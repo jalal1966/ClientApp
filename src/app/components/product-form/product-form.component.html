@@ -1,0 +1,90 @@
+<div class="container">
+  <h2>{{ isEditMode ? "Edit" : "Add" }} Product</h2>
+
+  <div *ngIf="loading" class="text-center">
+    <p>Loading product data...</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        formControlName="name"
+      />
+      <div
+        class="text-danger"
+        *ngIf="
+          productForm.get('name')?.invalid && productForm.get('name')?.touched
+        "
+      >
+        <small *ngIf="productForm.get('name')?.errors?.['required']"
+          >Name is required</small
+        >
+        <small *ngIf="productForm.get('name')?.errors?.['maxlength']"
+          >Name must be less than 100 characters</small
+        >
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea
+        class="form-control"
+        id="description"
+        rows="3"
+        formControlName="description"
+      ></textarea>
+      <div
+        class="text-danger"
+        *ngIf="
+          productForm.get('description')?.invalid &&
+          productForm.get('description')?.touched
+        "
+      >
+        <small *ngIf="productForm.get('description')?.errors?.['maxlength']"
+          >Description must be less than 500 characters</small
+        >
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="price" class="form-label">Price</label>
+      <input
+        type="number"
+        class="form-control"
+        id="price"
+        formControlName="price"
+        step="0.01"
+      />
+      <div
+        class="text-danger"
+        *ngIf="
+          productForm.get('price')?.invalid && productForm.get('price')?.touched
+        "
+      >
+        <small *ngIf="productForm.get('price')?.errors?.['required']"
+          >Price is required</small
+        >
+        <small *ngIf="productForm.get('price')?.errors?.['min']"
+          >Price must be greater than or equal to 0</small
+        >
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="productForm.invalid || submitting"
+    >
+      {{ submitting ? "Saving..." : "Save" }}
+    </button>
+    <a routerLink="/products" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+</div>
