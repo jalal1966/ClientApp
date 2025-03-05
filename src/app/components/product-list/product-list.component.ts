@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
@@ -16,7 +16,10 @@ export class ProductListComponent implements OnInit {
   loading = true;
   error = '';
 
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private location: Location
+  ) {}
 
   ngOnInit(): void {
     this.getProducts();
@@ -49,5 +52,8 @@ export class ProductListComponent implements OnInit {
         },
       });
     }
+  }
+  goBack(): void {
+    this.location.back();
   }
 }
