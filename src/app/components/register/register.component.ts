@@ -41,6 +41,10 @@ export class RegisterComponent {
         confirmPassword: ['', Validators.required],
         firstName: [''],
         lastName: [''],
+        address: ['', Validators.required],
+        telephoneNo: ['', Validators.required],
+        salary: [''],
+        note: [''],
       },
       { validators: this.passwordMatchValidator }
     );
@@ -58,6 +62,27 @@ export class RegisterComponent {
   }
   get confirmPassword() {
     return this.registerForm.get('confirmPassword');
+  }
+  get firstName() {
+    return this.registerForm.get('firstName');
+  }
+  get lastName() {
+    return this.registerForm.get('lastName');
+  }
+  get address() {
+    return this.registerForm.get('address');
+  }
+  get telephoneNo() {
+    return this.registerForm.get('telephoneNo');
+  }
+  get salary() {
+    return this.registerForm.get('salary');
+  }
+  get note() {
+    return this.registerForm.get('note');
+  }
+  get gender() {
+    return this.registerForm.get('gender');
   }
 
   passwordMatchValidator(form: FormGroup) {

@@ -5,7 +5,12 @@ export interface RegisterModel {
   salt?: string;
   firstName?: string;
   lastName?: string;
-  CreatedAt?: Date;
-  UpdatedAt?: Date;
+  address?: string;
+  telephoneNo?: string;
+  salary?: number;
+  note?: string;
+  gender?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
   lastLoginAt?: Date;
 }
