@@ -14,7 +14,7 @@ import { RouterOutlet } from '@angular/router';
           href="/"
           class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
         >
-          <span class="fs-4">Angular Standalone + C# + MSSQL Demo</span>
+          <span class="fs-5">Doctor's Clinic Demo Program</span>
         </a>
       </header>
       <main>
@@ -25,5 +25,5 @@ import { RouterOutlet } from '@angular/router';
   styles: [],
 })
 export class AppComponent {
-  title = 'Angular Standalone + C# + MSSQL Demo';
+  title = 'Angular Standalone + C# .NEt8.0 + MSSQL Demo';
 }

@@ -1,26 +1,30 @@
 .register-container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
+  max-width: 900px;
+  margin: 10px auto;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background-color: #f9f9f9;
 }
-
 .register-container h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   color: #333;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  flex: 1; // Adjusts the width of the form group
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2px;
 }
 
 .form-group label {
+  width: 170px;
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
+
   color: #555;
 }
 
@@ -30,8 +34,17 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   box-sizing: border-box;
+  margin-bottom: 5px;
 }
 
+.form-container {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  gap: 5px; // Adjusts the space between the two form groups
+  justify-content: center;
+}
 .form-group .error {
   color: red;
   margin-top: 5px;
@@ -39,7 +52,9 @@
 }
 
 button[type="submit"] {
-  width: 100%;
+  width: 98%;
+  height: 40px;
+  margin: 0 auto;
   padding: 10px;
   background-color: #007bff;
   border: none;

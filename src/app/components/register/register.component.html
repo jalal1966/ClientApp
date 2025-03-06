@@ -2,101 +2,118 @@
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
     <h2>Register</h2>
 
-    <div class="form-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" formControlName="username" required />
-      <div *ngIf="username?.invalid && (username?.dirty || username?.touched)">
-        <small class="error" *ngIf="username?.errors?.['required']">
-          Username is required
-        </small>
-        <small class="error" *ngIf="username?.errors?.['minlength'] ?? false">
-          Username must be at least 3 characters
-        </small>
+    <div class="form-container">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" formControlName="username" required />
+        <div
+          *ngIf="username?.invalid && (username?.dirty || username?.touched)"
+        >
+          <small class="error" *ngIf="username?.errors?.['required']">
+            Username is required
+          </small>
+          <small class="error" *ngIf="username?.errors?.['minlength'] ?? false">
+            Username must be at least 3 characters
+          </small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email" required />
+        <div *ngIf="email?.invalid && (email?.dirty || email?.touched)">
+          <small class="error" *ngIf="email?.errors?.['required']">
+            Email is required
+          </small>
+          <small class="error" *ngIf="email?.errors?.['email']">
+            Invalid email format
+          </small>
+        </div>
       </div>
     </div>
+    <div class="form-container">
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          required
+        />
+        <div
+          *ngIf="password?.invalid && (password?.dirty || password?.touched)"
+        >
+          <small class="error" *ngIf="password?.errors?.['required']">
+            Password is required
+          </small>
+          <small class="error" *ngIf="password?.errors?.['minlength']">
+            Password must be at least 6 characters
+          </small>
+        </div>
+      </div>
 
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input type="email" id="email" formControlName="email" required />
-      <div *ngIf="email?.invalid && (email?.dirty || email?.touched)">
-        <small class="error" *ngIf="email?.errors?.['required']">
-          Email is required
-        </small>
-        <small class="error" *ngIf="email?.errors?.['email']">
-          Invalid email format
-        </small>
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          required
+        />
+        <div
+          *ngIf="
+            confirmPassword?.invalid &&
+            (confirmPassword?.dirty || confirmPassword?.touched)
+          "
+        >
+          <small class="error" *ngIf="confirmPassword?.errors?.['required']">
+            Please confirm your password
+          </small>
+          <small
+            class="error"
+            *ngIf="registerForm.errors?.['passwordMismatch']"
+          >
+            Passwords do not match
+          </small>
+        </div>
       </div>
     </div>
+    <div class="form-container">
+      <div class="form-group">
+        <label for="firstName">First Name (Optional)</label>
+        <input type="text" id="firstName" formControlName="firstName" />
+      </div>
 
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input
-        type="password"
-        id="password"
-        formControlName="password"
-        required
-      />
-      <div *ngIf="password?.invalid && (password?.dirty || password?.touched)">
-        <small class="error" *ngIf="password?.errors?.['required']">
-          Password is required
-        </small>
-        <small class="error" *ngIf="password?.errors?.['minlength']">
-          Password must be at least 6 characters
-        </small>
+      <div class="form-group">
+        <label for="lastName">Last Name (Optional)</label>
+        <input type="text" id="lastName" formControlName="lastName" />
       </div>
     </div>
-
     <div class="form-group">
-      <label for="confirmPassword">Confirm Password</label>
-      <input
-        type="password"
-        id="confirmPassword"
-        formControlName="confirmPassword"
-        required
-      />
-      <div
-        *ngIf="
-          confirmPassword?.invalid &&
-          (confirmPassword?.dirty || confirmPassword?.touched)
-        "
-      >
-        <small class="error" *ngIf="confirmPassword?.errors?.['required']">
-          Please confirm your password
-        </small>
-        <small class="error" *ngIf="registerForm.errors?.['passwordMismatch']">
-          Passwords do not match
-        </small>
+      <div class="d-inline-flex align-items-center">
+        <label for="address">User Address</label>
+        <input type="text" id="address" formControlName="address" />
       </div>
     </div>
-
-    <div class="form-group">
-      <label for="firstName">First Name (Optional)</label>
-      <input type="text" id="firstName" formControlName="firstName" />
-    </div>
-
-    <div class="form-group">
-      <label for="lastName">Last Name (Optional)</label>
-      <input type="text" id="lastName" formControlName="lastName" />
-    </div>
-    <div class="form-group">
-      <label for="address">User Address</label>
-      <input type="text" id="lastName" formControlName="address" />
-    </div>
-    <div class="form-group">
-      <label for="telephoneNo">Phone Number</label>
-      <input type="text" id="telephoneNo" formControlName="telephoneNo" />
+    <div class="form-container">
+      <div class="form-group">
+        <label for="telephoneNo">Phone Number</label>
+        <input type="text" id="telephoneNo" formControlName="telephoneNo" />
+      </div>
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <input type="text" id="gender" formControlName="gender" />
+      </div>
+      <div class="form-group">
+        <label for="salary">User Salary</label>
+        <input type="text" id="salary" formControlName="salary" />
+      </div>
     </div>
     <div class="form-group">
-      <label for="salary">User Salary</label>
-      <input type="text" id="salary" formControlName="salary" />
-    </div>
-    <div class="form-group">
-      <label for="note">Note.</label>
-      <input type="text" id="role" formControlName="note" />
-    </div>
-    <div class="form-group">
-      <label for="gender">Gender</label>
-      <input type="text" id="gender" formControlName="gender" />
+      <div class="d-inline-flex align-items-center">
+        <label for="note">Note.</label>
+        <input type="text" id="role" formControlName="note" />
+      </div>
     </div>
     <button type="submit" [disabled]="registerForm.invalid || isSubmitting">
       {{ isSubmitting ? "Registering..." : "Register" }}
