@@ -1,38 +1,77 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
-
+import { Observable } from 'rxjs';
 import { RegisterModel } from '../models/register.model';
 import { LoginModel } from '../models/login.model';
 import { AuthResponse } from '../models/authResponse.model';
+import { User } from '../models/user';
+import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:5000/api/auth'; // Update with your API URL
-  private currentUserSubject = new BehaviorSubject<string | null>(
-    localStorage.getItem('username')
+  public currentUser: Observable<User | null>;
+  private apiUrl = environment.apiUrl + '/api/auth'; // Update with your API URL
+
+  private currentUserSubject = new BehaviorSubject<User | null>(
+    JSON.parse(localStorage.getItem('username') || 'null')
   );
 
-  constructor(private http: HttpClient) {}
-
-  register(model: RegisterModel): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, model);
+  constructor(private http: HttpClient) {
+    this.currentUserSubject = new BehaviorSubject<User | null>(
+      JSON.parse(localStorage.getItem('currentUser') || 'null')
+    );
+    this.currentUser = this.currentUserSubject.asObservable();
+    this.currentUser.subscribe((user) => console.log('Current User:', user));
+  }
+  public get currentUserValue(): User | null {
+    return this.currentUserSubject.value;
+  }
+  getCurrentUser(): Observable<User | null> {
+    return this.currentUserSubject.asObservable();
   }
 
-  login(model: LoginModel): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, model).pipe(
-      tap((response) => {
-        // Store token and username in localStorage
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('username', response.username);
-        localStorage.setItem('expiration', response.expiration.toString());
+  login(username: string, password: string): Observable<User> {
+    return this.http
+      .post<User>(`${this.apiUrl}/login`, { username, password })
+      .pipe(
+        map((user) => {
+          // store user details and jwt token in local storage
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          this.currentUserSubject.next(user);
+          return user;
+        })
+      );
+  }
 
-        // Update current user
-        this.currentUserSubject.next(response.username);
-      })
-    );
+  register(registerData: RegisterModel): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, registerData);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  validateResetToken(email: string, token: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/validate-reset-token`, {
+      email,
+      token,
+    });
+  }
+
+  resetPassword(
+    email: string,
+    token: string,
+    password: string
+  ): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, {
+      email,
+      token,
+      password,
+    });
   }
 
   logout() {
@@ -43,10 +82,10 @@ export class AuthService {
 
     // Update current user
     this.currentUserSubject.next(null);
-  }
 
-  getCurrentUser(): Observable<string | null> {
-    return this.currentUserSubject.asObservable();
+    // remove user from local storage and set current user to null
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
   }
 
   isLoggedIn(): boolean {
@@ -64,6 +103,6 @@ export class AuthService {
 
   hasToken(): boolean {
     // Implement your logic to check for token
-    return !!localStorage.getItem('token');
+    return !!localStorage.getItem('token') || !!this.currentUserValue?.token;
   }
 }

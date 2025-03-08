@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -7,46 +7,72 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
-  loginForm: FormGroup;
-  errorMessage = '';
+export class LoginComponent implements OnInit {
+  loginForm!: FormGroup;
   loading = false;
+  submitted = false;
+  errorMessage = '';
+  returnUrl: string = '/';
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
+    private formBuilder: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService
   ) {
-    this.loginForm = this.fb.group({
+    // redirect to home if already logged in
+    if (this.authService.currentUserValue) {
+      this.router.navigate(['/']);
+    }
+  }
+
+  ngOnInit() {
+    this.loginForm = this.formBuilder.group({
       username: ['', Validators.required],
-      // email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', Validators.required],
     });
+
+    // get return url from route parameters or default to '/'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
 
   onSubmit(): void {
+    this.submitted = true;
+
+    // stop here if form is invalid
+    if (this.loginForm.invalid) {
+      return;
+    }
+
     if (this.loginForm.valid) {
       this.loading = true;
       this.errorMessage = '';
 
-      this.authService.login(this.loginForm.value).subscribe({
-        next: () => {
-          this.router.navigate(['/products']);
-        },
-        error: (err) => {
-          this.errorMessage = 'Login failed. Please try again.';
-          this.loading = false;
-        },
-      });
+      this.authService
+        .login(this.loginForm.value.username, this.loginForm.value.password)
+        .subscribe({
+          next: () => {
+            this.router.navigate(['/products']);
+          },
+          error: () => {
+            this.errorMessage = 'Login failed. Please try again.';
+            this.loading = false;
+          },
+        });
     }
+  }
+  // convenience getter for easy access to form fields
+  get f() {
+    return this.loginForm.controls;
   }
 }

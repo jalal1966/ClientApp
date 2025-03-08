@@ -45,9 +45,18 @@ export class RegisterComponent {
         telephoneNo: ['', Validators.required],
         salary: [''],
         note: [''],
+        jobTitleID: ['', [Validators.required, this.oneOf([1, 2])]],
+        gender: ['', [Validators.required, this.oneOf([1, 2])]],
       },
       { validators: this.passwordMatchValidator }
     );
+  }
+
+  // Custom validator for oneOf
+  oneOf(validOptions: any[]) {
+    return (control: any) => {
+      return validOptions.includes(control.value) ? null : { oneOf: true };
+    };
   }
 
   // Getter methods for easy form control access

@@ -1,6 +1,6 @@
 <div class="register-container">
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-    <h2>Register</h2>
+    <h2>Employee Registration</h2>
 
     <div class="form-container">
       <div class="form-group">
@@ -120,7 +120,7 @@
     </button>
 
     <p class="error" *ngIf="error">{{ error }}</p>
-
+    <br /><br />
     <p>
       Already have an account?
       <a [routerLink]="['/login']">Login here</a>

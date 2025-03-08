@@ -9,7 +9,8 @@ export interface RegisterModel {
   telephoneNo?: string;
   salary?: number;
   note?: string;
-  gender?: string;
+  jobTitleID?: number;
+  gender?: number;
   createdAt?: Date;
   updatedAt?: Date;
   lastLoginAt?: Date;

@@ -26,4 +26,9 @@ import { RouterOutlet } from '@angular/router';
 })
 export class AppComponent {
   title = 'Angular Standalone + C# .NEt8.0 + MSSQL Demo';
+  ngOnInit(): void {
+    // Clear localStorage when the application starts
+    localStorage.clear();
+    console.log('localStorage has been cleared.');
+  }
 }
