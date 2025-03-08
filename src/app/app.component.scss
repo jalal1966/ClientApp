@@ -165,3 +165,9 @@ main {
     margin-block: 1.5rem;
   }
 }
+.home {
+  background-image: url("assets/images/background.jpg");
+  background-size: cover;
+  background-position: center;
+  height: 100vh; /* Adjust the height to your needs */
+}
