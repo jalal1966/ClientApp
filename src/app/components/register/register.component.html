@@ -101,9 +101,31 @@
         <input type="text" id="telephoneNo" formControlName="telephoneNo" />
       </div>
       <div class="form-group">
-        <label for="gender">Gender</label>
-        <input type="text" id="gender" formControlName="gender" />
+        <label for="genderID">Gender</label>
+        <select class="form-select" id="genderID" formControlName="genderID">
+          <option [ngValue]="1">Man</option>
+          <option [ngValue]="2">Women</option>
+        </select>
       </div>
+      <!--<div class="form-group" title="1. Man 2. Women">
+        <label for="genderID">Gender</label>
+        <input type="text" id="genderID" formControlName="genderID" />
+      </div>-->
+      <div class="form-group">
+        <label for="jobTitleID">Job Title</label>
+        <select
+          class="form-select"
+          id="jobTitleID"
+          formControlName="jobTitleID"
+        >
+          <option [ngValue]="1">Doctor</option>
+          <option [ngValue]="2">Nurse</option>
+        </select>
+      </div>
+      <!--<div class="form-group" title="1. Doctor 2. Nurse">
+        <label for="jobTitleID">jobTitleID</label>
+        <input type="text" id="jobTitleID" formControlName="jobTitleID" />
+      </div>-->
       <div class="form-group">
         <label for="salary">User Salary</label>
         <input type="text" id="salary" formControlName="salary" />
@@ -112,7 +134,7 @@
     <div class="form-group">
       <div class="d-inline-flex align-items-center">
         <label for="note">Note.</label>
-        <input type="text" id="role" formControlName="note" />
+        <input type="text" id="note" formControlName="note" />
       </div>
     </div>
     <button type="submit" [disabled]="registerForm.invalid || isSubmitting">

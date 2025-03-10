@@ -2,49 +2,65 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RegisterModel } from '../models/register.model';
-import { LoginModel } from '../models/login.model';
-import { AuthResponse } from '../models/authResponse.model';
 import { User } from '../models/user';
 import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  public currentUser: Observable<User | null>;
   private apiUrl = environment.apiUrl + '/api/auth'; // Update with your API URL
-
   private currentUserSubject = new BehaviorSubject<User | null>(
-    JSON.parse(localStorage.getItem('username') || 'null')
+    JSON.parse(localStorage.getItem('currentUser') || 'null')
   );
+  public currentUser: Observable<User | null> =
+    this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    this.currentUserSubject = new BehaviorSubject<User | null>(
-      JSON.parse(localStorage.getItem('currentUser') || 'null')
-    );
-    this.currentUser = this.currentUserSubject.asObservable();
     this.currentUser.subscribe((user) => console.log('Current User:', user));
   }
-  public get currentUserValue(): User | null {
-    return this.currentUserSubject.value;
-  }
-  getCurrentUser(): Observable<User | null> {
-    return this.currentUserSubject.asObservable();
-  }
-
+  // to DO here localStorage.setItem('jobTitle', user.jobTitle);
   login(username: string, password: string): Observable<User> {
     return this.http
       .post<User>(`${this.apiUrl}/login`, { username, password })
       .pipe(
         map((user) => {
-          // store user details and jwt token in local storage
           localStorage.setItem('currentUser', JSON.stringify(user));
+          localStorage.setItem('token', user.token); // Store token separately
+          localStorage.setItem('expiration', user.expiration);
           this.currentUserSubject.next(user);
+          console.log('user', user);
           return user;
+        }),
+        catchError((error) => {
+          console.error('Login failed:', error);
+          throw error; // Re-throw the error for the component to handle
         })
       );
+  }
+
+  public get currentUserValue(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  getCurrentUser(): Observable<User | null> {
+    return this.currentUserSubject.asObservable();
+  }
+
+  isLoggedIn(): boolean {
+    const token = localStorage.getItem('token');
+    const expiration = localStorage.getItem('expiration');
+    if (!token || !expiration) return false;
+
+    const expirationDate = new Date(expiration); // Convert stored string to Date
+
+    return expirationDate.getTime() > new Date().getTime(); // Compare timestamps
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 
   register(registerData: RegisterModel): Observable<any> {
@@ -86,19 +102,6 @@ export class AuthService {
     // remove user from local storage and set current user to null
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
-  }
-
-  isLoggedIn(): boolean {
-    const token = localStorage.getItem('token');
-    const expiration = localStorage.getItem('expiration');
-
-    if (!token || !expiration) return false;
-
-    return new Date(expiration) > new Date();
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem('token');
   }
 
   hasToken(): boolean {

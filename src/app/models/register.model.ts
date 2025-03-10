@@ -2,7 +2,7 @@ export interface RegisterModel {
   username: string;
   email: string;
   password: string;
-  salt?: string;
+  confirmPassword: string;
   firstName?: string;
   lastName?: string;
   address?: string;
@@ -10,7 +10,7 @@ export interface RegisterModel {
   salary?: number;
   note?: string;
   jobTitleID?: number;
-  gender?: number;
+  genderID?: number;
   createdAt?: Date;
   updatedAt?: Date;
   lastLoginAt?: Date;

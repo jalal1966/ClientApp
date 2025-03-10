@@ -1,4 +1,9 @@
-import { Routes, Router } from '@angular/router';
+import {
+  Routes,
+  Router,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { ProductDetailsComponent } from './components/product-details/product-details.component';
 import { ProductFormComponent } from './components/product-form/product-form.component';
@@ -9,23 +14,13 @@ import { AuthService } from './services/auth.service';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 
 export const routes: Routes = [
-  {
-    path: 'login',
-    component: LoginComponent,
-  },
-  {
-    path: 'register',
-    component: RegisterComponent,
-  },
-  {
-    path: 'forgot-password',
-    component: ForgotPasswordComponent,
-  },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
   {
     path: 'products',
     component: ProductListComponent,
     canActivate: [
-      () => {
+      (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
         const authService = inject(AuthService);
         const router = inject(Router);
 
@@ -33,11 +28,13 @@ export const routes: Routes = [
           return true;
         }
 
-        router.navigate(['/login']);
+        console.warn('User not logged in, redirecting...');
+        router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
         return false;
       },
     ],
   },
+
   {
     path: 'products/new',
     component: ProductFormComponent,
@@ -89,6 +86,15 @@ export const routes: Routes = [
       },
     ],
   },
+
+  {
+    path: 'register',
+    component: RegisterComponent,
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
+  },
   {
     path: '',
     redirectTo: '/login',
@@ -98,4 +104,5 @@ export const routes: Routes = [
     path: '**', // Catch-all route for 404
     redirectTo: '/login',
   },
+  { path: '**', redirectTo: '/login' }, // Wildcard route for a 404 page
 ];

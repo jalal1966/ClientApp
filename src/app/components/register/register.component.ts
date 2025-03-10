@@ -27,7 +27,7 @@ export class RegisterComponent {
   registerForm: FormGroup;
   error = '';
   isSubmitting: boolean = false;
-
+  roles = ['Doctor', 'Nurse'];
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -46,7 +46,7 @@ export class RegisterComponent {
         salary: [''],
         note: [''],
         jobTitleID: ['', [Validators.required, this.oneOf([1, 2])]],
-        gender: ['', [Validators.required, this.oneOf([1, 2])]],
+        genderID: ['', [Validators.required, this.oneOf([1, 2])]],
       },
       { validators: this.passwordMatchValidator }
     );

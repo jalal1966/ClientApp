@@ -23,6 +23,7 @@ export class LoginComponent implements OnInit {
   submitted = false;
   errorMessage = '';
   returnUrl: string = '/';
+  showPassword: boolean = false;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -44,6 +45,7 @@ export class LoginComponent implements OnInit {
 
     // get return url from route parameters or default to '/'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    console.log('Return URL:', this.returnUrl);
   }
 
   onSubmit(): void {
@@ -62,15 +64,28 @@ export class LoginComponent implements OnInit {
         .login(this.loginForm.value.username, this.loginForm.value.password)
         .subscribe({
           next: () => {
-            this.router.navigate(['/products']);
+            console.log('Login successful, navigating to:', this.returnUrl);
+
+            this.router
+
+              .navigateByUrl(this.returnUrl + '/products')
+              .then((success) => {
+                console.log('Navigation status:', success);
+              })
+              .catch((err) => console.error('Navigation error:', err));
           },
-          error: () => {
+          error: (error) => {
+            console.error('Login failed:', error);
             this.errorMessage = 'Login failed. Please try again.';
             this.loading = false;
           },
         });
     }
   }
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
   // convenience getter for easy access to form fields
   get f() {
     return this.loginForm.controls;
