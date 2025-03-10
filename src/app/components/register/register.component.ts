@@ -27,7 +27,7 @@ export class RegisterComponent {
   registerForm: FormGroup;
   error = '';
   isSubmitting: boolean = false;
-  roles = ['Doctor', 'Nurse'];
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -37,19 +37,32 @@ export class RegisterComponent {
       {
         username: ['', [Validators.required, Validators.minLength(3)]],
         email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(8)]],
+        password: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', Validators.required],
         firstName: [''],
         lastName: [''],
-        address: ['', Validators.required],
-        telephoneNo: ['', Validators.required],
-        salary: [''],
+        address: [''],
+        telephoneNo: [''],
+        salary: [''], // Will convert to number before submission if needed
         note: [''],
-        jobTitleID: ['', [Validators.required, this.oneOf([1, 2])]],
-        genderID: ['', [Validators.required, this.oneOf([1, 2])]],
+        jobTitleID: [null, [Validators.required, this.oneOf([1, 2])]],
+        genderID: [null, [Validators.required, this.oneOf([1, 2])]],
       },
       { validators: this.passwordMatchValidator }
     );
+  }
+
+  ngOnInit() {
+    // For debugging the form
+    if (typeof window !== 'undefined') {
+      // Check for SSR
+      console.log('Form initialized');
+      this.registerForm.valueChanges.subscribe((val) => {
+        console.log('Form values:', val);
+        console.log('Form valid:', this.registerForm.valid);
+        console.log('Form errors:', this.registerForm.errors);
+      });
+    }
   }
 
   // Custom validator for oneOf
@@ -90,14 +103,18 @@ export class RegisterComponent {
   get note() {
     return this.registerForm.get('note');
   }
-  get gender() {
-    return this.registerForm.get('gender');
+  get genderID() {
+    return this.registerForm.get('genderID');
+  }
+  get jobTitleID() {
+    return this.registerForm.get('jobTitleID');
   }
 
   passwordMatchValidator(form: FormGroup) {
-    return form.get('password')?.value === form.get('confirmPassword')?.value
-      ? null
-      : { mismatch: true };
+    const password = form.get('password')?.value;
+    const confirmPassword = form.get('confirmPassword')?.value;
+
+    return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
   onSubmit() {
@@ -108,11 +125,22 @@ export class RegisterComponent {
       this.isSubmitting = true;
       this.error = '';
 
-      // Prepare registration model, excluding confirmPassword
-      const { confirmPassword, ...registerModel } = this.registerForm.value;
+      // Create a copy of the form value
+      const formData = { ...this.registerForm.value };
+
+      // Convert salary to number if it has a value
+      if (formData.salary) {
+        formData.salary = Number(formData.salary);
+      }
+
+      // Remove confirmPassword as it's not in the API model
+      const { confirmPassword, ...registerModel } = formData;
+
+      console.log('Submitting registration data:', registerModel);
 
       this.authService.register(registerModel).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Registration successful:', response);
           // Show success message or redirect to login
           this.router.navigate(['/login'], {
             queryParams: { registered: 'true' },
@@ -120,15 +148,23 @@ export class RegisterComponent {
         },
         error: (err) => {
           // Handle registration errors
+          console.error('Registration error', err);
           this.error =
             err.error?.message || 'Registration failed. Please try again.';
           this.isSubmitting = false;
-          console.error('Registration error', err);
         },
         complete: () => {
           this.isSubmitting = false;
         },
       });
+    } else {
+      console.log('Form is invalid:', this.registerForm.errors);
+      const controls = this.registerForm.controls;
+      for (const name in controls) {
+        if (controls[name].invalid) {
+          console.log('Invalid control:', name, controls[name].errors);
+        }
+      }
     }
   }
 }

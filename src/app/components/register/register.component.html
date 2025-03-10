@@ -12,7 +12,7 @@
           <small class="error" *ngIf="username?.errors?.['required']">
             Username is required
           </small>
-          <small class="error" *ngIf="username?.errors?.['minlength'] ?? false">
+          <small class="error" *ngIf="username?.errors?.['minlength']">
             Username must be at least 3 characters
           </small>
         </div>
@@ -47,7 +47,7 @@
             Password is required
           </small>
           <small class="error" *ngIf="password?.errors?.['minlength']">
-            Password must be at least 6 characters
+            Password must be at least 8 characters
           </small>
         </div>
       </div>
@@ -69,13 +69,13 @@
           <small class="error" *ngIf="confirmPassword?.errors?.['required']">
             Please confirm your password
           </small>
-          <small
-            class="error"
-            *ngIf="registerForm.errors?.['passwordMismatch']"
-          >
-            Passwords do not match
-          </small>
         </div>
+        <small
+          class="error"
+          *ngIf="registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched"
+        >
+          Passwords do not match
+        </small>
       </div>
     </div>
     <div class="form-container">
@@ -90,10 +90,8 @@
       </div>
     </div>
     <div class="form-group">
-      <div class="d-inline-flex align-items-center">
-        <label for="address">User Address</label>
-        <input type="text" id="address" formControlName="address" />
-      </div>
+      <label for="address">User Address (Optional)</label>
+      <input type="text" id="address" formControlName="address" />
     </div>
     <div class="form-container">
       <div class="form-group">
@@ -103,14 +101,18 @@
       <div class="form-group">
         <label for="genderID">Gender</label>
         <select class="form-select" id="genderID" formControlName="genderID">
+          <option [ngValue]="null" disabled>Select gender</option>
           <option [ngValue]="1">Man</option>
           <option [ngValue]="2">Women</option>
         </select>
+        <div
+          *ngIf="genderID?.invalid && (genderID?.dirty || genderID?.touched)"
+        >
+          <small class="error" *ngIf="genderID?.errors?.['required']">
+            Gender is required
+          </small>
+        </div>
       </div>
-      <!--<div class="form-group" title="1. Man 2. Women">
-        <label for="genderID">Gender</label>
-        <input type="text" id="genderID" formControlName="genderID" />
-      </div>-->
       <div class="form-group">
         <label for="jobTitleID">Job Title</label>
         <select
@@ -118,24 +120,28 @@
           id="jobTitleID"
           formControlName="jobTitleID"
         >
+          <option [ngValue]="null" disabled>Select job title</option>
           <option [ngValue]="1">Doctor</option>
           <option [ngValue]="2">Nurse</option>
         </select>
+        <div
+          *ngIf="
+            jobTitleID?.invalid && (jobTitleID?.dirty || jobTitleID?.touched)
+          "
+        >
+          <small class="error" *ngIf="jobTitleID?.errors?.['required']">
+            Job title is required
+          </small>
+        </div>
       </div>
-      <!--<div class="form-group" title="1. Doctor 2. Nurse">
-        <label for="jobTitleID">jobTitleID</label>
-        <input type="text" id="jobTitleID" formControlName="jobTitleID" />
-      </div>-->
       <div class="form-group">
-        <label for="salary">User Salary</label>
-        <input type="text" id="salary" formControlName="salary" />
+        <label for="salary">User Salary (Optional)</label>
+        <input type="number" id="salary" formControlName="salary" />
       </div>
     </div>
     <div class="form-group">
-      <div class="d-inline-flex align-items-center">
-        <label for="note">Note.</label>
-        <input type="text" id="note" formControlName="note" />
-      </div>
+      <label for="note">Note (Optional)</label>
+      <input type="text" id="note" formControlName="note" />
     </div>
     <button type="submit" [disabled]="registerForm.invalid || isSubmitting">
       {{ isSubmitting ? "Registering..." : "Register" }}
