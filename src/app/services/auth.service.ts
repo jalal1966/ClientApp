@@ -1,52 +1,57 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { RegisterModel } from '../models/register.model';
+import { Observable, throwError } from 'rxjs';
 import { User } from '../models/user';
 import { BehaviorSubject } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { RegisterModel } from '../models/register.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl + '/api/auth'; // Update with your API URL
-  private currentUserSubject = new BehaviorSubject<User | null>(
-    JSON.parse(localStorage.getItem('currentUser') || 'null')
-  );
-  public currentUser: Observable<User | null> =
-    this.currentUserSubject.asObservable();
+  private currentUserSubject: BehaviorSubject<User | null>;
+  public currentUser: Observable<User | null>;
+  private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {
-    this.currentUser.subscribe((user) => console.log('Current User:', user));
-  }
-  // to DO here localStorage.setItem('jobTitle', user.jobTitle);
-  login(username: string, password: string): Observable<User> {
-    return this.http
-      .post<User>(`${this.apiUrl}/login`, { username, password })
-      .pipe(
-        map((user) => {
-          localStorage.setItem('currentUser', JSON.stringify(user));
-          localStorage.setItem('token', user.token); // Store token separately
-          localStorage.setItem('expiration', user.expiration);
-          this.currentUserSubject.next(user);
-          console.log('user', user);
-          return user;
-        }),
-        catchError((error) => {
-          console.error('Login failed:', error);
-          throw error; // Re-throw the error for the component to handle
-        })
-      );
+  constructor(private http: HttpClient, private router: Router) {
+    // Initialize from localStorage
+    const storedUser = localStorage.getItem('currentUser');
+    this.currentUserSubject = new BehaviorSubject<User | null>(
+      storedUser ? JSON.parse(storedUser) : null
+    );
+    this.currentUser = this.currentUserSubject.asObservable();
   }
 
   public get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
 
-  getCurrentUser(): Observable<User | null> {
-    return this.currentUserSubject.asObservable();
+  login(username: string, password: string): Observable<User> {
+    return this.http
+      .post<any>(`${this.apiUrl}/api/auth/login`, { username, password })
+      .pipe(
+        map((user) => {
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          localStorage.setItem('token', user.token); // Store token separately
+          localStorage.setItem('expiration', user.expiration.toString());
+
+          // Store job title ID for role-based routing
+          if (user.jobTitleId !== undefined) {
+            localStorage.setItem('jobTitleId', user.jobTitleId.toString());
+          }
+
+          this.currentUserSubject.next(user);
+          console.log('user', user);
+          return user;
+        }),
+        catchError((error) => {
+          console.error('Login error:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   isLoggedIn(): boolean {
@@ -57,6 +62,10 @@ export class AuthService {
     const expirationDate = new Date(expiration); // Convert stored string to Date
 
     return expirationDate.getTime() > new Date().getTime(); // Compare timestamps
+  }
+
+  getCurrentUser(): Observable<User | null> {
+    return this.currentUserSubject.asObservable();
   }
 
   getToken(): string | null {
@@ -78,6 +87,20 @@ export class AuthService {
     });
   }
 
+  logout(): void {
+    // Remove stored token and username
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('expiration');
+
+    // Update current user
+    this.currentUserSubject.next(null);
+
+    // remove user from local storage and set current user to null
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
+  }
+
   resetPassword(
     email: string,
     token: string,
@@ -90,18 +113,39 @@ export class AuthService {
     });
   }
 
-  logout() {
-    // Remove stored token and username
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('expiration');
+  // Navigate based on user role
+  navigateByRole(): void {
+    const user = this.currentUserValue;
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
 
-    // Update current user
-    this.currentUserSubject.next(null);
+    switch (user.jobTitleId) {
+      case 1: // Doctor
+        this.router.navigate(['/doctor']);
+        break;
+      case 2: // Nurse
+        this.router.navigate(['/nurse']);
+        break;
+      default:
+        this.router.navigate(['/']);
+        break;
+    }
+  }
 
-    // remove user from local storage and set current user to null
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
+  // Check if the user has a specific role
+  hasRole(roleId: number): boolean {
+    return this.currentUserValue?.jobTitleId === roleId;
+  }
+
+  // Check if the current token is expired
+  isTokenExpired(): boolean {
+    const user = this.currentUserValue;
+    if (!user) return true;
+
+    const expiration = new Date(user.expiration);
+    return expiration < new Date();
   }
 
   hasToken(): boolean {

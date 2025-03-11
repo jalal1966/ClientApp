@@ -12,97 +12,47 @@ import { RegisterComponent } from './components/register/register.component';
 import { inject } from '@angular/core';
 import { AuthService } from './services/auth.service';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { DoctorPageComponent } from './components/doctor-page/doctor-page.component';
+import { RoleGuard } from './services/roleguard';
+import { NursePageComponent } from './components/nurse-page/nurse-page.component';
+import { AuthGuard } from './services/authGuard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
   {
     path: 'products',
     component: ProductListComponent,
-    canActivate: [
-      (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-        const authService = inject(AuthService);
-        const router = inject(Router);
-
-        if (authService.isLoggedIn()) {
-          return true;
-        }
-
-        console.warn('User not logged in, redirecting...');
-        router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
-        return false;
-      },
-    ],
+    canActivate: [AuthGuard],
   },
-
   {
     path: 'products/new',
     component: ProductFormComponent,
-    canActivate: [
-      () => {
-        const authService = inject(AuthService);
-        const router = inject(Router);
-
-        if (authService.isLoggedIn()) {
-          return true;
-        }
-
-        router.navigate(['/login']);
-        return false;
-      },
-    ],
+    canActivate: [AuthGuard],
   },
   {
     path: 'products/:id',
     component: ProductDetailsComponent,
-    canActivate: [
-      () => {
-        const authService = inject(AuthService);
-        const router = inject(Router);
-
-        if (authService.isLoggedIn()) {
-          return true;
-        }
-
-        router.navigate(['/login']);
-        return false;
-      },
-    ],
+    canActivate: [AuthGuard],
   },
   {
     path: 'products/:id/edit',
     component: ProductFormComponent,
-    canActivate: [
-      () => {
-        const authService = inject(AuthService);
-        const router = inject(Router);
-
-        if (authService.isLoggedIn()) {
-          return true;
-        }
-
-        router.navigate(['/login']);
-        return false;
-      },
-    ],
-  },
-
-  {
-    path: 'register',
-    component: RegisterComponent,
+    canActivate: [AuthGuard],
   },
   {
-    path: 'forgot-password',
-    component: ForgotPasswordComponent,
+    path: 'doctor',
+    component: DoctorPageComponent,
+    canActivate: [RoleGuard],
+    data: { roleId: 1 },
   },
   {
-    path: '',
-    redirectTo: '/login',
-    pathMatch: 'full',
-  },
-  {
-    path: '**', // Catch-all route for 404
-    redirectTo: '/login',
+    path: 'nurse',
+    component: NursePageComponent,
+    canActivate: [RoleGuard],
+    data: { roleId: 2 },
   },
   { path: '**', redirectTo: '/login' }, // Wildcard route for a 404 page
 ];

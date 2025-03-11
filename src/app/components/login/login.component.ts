@@ -63,16 +63,21 @@ export class LoginComponent implements OnInit {
       this.authService
         .login(this.loginForm.value.username, this.loginForm.value.password)
         .subscribe({
-          next: () => {
-            console.log('Login successful, navigating to:', this.returnUrl);
+          next: (user) => {
+            console.log('Login successful, user:', user);
 
-            this.router
-
-              .navigateByUrl(this.returnUrl + '/products')
-              .then((success) => {
-                console.log('Navigation status:', success);
-              })
-              .catch((err) => console.error('Navigation error:', err));
+            // Check if there's a specific returnUrl, otherwise route based on role
+            if (this.returnUrl !== '/') {
+              this.router
+                .navigateByUrl(this.returnUrl)
+                .then((success) => {
+                  console.log('Navigation status:', success);
+                })
+                .catch((err) => console.error('Navigation error:', err));
+            } else {
+              // Navigate based on role
+              this.authService.navigateByRole();
+            }
           },
           error: (error) => {
             console.error('Login failed:', error);
