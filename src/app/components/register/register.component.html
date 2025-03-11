@@ -2,6 +2,23 @@
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
     <h2>Employee Registration</h2>
 
+    <!-- Add debugging info -->
+    <div
+      class="debug-info"
+      style="
+        background: #f5f5f5;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        display: none;
+      "
+    >
+      <p>Form valid: {{ registerForm.valid }}</p>
+      <p>Form touched: {{ registerForm.touched }}</p>
+      <p>Form dirty: {{ registerForm.dirty }}</p>
+      <p>Form errors: {{ registerForm.errors | json }}</p>
+    </div>
+
     <div class="form-container">
       <div class="form-group">
         <label for="username">Username</label>
@@ -31,15 +48,11 @@
         </div>
       </div>
     </div>
+
     <div class="form-container">
-      <div class="form-group">
+      <div class="form-group-pasword">
         <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          formControlName="password"
-          required
-        />
+        <input type="password" id="password" required />
         <div
           *ngIf="password?.invalid && (password?.dirty || password?.touched)"
         >
@@ -47,12 +60,12 @@
             Password is required
           </small>
           <small class="error" *ngIf="password?.errors?.['minlength']">
-            Password must be at least 8 characters
+            Password must be at least 6 characters
           </small>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group-pasword">
         <label for="confirmPassword">Confirm Password</label>
         <input
           type="password"
@@ -78,6 +91,7 @@
         </small>
       </div>
     </div>
+
     <div class="form-container">
       <div class="form-group">
         <label for="firstName">First Name (Optional)</label>
@@ -89,15 +103,18 @@
         <input type="text" id="lastName" formControlName="lastName" />
       </div>
     </div>
+
     <div class="form-group">
       <label for="address">User Address (Optional)</label>
       <input type="text" id="address" formControlName="address" />
     </div>
+
     <div class="form-container">
       <div class="form-group">
         <label for="telephoneNo">Phone Number</label>
         <input type="text" id="telephoneNo" formControlName="telephoneNo" />
       </div>
+
       <div class="form-group">
         <label for="genderID">Gender</label>
         <select class="form-select" id="genderID" formControlName="genderID">
@@ -111,8 +128,12 @@
           <small class="error" *ngIf="genderID?.errors?.['required']">
             Gender is required
           </small>
+          <small class="error" *ngIf="genderID?.errors?.['oneOf']">
+            Please select a valid gender
+          </small>
         </div>
       </div>
+
       <div class="form-group">
         <label for="jobTitleID">Job Title</label>
         <select
@@ -121,6 +142,7 @@
           formControlName="jobTitleID"
         >
           <option [ngValue]="null" disabled>Select job title</option>
+          <option [ngValue]="0">Admin</option>
           <option [ngValue]="1">Doctor</option>
           <option [ngValue]="2">Nurse</option>
         </select>
@@ -132,20 +154,41 @@
           <small class="error" *ngIf="jobTitleID?.errors?.['required']">
             Job title is required
           </small>
+          <small class="error" *ngIf="jobTitleID?.errors?.['oneOf']">
+            Please select a valid job title
+          </small>
         </div>
       </div>
+
       <div class="form-group">
         <label for="salary">User Salary (Optional)</label>
         <input type="number" id="salary" formControlName="salary" />
       </div>
     </div>
+
     <div class="form-group">
       <label for="note">Note (Optional)</label>
       <input type="text" id="note" formControlName="note" />
     </div>
-    <button type="submit" [disabled]="registerForm.invalid || isSubmitting">
-      {{ isSubmitting ? "Registering..." : "Register" }}
-    </button>
+
+    <div>
+      <button
+        type="submit"
+        [disabled]="registerForm.invalid || isSubmitting"
+        style="margin-right: 10px"
+      >
+        {{ isSubmitting ? "Registering..." : "Register" }}
+      </button>
+
+      <!-- Debug button that doesn't have the disabled restriction -->
+      <button
+        type="button"
+        (click)="onSubmit()"
+        style="background-color: orange; display: none"
+      >
+        Force Submit (Debug)
+      </button>
+    </div>
 
     <p class="error" *ngIf="error">{{ error }}</p>
     <br /><br />

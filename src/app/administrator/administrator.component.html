@@ -1,0 +1,67 @@
+<div class="container-fluid">
+  <div class="row">
+    <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+      <div class="position-sticky">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="#">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Appointments</a>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#">Doctors</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Patients</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Billing</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
+        </ul>
+      </div>
+    </nav>
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <h1 class="mt-4">Admin Dashboard</h1>
+      <div class="row my-4">
+        <div class="col-md-4">
+          <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Total Patients</h5>
+              <p class="card-text">250</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Appointments Today</h5>
+              <p class="card-text">15</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Revenue</h5>
+              <p class="card-text">$5000</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Doctor</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let appointment of appointments">
+              <td>{{ appointment.patient }}</td>
+              <td>{{ appointment.doctor }}</td>
+              <td>{{ appointment.date }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>

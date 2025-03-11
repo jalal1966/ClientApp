@@ -30,6 +30,8 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<User> {
+    const link = `${this.apiUrl}/api/Auth/login`;
+    console.log('linklogin', link);
     return this.http
       .post<any>(`${this.apiUrl}/api/auth/login`, { username, password })
       .pipe(
@@ -73,7 +75,9 @@ export class AuthService {
   }
 
   register(registerData: RegisterModel): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, registerData);
+    const link = `${this.apiUrl}/api/auth/register`;
+    console.log('link', link);
+    return this.http.post(`${this.apiUrl}/api/auth/register`, registerData);
   }
 
   forgotPassword(email: string): Observable<any> {
@@ -122,6 +126,9 @@ export class AuthService {
     }
 
     switch (user.jobTitleId) {
+      case 0: // Admin
+        this.router.navigate(['/admin']);
+        break;
       case 1: // Doctor
         this.router.navigate(['/doctor']);
         break;

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -23,10 +23,11 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
-  error = '';
+  error: string | null = null;
   isSubmitting: boolean = false;
+  showPassword: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -45,7 +46,7 @@ export class RegisterComponent {
         telephoneNo: [''],
         salary: [''], // Will convert to number before submission if needed
         note: [''],
-        jobTitleID: [null, [Validators.required, this.oneOf([1, 2])]],
+        jobTitleID: [null, [Validators.required, this.oneOf([0, 1, 2])]],
         genderID: [null, [Validators.required, this.oneOf([1, 2])]],
       },
       { validators: this.passwordMatchValidator }
@@ -114,6 +115,10 @@ export class RegisterComponent {
     const password = form.get('password')?.value;
     const confirmPassword = form.get('confirmPassword')?.value;
 
+    if (!password || !confirmPassword) {
+      return null; // Skip validation if either field is empty
+    }
+
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
@@ -166,5 +171,8 @@ export class RegisterComponent {
         }
       }
     }
+  }
+  togglePassword() {
+    this.showPassword = !this.showPassword;
   }
 }

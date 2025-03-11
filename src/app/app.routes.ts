@@ -16,6 +16,7 @@ import { DoctorPageComponent } from './components/doctor-page/doctor-page.compon
 import { RoleGuard } from './services/roleguard';
 import { NursePageComponent } from './components/nurse-page/nurse-page.component';
 import { AuthGuard } from './services/authGuard';
+import { AdministratorComponent } from './administrator/administrator.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -41,6 +42,12 @@ export const routes: Routes = [
     path: 'products/:id/edit',
     component: ProductFormComponent,
     canActivate: [AuthGuard],
+  },
+  {
+    path: 'admin',
+    component: AdministratorComponent,
+    canActivate: [RoleGuard],
+    data: { roleId: 0 },
   },
   {
     path: 'doctor',
