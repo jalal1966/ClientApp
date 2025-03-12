@@ -51,41 +51,61 @@ export class LoginComponent implements OnInit {
   onSubmit(): void {
     this.submitted = true;
 
+    // Reset error message
+    this.errorMessage = '';
+
     // stop here if form is invalid
     if (this.loginForm.invalid) {
       return;
     }
 
-    if (this.loginForm.valid) {
-      this.loading = true;
-      this.errorMessage = '';
+    this.loading = true;
+    const username = this.loginForm.value.username;
+    const password = this.loginForm.value.password;
 
-      this.authService
-        .login(this.loginForm.value.username, this.loginForm.value.password)
-        .subscribe({
-          next: (user) => {
-            console.log('Login successful, user:', user);
+    console.log('Submitting login for user:', username);
 
-            // Check if there's a specific returnUrl, otherwise route based on role
-            if (this.returnUrl !== '/') {
-              this.router
-                .navigateByUrl(this.returnUrl)
-                .then((success) => {
-                  console.log('Navigation status:', success);
-                })
-                .catch((err) => console.error('Navigation error:', err));
-            } else {
-              // Navigate based on role
-              this.authService.navigateByRole();
-            }
-          },
-          error: (error) => {
-            console.error('Login failed:', error);
-            this.errorMessage = 'Login failed. Please try again.';
+    this.authService
+      .login(this.loginForm.value.username, this.loginForm.value.password)
+      .subscribe({
+        next: (user) => {
+          console.log('Login successful, user received:', user);
+          console.log('Return URL is:', this.returnUrl);
+
+          // Only navigate to returnUrl if it's explicitly set and not the default
+
+          if (
+            this.returnUrl &&
+            this.returnUrl !== '/' &&
+            this.returnUrl !== '/login'
+          ) {
+            console.log('Navigating to return URL:', this.returnUrl);
+            this.router
+              .navigateByUrl(this.returnUrl)
+              .then((success) => {
+                console.log('Navigation status:', success);
+                this.loading = false;
+              })
+              .catch((err) => {
+                console.error('Navigation to return URL failed:', err);
+                this.loading = false;
+                // Fall back to role-based navigation
+                this.authService.navigateByRole();
+              });
+          } else {
+            console.log('No specific return URL, using role-based navigation');
+            // Navigate based on role
+            this.authService.navigateByRole();
             this.loading = false;
-          },
-        });
-    }
+          }
+        },
+        error: (error) => {
+          console.error('Login failed with error:', error);
+          this.errorMessage =
+            'Login failed. Please check your credentials and try again.';
+          this.loading = false;
+        },
+      });
   }
   togglePassword() {
     this.showPassword = !this.showPassword;

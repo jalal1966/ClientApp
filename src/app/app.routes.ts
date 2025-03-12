@@ -16,10 +16,9 @@ import { DoctorPageComponent } from './components/doctor-page/doctor-page.compon
 import { RoleGuard } from './services/roleguard';
 import { NursePageComponent } from './components/nurse-page/nurse-page.component';
 import { AuthGuard } from './services/authGuard';
-import { AdministratorComponent } from './administrator/administrator.component';
+import { AdministratorComponent } from './components/administrator/administrator.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },

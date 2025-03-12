@@ -152,10 +152,22 @@ export class RegisterComponent implements OnInit {
           });
         },
         error: (err) => {
-          // Handle registration errors
-          console.error('Registration error', err);
-          this.error =
-            err.error?.message || 'Registration failed. Please try again.';
+          // The error has been transformed in the service to have a consistent format
+          console.error('Registration error in component:', err);
+
+          // Display the general error message
+          this.error = err.message;
+
+          // Apply validation errors to the form controls
+          if (err.validationErrors) {
+            for (const field in err.validationErrors) {
+              const control = this.registerForm.get(field);
+              if (control) {
+                control.setErrors({ serverError: err.validationErrors[field] });
+              }
+            }
+          }
+
           this.isSubmitting = false;
         },
         complete: () => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { User } from '../models/user';
 import { BehaviorSubject } from 'rxjs';
@@ -26,6 +26,7 @@ export class AuthService {
   }
 
   public get currentUserValue(): User | null {
+    console.log('Getting currentUserValue:', this.currentUserSubject.value);
     return this.currentUserSubject.value;
   }
 
@@ -36,21 +37,29 @@ export class AuthService {
       .post<any>(`${this.apiUrl}/api/auth/login`, { username, password })
       .pipe(
         map((user) => {
+          // Make sure user object has all required properties
+          if (!user || !user.token) {
+            console.error('Invalid user object returned from API:', user);
+            throw new Error('Invalid user response from server');
+          }
+
+          // Store user info with consistent casing
           localStorage.setItem('currentUser', JSON.stringify(user));
           localStorage.setItem('token', user.token); // Store token separately
           localStorage.setItem('expiration', user.expiration.toString());
 
           // Store job title ID for role-based routing
+          // Make sure jobTitleId is stored explicitly as a number
           if (user.jobTitleId !== undefined) {
             localStorage.setItem('jobTitleId', user.jobTitleId.toString());
           }
 
           this.currentUserSubject.next(user);
-          console.log('user', user);
+          console.log('Login successful, user data:', user);
           return user;
         }),
         catchError((error) => {
-          console.error('Login error:', error);
+          console.error('Login error details:', error);
           return throwError(() => error);
         })
       );
@@ -75,13 +84,26 @@ export class AuthService {
   }
 
   register(registerData: RegisterModel): Observable<any> {
-    const link = `${this.apiUrl}/api/auth/register`;
-    console.log('link', link);
-    return this.http.post(`${this.apiUrl}/api/auth/register`, registerData);
+    return this.http
+      .post(`${this.apiUrl}/api/auth/register`, registerData)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          let errorMessage = 'Registration failed. Please try again.';
+          if (error.status === 400) {
+            errorMessage =
+              error.error?.message ||
+              'Validation error. Please check the input fields.';
+          } else if (error.status === 500) {
+            errorMessage = 'Internal server error. Please try again later.';
+          }
+          console.error('Registration error details:', error);
+          return throwError(() => new Error(errorMessage));
+        })
+      );
   }
 
   forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+    return this.http.post(`${this.apiUrl}/api/auth/forgot-password`, { email });
   }
 
   validateResetToken(email: string, token: string): Observable<any> {
@@ -121,24 +143,40 @@ export class AuthService {
   navigateByRole(): void {
     const user = this.currentUserValue;
     if (!user) {
+      console.warn('No user found, redirecting to login');
       this.router.navigate(['/login']);
       return;
     }
 
-    switch (user.jobTitleId) {
-      case 0: // Admin
-        this.router.navigate(['/admin']);
-        break;
-      case 1: // Doctor
-        this.router.navigate(['/doctor']);
-        break;
-      case 2: // Nurse
-        this.router.navigate(['/nurse']);
-        break;
-      default:
-        this.router.navigate(['/']);
-        break;
-    }
+    // Ensure jobTitleId is treated as a number
+    const roleId =
+      typeof user.jobTitleId === 'string'
+        ? parseInt(user.jobTitleId, 10)
+        : user.jobTitleId;
+
+    console.log('Navigating based on role ID:', roleId);
+
+    // Use a delayed navigation to ensure the auth state is fully updated
+    setTimeout(() => {
+      switch (roleId) {
+        case 0:
+          console.log('Routing to admin dashboard');
+          this.router.navigate(['/admin']);
+          break;
+        case 1:
+          console.log('Routing to doctor dashboard');
+          this.router.navigate(['/doctor']);
+          break;
+        case 2:
+          console.log('Routing to nurse dashboard');
+          this.router.navigate(['/nurse']);
+          break;
+        default:
+          console.log('No specific role matched, routing to home');
+          this.router.navigate(['/']);
+          break;
+      }
+    }, 100);
   }
 
   // Check if the user has a specific role
