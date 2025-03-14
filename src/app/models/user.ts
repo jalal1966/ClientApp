@@ -4,4 +4,6 @@ export interface User {
   token: string;
   expiration: Date;
   jobTitleId?: number; // Added for role-based routing
+  firstName: string;
+  lastName: string;
 }

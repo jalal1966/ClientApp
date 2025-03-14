@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormGroup } from '@angular/forms';
+import { User } from '../../models/user';
 
 @Component({
   selector: 'app-doctor-page',
@@ -11,6 +12,7 @@ import { FormGroup } from '@angular/forms';
   styleUrl: './doctor-page.component.scss',
 })
 export class DoctorPageComponent {
+  public curntUser!: User;
   isPatientFormVisible = false;
   loginForm!: FormGroup;
   private authService!: AuthService;
@@ -21,6 +23,7 @@ export class DoctorPageComponent {
     this.router.navigate(['/login']);
   }
   constructor(authService: AuthService, router: Router) {
+    this.curntUser = authService.currentUserValue ?? ({} as User);
     this.authService = authService;
     this.router = router;
   }

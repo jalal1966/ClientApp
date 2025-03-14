@@ -43,6 +43,7 @@ export class RegisterComponent implements OnInit {
         confirmPassword: ['', Validators.required],
         firstName: [''],
         lastName: [''],
+        specialist: ['', [Validators.required, Validators.minLength(3)]],
         address: [''],
         telephoneNo: [''],
         salary: [0], // Will convert to number before submission if needed
@@ -92,6 +93,9 @@ export class RegisterComponent implements OnInit {
   }
   get lastName() {
     return this.registerForm.get('lastName');
+  }
+  get specialist() {
+    return this.registerForm.get('specialist');
   }
   get address() {
     return this.registerForm.get('address');

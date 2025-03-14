@@ -5,6 +5,7 @@ export interface RegisterModel {
   confirmPassword: string;
   firstName?: string;
   lastName?: string;
+  specialist?: string;
   address?: string;
   telephoneNo?: string;
   salary?: number;
