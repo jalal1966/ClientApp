@@ -17,6 +17,8 @@ import { RoleGuard } from './services/roleguard';
 import { NursePageComponent } from './components/nurse-page/nurse-page.component';
 import { AuthGuard } from './services/authGuard';
 import { AdministratorComponent } from './components/administrator/administrator.component';
+import { PatientListComponent } from './components/patient-list/patient-list.component';
+import { PatientFormComponent } from './components/patient-form/patient-form.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -59,6 +61,16 @@ export const routes: Routes = [
     component: NursePageComponent,
     canActivate: [RoleGuard],
     data: { roleId: 2 },
+  },
+  // TODO: Add a route for the administrator page
+  {
+    path: 'patients',
+    component: PatientListComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'patient-form',
+    component: PatientFormComponent,
   },
   { path: '**', redirectTo: '/login' }, // Wildcard route for a 404 page
 ];

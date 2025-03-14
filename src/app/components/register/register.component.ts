@@ -25,7 +25,8 @@ import { AuthService } from '../../services/auth.service';
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
-  error: string | null = null;
+  errorMessage: string | null = null; // For single error messages
+  errorMessages: string[] = []; // For multiple error messages
   isSubmitting: boolean = false;
   showPassword: boolean = false;
 
@@ -44,7 +45,7 @@ export class RegisterComponent implements OnInit {
         lastName: [''],
         address: [''],
         telephoneNo: [''],
-        salary: [''], // Will convert to number before submission if needed
+        salary: [0], // Will convert to number before submission if needed
         note: [''],
         jobTitleID: [null, [Validators.required, this.oneOf([0, 1, 2])]],
         genderID: [null, [Validators.required, this.oneOf([1, 2])]],
@@ -128,7 +129,8 @@ export class RegisterComponent implements OnInit {
 
     if (this.registerForm.valid) {
       this.isSubmitting = true;
-      this.error = '';
+      this.errorMessage = null;
+      this.errorMessages = [];
 
       // Create a copy of the form value
       const formData = { ...this.registerForm.value };
@@ -138,8 +140,8 @@ export class RegisterComponent implements OnInit {
         formData.salary = Number(formData.salary);
       }
 
-      // Remove confirmPassword as it's not in the API model
-      const { confirmPassword, ...registerModel } = formData;
+      // Include confirmPassword in the payload
+      const registerModel = formData;
 
       console.log('Submitting registration data:', registerModel);
 
@@ -151,23 +153,12 @@ export class RegisterComponent implements OnInit {
             queryParams: { registered: 'true' },
           });
         },
-        error: (err) => {
-          // The error has been transformed in the service to have a consistent format
-          console.error('Registration error in component:', err);
+        error: (errors) => {
+          console.log('Registration errors:', errors);
 
-          // Display the general error message
-          this.error = err.message;
-
-          // Apply validation errors to the form controls
-          if (err.validationErrors) {
-            for (const field in err.validationErrors) {
-              const control = this.registerForm.get(field);
-              if (control) {
-                control.setErrors({ serverError: err.validationErrors[field] });
-              }
-            }
-          }
-
+          this.errorMessages = Array.isArray(errors)
+            ? errors
+            : [errors.toString()];
           this.isSubmitting = false;
         },
         complete: () => {
@@ -175,13 +166,43 @@ export class RegisterComponent implements OnInit {
         },
       });
     } else {
-      console.log('Form is invalid:', this.registerForm.errors);
-      const controls = this.registerForm.controls;
-      for (const name in controls) {
-        if (controls[name].invalid) {
-          console.log('Invalid control:', name, controls[name].errors);
+      // Form validation handling
+      this.collectFormErrors();
+    }
+  }
+
+  private collectFormErrors() {
+    const controls = this.registerForm.controls;
+    for (const name in controls) {
+      if (
+        controls[name].invalid &&
+        controls[name].errors &&
+        controls[name].touched
+      ) {
+        const fieldName = name.charAt(0).toUpperCase() + name.slice(1);
+
+        if (controls[name].errors['required']) {
+          this.errorMessages.push(`${fieldName} is required`);
+        }
+        if (controls[name].errors['minlength']) {
+          const minLength = controls[name].errors['minlength'].requiredLength;
+          this.errorMessages.push(
+            `${fieldName} must be at least ${minLength} characters`
+          );
+        }
+        if (controls[name].errors['email']) {
+          this.errorMessages.push(`Please enter a valid email address`);
+        }
+        if (controls[name].errors['oneOf']) {
+          this.errorMessages.push(
+            `Please select a valid option for ${fieldName}`
+          );
         }
       }
+    }
+
+    if (this.registerForm.errors?.['passwordMismatch']) {
+      this.errorMessages.push('Passwords do not match');
     }
   }
   togglePassword() {

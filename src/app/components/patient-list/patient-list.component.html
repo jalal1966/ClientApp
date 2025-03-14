@@ -1,0 +1,65 @@
+<div class="container mx-auto p-4">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Patient List</h1>
+    <button
+      [routerLink]="['/patients/new']"
+      class="bg-blue-500 text-white px-4 py-2 rounded"
+    >
+      Add New Patient
+    </button>
+  </div>
+
+  <div class="mb-4">
+    <input
+      type="text"
+      placeholder="Search patients..."
+      class="p-2 border rounded w-full"
+      (input)="filterPatients($event)"
+    />
+  </div>
+
+  <div *ngIf="loading" class="text-center py-4">Loading patients...</div>
+
+  <div
+    *ngIf="error"
+    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+  >
+    {{ error }}
+  </div>
+
+  <div
+    *ngIf="!loading && filteredPatients.length === 0"
+    class="text-center py-4"
+  >
+    No patients found.
+  </div>
+
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
+    <div
+      *ngFor="let patient of filteredPatients"
+      [routerLink]="['/patients', patient.id]"
+      class="border rounded p-4 cursor-pointer hover:bg-gray-50"
+    >
+      <h2 class="text-xl font-semibold">
+        {{ patient.firstName }} {{ patient.lastName }}
+      </h2>
+      <p class="text-gray-600">DOB: {{ patient.dateOfBirth | date }}</p>
+      <p class="text-gray-600">Contact: {{ patient.contactNumber }}</p>
+      <div class="mt-2 flex justify-end">
+        <button
+          [routerLink]="['/patients', patient.id, 'edit']"
+          class="text-blue-500 mr-2"
+          (click)="$event.stopPropagation()"
+        >
+          Edit
+        </button>
+        <button
+          class="text-red-500"
+          (click)="patient.id ? deletePatient(patient.id, $event) : null"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

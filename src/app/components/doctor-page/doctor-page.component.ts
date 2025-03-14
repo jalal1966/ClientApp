@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-doctor-page',
@@ -10,6 +11,8 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './doctor-page.component.scss',
 })
 export class DoctorPageComponent {
+  isPatientFormVisible = false;
+  loginForm!: FormGroup;
   private authService!: AuthService;
   private router!: Router;
   ngOnInit(): void {}
@@ -20,5 +23,15 @@ export class DoctorPageComponent {
   constructor(authService: AuthService, router: Router) {
     this.authService = authService;
     this.router = router;
+  }
+  showPatientForm() {
+    console.log('showPatientForm method called');
+    this.isPatientFormVisible = true;
+    console.log('showPatientForm', this.isPatientFormVisible);
+    this.router.navigate(['/patient-form']);
+  }
+  // convenience getter for easy access to form fields
+  get f() {
+    return this.loginForm.controls;
   }
 }

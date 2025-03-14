@@ -86,20 +86,7 @@ export class AuthService {
   register(registerData: RegisterModel): Observable<any> {
     return this.http
       .post(`${this.apiUrl}/api/auth/register`, registerData)
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          let errorMessage = 'Registration failed. Please try again.';
-          if (error.status === 400) {
-            errorMessage =
-              error.error?.message ||
-              'Validation error. Please check the input fields.';
-          } else if (error.status === 500) {
-            errorMessage = 'Internal server error. Please try again later.';
-          }
-          console.error('Registration error details:', error);
-          return throwError(() => new Error(errorMessage));
-        })
-      );
+      .pipe(catchError(this.handleError));
   }
 
   forgotPassword(email: string): Observable<any> {
@@ -196,5 +183,53 @@ export class AuthService {
   hasToken(): boolean {
     // Implement your logic to check for token
     return !!localStorage.getItem('token') || !!this.currentUserValue?.token;
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('API Error:', error.status, error);
+
+    if (error.error) {
+      // Handle ASP.NET Core default validation response format
+      if (error.error.errors && typeof error.error.errors === 'object') {
+        // Extract all error messages from the errors object
+        const errorMessages: string[] = [];
+        for (const key in error.error.errors) {
+          if (Array.isArray(error.error.errors[key])) {
+            error.error.errors[key].forEach((message: string) => {
+              errorMessages.push(message);
+            });
+          }
+        }
+
+        if (errorMessages.length > 0) {
+          return throwError(() => errorMessages);
+        }
+      }
+
+      // Handle our custom error response format
+      if (error.error.errors && Array.isArray(error.error.errors)) {
+        return throwError(() => error.error.errors);
+      }
+
+      // If there's a message property
+      if (error.error.message) {
+        return throwError(() => [error.error.message]);
+      }
+
+      // If error.error is a string
+      if (typeof error.error === 'string') {
+        return throwError(() => [error.error]);
+      }
+
+      // If error.error has a title (common in ASP.NET Core responses)
+      if (error.error.title) {
+        return throwError(() => [error.error.title]);
+      }
+    }
+
+    // Fallback error
+    return throwError(() => [
+      'An unexpected error occurred. Please try again.',
+    ]);
   }
 }

@@ -206,8 +206,20 @@
         Force Submit (Debug)
       </button>
     </div>
-    <div *ngIf="error" class="alert alert-danger mt-3">
-      <p class="error" *ngIf="error">{{ error }}</p>
+    <!-- For a single error message -->
+    <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+      {{ errorMessage }}
+    </div>
+
+    <!-- For multiple error messages -->
+    <!-- Error messages display -->
+    <div
+      *ngIf="errorMessages && errorMessages.length > 0"
+      class="alert alert-danger mt-3"
+    >
+      <ul>
+        <li *ngFor="let err of errorMessages">{{ err }}</li>
+      </ul>
     </div>
     <br />
     <p>

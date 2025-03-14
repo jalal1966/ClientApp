@@ -1,0 +1,117 @@
+// SCSS file for Patient Form - Clean & Professional
+
+// Color Variables
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+$error-color: #dc3545;
+$success-color: #28a745;
+$background-color: #d5e3f0;
+$text-color: #343a40;
+$border-color: #dee2e6;
+$input-bg: #ffffff;
+$input-border-radius: 0.375rem;
+$spacing: 1rem;
+
+// Mixins for Reusability
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid $border-color;
+  border-radius: $input-border-radius;
+  background-color: $input-bg;
+  transition: 0.3s;
+
+  &:focus {
+    border-color: $primary-color;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+}
+
+// Container Styling
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #d2d7d8;
+  border-radius: 0.5rem;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: $text-color;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+}
+
+// Form Styling
+form {
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    label {
+      display: auto;
+      font-weight: 600;
+      color: $text-color;
+      margin-bottom: 0.5rem;
+      margin-left: 5rem;
+      margin-right: 5rem;
+    }
+
+    input,
+    select,
+    textarea {
+      @include form-input;
+    }
+  }
+
+  // Ensure First Name and Last Name Are in the Same Row
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing;
+
+    .form-group {
+      min-width: 200px;
+    }
+  }
+}
+
+// Error Message Styling
+.error-message {
+  background-color: lighten($error-color, 40%);
+  border: 1px solid $error-color;
+  color: darken($error-color, 10%);
+  padding: 0.75rem;
+  border-radius: $input-border-radius;
+  margin-bottom: 1rem;
+}
+
+// Button Styling
+.button {
+  margin-right: 5rem;
+  margin-left: 5rem;
+  display: inline-block;
+  background-color: $primary-color;
+  color: rgb(83, 110, 191);
+  padding: 0.75rem 1.5rem;
+  border-radius: $input-border-radius;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+    transform: translateY(-2px);
+  }
+}
