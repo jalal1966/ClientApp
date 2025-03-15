@@ -9,26 +9,41 @@
         This is the Nurse interface. Here you can manage patient care, vital
         signs, and medications.
       </p>
-
       <div class="row mt-4">
-        <div class="col-md-4" *ngFor="let section of sections">
+        <div class="col-md-4">
           <div class="card mb-3">
-            <div class="card-header">{{ section.title }}</div>
+            <div class="card-header">Patients</div>
             <div class="card-body">
-              <p>{{ section.description }}</p>
+              <p>Manage your patients' medical records</p>
               <button
-                class="btn btn-outline-success"
-                (click)="onAction(section.action)"
+                (click)="showPatientForm()"
+                class="btn btn-outline-primary"
               >
-                {{ section.buttonText }}
+                View Patients
               </button>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-md-4" *ngFor="let section of sections">
+            <div class="card mb-3">
+              <div class="card-header">{{ section.title }}</div>
+              <div class="card-body">
+                <p>{{ section.description }}</p>
+                <button
+                  class="btn btn-outline-success"
+                  (click)="onAction(section.action)"
+                >
+                  {{ section.buttonText }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="mt-4">
-    <button class="btn btn-danger" (click)="logout()">Logout</button>
+    <div class="mt-4">
+      <button class="btn btn-danger" (click)="logout()">Logout</button>
+    </div>
   </div>
 </div>

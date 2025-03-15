@@ -1,234 +1,264 @@
 <div class="register-container">
   <!-- Main error message from backend -->
+  <div class="register-form">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <h2>Employee Registration</h2>
 
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-    <h2>Employee Registration</h2>
-
-    <!-- Add debugging info -->
-    <div
-      class="debug-info"
-      style="
-        background: #f5f5f5;
-        padding: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #ddd;
-        display: none;
-      "
-    >
-      <p>Form valid: {{ registerForm.valid }}</p>
-      <p>Form touched: {{ registerForm.touched }}</p>
-      <p>Form dirty: {{ registerForm.dirty }}</p>
-      <p>Form errors: {{ registerForm.errors | json }}</p>
-    </div>
-
-    <div class="form-container">
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" formControlName="username" required />
-        <div
-          *ngIf="username?.invalid && (username?.dirty || username?.touched)"
-        >
-          <small class="error" *ngIf="username?.errors?.['required']">
-            Username is required
-          </small>
-          <small class="error" *ngIf="username?.errors?.['minlength']">
-            Username must be at least 3 characters
-          </small>
-
-          <!-- Display server-side validation error -->
-          <small class="error" *ngIf="username?.errors?.['serverError']">
-            {{ username?.errors?.['serverError'] }}
-          </small>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" formControlName="email" required />
-        <div *ngIf="email?.invalid && (email?.dirty || email?.touched)">
-          <small class="error" *ngIf="email?.errors?.['required']">
-            Email is required
-          </small>
-          <small class="error" *ngIf="email?.errors?.['email']">
-            Invalid email format
-          </small>
-
-          <!-- Display server-side validation error -->
-          <small class="error" *ngIf="email?.errors?.['serverError']">
-            {{ email?.errors?.['serverError'] }}
-          </small>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-container">
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          formControlName="password"
-          required
-        />
-        <div
-          *ngIf="password?.invalid && (password?.dirty || password?.touched)"
-        >
-          <small class="error" *ngIf="password?.errors?.['required']">
-            Password is required
-          </small>
-          <small class="error" *ngIf="password?.errors?.['minlength']">
-            Password must be at least 6 characters
-          </small>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="confirmPassword">Confirm Password</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          formControlName="confirmPassword"
-          required
-        />
-        <div
-          *ngIf="
-            confirmPassword?.invalid &&
-            (confirmPassword?.dirty || confirmPassword?.touched)
-          "
-        >
-          <small class="error" *ngIf="confirmPassword?.errors?.['required']">
-            Please confirm your password
-          </small>
-        </div>
-        <small
-          class="error"
-          *ngIf="registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched"
-        >
-          Passwords do not match
-        </small>
-      </div>
-    </div>
-
-    <div class="form-container">
-      <div class="form-group">
-        <label for="firstName">First Name (Optional)</label>
-        <input type="text" id="firstName" formControlName="firstName" />
-      </div>
-
-      <div class="form-group">
-        <label for="lastName">Last Name (Optional)</label>
-        <input type="text" id="lastName" formControlName="lastName" />
-      </div>
-      <div class="form-group">
-        <label for="specialist">Specialist</label>
-        <input type="text" id="specialist" formControlName="specialist" />
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="address">User Address (Optional)</label>
-      <input type="text" id="address" formControlName="address" />
-    </div>
-
-    <div class="form-container">
-      <div class="form-group">
-        <label for="telephoneNo">Phone Number</label>
-        <input type="text" id="telephoneNo" formControlName="telephoneNo" />
-      </div>
-
-      <div class="form-group">
-        <label for="genderID">Gender</label>
-        <select class="form-select" id="genderID" formControlName="genderID">
-          <option [ngValue]="null" disabled>Select gender</option>
-          <option [ngValue]="1">Man</option>
-          <option [ngValue]="2">Women</option>
-        </select>
-        <div
-          *ngIf="genderID?.invalid && (genderID?.dirty || genderID?.touched)"
-        >
-          <small class="error" *ngIf="genderID?.errors?.['required']">
-            Gender is required
-          </small>
-          <small class="error" *ngIf="genderID?.errors?.['oneOf']">
-            Please select a valid gender
-          </small>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="jobTitleID">Job Title</label>
-        <select
-          class="form-select"
-          id="jobTitleID"
-          formControlName="jobTitleID"
-        >
-          <option [ngValue]="null" disabled>Select job title</option>
-          <option [ngValue]="0">Admin</option>
-          <option [ngValue]="1">Doctor</option>
-          <option [ngValue]="2">Nurse</option>
-        </select>
-        <div
-          *ngIf="
-            jobTitleID?.invalid && (jobTitleID?.dirty || jobTitleID?.touched)
-          "
-        >
-          <small class="error" *ngIf="jobTitleID?.errors?.['required']">
-            Job title is required
-          </small>
-          <small class="error" *ngIf="jobTitleID?.errors?.['oneOf']">
-            Please select a valid job title
-          </small>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="salary">User Salary (Optional)</label>
-        <input type="number" id="salary" formControlName="salary" />
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="note">Note (Optional)</label>
-      <input type="text" id="note" formControlName="note" />
-    </div>
-
-    <div>
-      <button
-        type="submit"
-        [disabled]="registerForm.invalid || isSubmitting"
-        style="margin-right: 10px"
+      <!-- Add debugging info -->
+      <div
+        class="debug-info"
+        style="
+          background: #f5f5f5;
+          padding: 10px;
+          margin-bottom: 10px;
+          border: 1px solid #ddd;
+          display: none;
+        "
       >
-        {{ isSubmitting ? "Registering..." : "Register" }}
-      </button>
+        <p>Form valid: {{ registerForm.valid }}</p>
+        <p>Form touched: {{ registerForm.touched }}</p>
+        <p>Form dirty: {{ registerForm.dirty }}</p>
+        <p>Form errors: {{ registerForm.errors | json }}</p>
+      </div>
 
-      <!-- Debug button that doesn't have the disabled restriction -->
-      <button
-        type="button"
-        (click)="onSubmit()"
-        style="background-color: orange; display: none"
+      <div class="form-container">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            required
+          />
+          <div
+            *ngIf="username?.invalid && (username?.dirty || username?.touched)"
+          >
+            <small class="error" *ngIf="username?.errors?.['required']">
+              Username is required
+            </small>
+            <small class="error" *ngIf="username?.errors?.['minlength']">
+              Username must be at least 3 characters
+            </small>
+
+            <!-- Display server-side validation error -->
+            <small class="error" *ngIf="username?.errors?.['serverError']">
+              {{ username?.errors?.['serverError'] }}
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" formControlName="email" required />
+          <div *ngIf="email?.invalid && (email?.dirty || email?.touched)">
+            <small class="error" *ngIf="email?.errors?.['required']">
+              Email is required
+            </small>
+            <small class="error" *ngIf="email?.errors?.['email']">
+              Invalid email format
+            </small>
+
+            <!-- Display server-side validation error -->
+            <small class="error" *ngIf="email?.errors?.['serverError']">
+              {{ email?.errors?.['serverError'] }}
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-container">
+        <!-- Password Field -->
+        <div class="form-group-password">
+          <label for="password">Password</label>
+          <div class="password-input-container">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              formControlName="password"
+              required
+            />
+            <span class="input-group-text">
+              <i
+                class="fa"
+                [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                id="togglePassword"
+                style="cursor: pointer"
+                (click)="togglePassword()"
+              ></i>
+            </span>
+          </div>
+          <div
+            *ngIf="password?.invalid && (password?.dirty || password?.touched)"
+          >
+            <small class="error" *ngIf="password?.errors?.['required']">
+              Password is required
+            </small>
+            <small class="error" *ngIf="password?.errors?.['minlength']">
+              Password must be at least 6 characters
+            </small>
+          </div>
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="form-group-password">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="password-input-container">
+            <input
+              type="password"
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              required
+            />
+            <span class="input-group-text">
+              <i
+                class="fa"
+                [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                id="toggleConfirmPassword"
+                style="cursor: pointer"
+                (click)="togglePassword()"
+              ></i>
+            </span>
+          </div>
+          <div
+            *ngIf="
+              confirmPassword?.invalid &&
+              (confirmPassword?.dirty || confirmPassword?.touched)
+            "
+          >
+            <small class="error" *ngIf="confirmPassword?.errors?.['required']">
+              Please confirm your password
+            </small>
+          </div>
+          <small
+            class="error"
+            *ngIf="registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched"
+          >
+            Passwords do not match
+          </small>
+        </div>
+      </div>
+
+      <div class="form-container">
+        <div class="form-group">
+          <label for="firstName">First Name (Optional)</label>
+          <input type="text" id="firstName" formControlName="firstName" />
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name (Optional)</label>
+          <input type="text" id="lastName" formControlName="lastName" />
+        </div>
+        <div class="form-group">
+          <label for="specialist">Specialist</label>
+          <input type="text" id="specialist" formControlName="specialist" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">User Address (Optional)</label>
+        <input type="text" id="address" formControlName="address" />
+      </div>
+
+      <div class="form-container">
+        <div class="form-group">
+          <label for="telephoneNo">Phone Number</label>
+          <input type="text" id="telephoneNo" formControlName="telephoneNo" />
+        </div>
+
+        <div class="form-group">
+          <label for="genderID">Gender</label>
+          <select class="form-select" id="genderID" formControlName="genderID">
+            <option [ngValue]="null" disabled>Select gender</option>
+            <option [ngValue]="1">Male</option>
+            <option [ngValue]="2">Female</option>
+          </select>
+          <div
+            *ngIf="genderID?.invalid && (genderID?.dirty || genderID?.touched)"
+          >
+            <small class="error" *ngIf="genderID?.errors?.['required']">
+              Gender is required
+            </small>
+            <small class="error" *ngIf="genderID?.errors?.['oneOf']">
+              Please select a valid gender
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="jobTitleID">Job Title</label>
+          <select
+            class="form-select"
+            id="jobTitleID"
+            formControlName="jobTitleID"
+          >
+            <option [ngValue]="null" disabled>Select job title</option>
+            <option [ngValue]="0">Admin</option>
+            <option [ngValue]="1">Doctor</option>
+            <option [ngValue]="2">Nurse</option>
+          </select>
+          <div
+            *ngIf="
+              jobTitleID?.invalid && (jobTitleID?.dirty || jobTitleID?.touched)
+            "
+          >
+            <small class="error" *ngIf="jobTitleID?.errors?.['required']">
+              Job title is required
+            </small>
+            <small class="error" *ngIf="jobTitleID?.errors?.['oneOf']">
+              Please select a valid job title
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="salary">User Salary (Optional)</label>
+          <input type="number" id="salary" formControlName="salary" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="note">Note (Optional)</label>
+        <input type="text" id="note" formControlName="note" />
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || isSubmitting"
+          style="margin-right: 10px"
+        >
+          {{ isSubmitting ? "Registering..." : "Register" }}
+        </button>
+
+        <!-- Debug button that doesn't have the disabled restriction -->
+        <button
+          type="button"
+          (click)="onSubmit()"
+          style="background-color: orange; display: none"
+        >
+          Force Submit (Debug)
+        </button>
+      </div>
+      <!-- For a single error message -->
+      <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+        {{ errorMessage }}
+      </div>
+
+      <!-- For multiple error messages -->
+      <!-- Error messages display -->
+      <div
+        *ngIf="errorMessages && errorMessages.length > 0"
+        class="alert alert-danger mt-3"
       >
-        Force Submit (Debug)
-      </button>
-    </div>
-    <!-- For a single error message -->
-    <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-      {{ errorMessage }}
-    </div>
-
-    <!-- For multiple error messages -->
-    <!-- Error messages display -->
-    <div
-      *ngIf="errorMessages && errorMessages.length > 0"
-      class="alert alert-danger mt-3"
-    >
-      <ul>
-        <li *ngFor="let err of errorMessages">{{ err }}</li>
-      </ul>
-    </div>
-    <br />
-    <p>
-      Already have an account?
-      <a [routerLink]="['/login']">Login here</a>
-    </p>
-  </form>
+        <ul>
+          <li *ngFor="let err of errorMessages">{{ err }}</li>
+        </ul>
+      </div>
+      <br />
+      <p>
+        Already have an account?
+        <a [routerLink]="['/login']">Login here</a>
+      </p>
+    </form>
+  </div>
 </div>

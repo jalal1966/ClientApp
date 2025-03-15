@@ -66,7 +66,6 @@ export const routes: Routes = [
   {
     path: 'patients',
     component: PatientListComponent,
-    canActivate: [AuthGuard],
   },
   {
     path: 'patient-form',

@@ -1,124 +1,313 @@
-<div class="container p-4 mx-auto">
-  <h1 class="h2 mb-4">{{ isEditMode ? "Edit" : "Add" }} Patient</h1>
-
-  <div *ngIf="error" class="alert alert-danger mb-4">
-    {{ error }}
+<div class="patient-container p-4 mx-auto">
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger mb-4">
+    {{ errorMessage }}
   </div>
 
-  <form
-    [formGroup]="patientForm"
-    (ngSubmit)="onSubmit()"
-    class="max-w-2xl mx-auto"
-  >
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <label class="form-label">First Name</label>
-        <input type="text" formControlName="firstName" class="form-control" />
-        <div
-          *ngIf="firstName?.invalid && (firstName?.dirty || firstName?.touched)"
-          class="text-danger mt-1"
-        >
-          First name is required
-        </div>
-      </div>
+  <!-- Patient Registration Form -->
+  <div class="patient-form">
+    <form
+      [formGroup]="patientForm"
+      (ngSubmit)="onSubmit()"
+      class="max-w-2xl mx-auto"
+    >
+      <h1 class="h2 mb-4 text-center">
+        Patient Registration edit by {{ currentUser?.firstName }}
+        {{ currentUser?.lastName }}
+      </h1>
 
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Last Name</label>
-        <input type="text" formControlName="lastName" class="form-control" />
-        <div
-          *ngIf="lastName?.invalid && (lastName?.dirty || lastName?.touched)"
-          class="text-danger mt-1"
-        >
-          Last name is required
-        </div>
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Date of Birth</label>
-        <input type="date" formControlName="dateOfBirth" class="form-control" />
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Gender</label>
-        <select formControlName="gender" class="form-select">
-          <option value="">Select Gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Contact Number</label>
-        <input
-          type="tel"
-          formControlName="contactNumber"
-          class="form-control"
-        />
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" formControlName="email" class="form-control" />
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Emergency Contact Name</label>
-        <input
-          type="text"
-          formControlName="emergencyContactName"
-          class="form-control"
-        />
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Emergency Contact Number</label>
-        <input
-          type="tel"
-          formControlName="emergencyContactNumber"
-          class="form-control"
-        />
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Insurance Provider</label>
-        <input
-          type="text"
-          formControlName="insuranceProvider"
-          class="form-control"
-        />
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Insurance Number</label>
-        <input
-          type="text"
-          formControlName="insuranceNumber"
-          class="form-control"
-        />
-      </div>
-
-      <div class="col-12 mb-3">
-        <label class="form-label">Address</label>
-        <textarea
-          formControlName="address"
-          rows="3"
-          class="form-control"
-        ></textarea>
-      </div>
-    </div>
-
-    <div class="d-flex justify-content-between mt-4">
-      <button type="button" (click)="navigateBack()" class="btn btn-secondary">
-        Cancel
-      </button>
-      <button
-        type="submit"
-        [disabled]="patientForm.invalid || isSubmitting"
-        class="btn btn-primary"
+      <!-- Debugging Info -->
+      <div
+        class="debug-info"
+        style="
+          background: #f5f5f5;
+          padding: 10px;
+          margin-bottom: 10px;
+          border: 1px solid #ddd;
+          display: none;
+        "
       >
-        {{ isSubmitting ? "Saving..." : "Save Patient" }}
-      </button>
-    </div>
-  </form>
+        <p>Form valid: {{ patientForm.valid }}</p>
+        <p>Form touched: {{ patientForm.touched }}</p>
+        <p>Form dirty: {{ patientForm.dirty }}</p>
+        <p>Form errors: {{ patientForm.errors | json }}</p>
+        <p>
+          First Name Errors: {{ patientForm.get("firstName")?.errors | json }}
+        </p>
+        <p>
+          Last Name Errors: {{ patientForm.get("lastName")?.errors | json }}
+        </p>
+        <p>
+          Date of Birth Errors:
+          {{ patientForm.get("dateOfBirth")?.errors | json }}
+        </p>
+        <p>Gender Errors: {{ patientForm.get("genderID")?.errors | json }}</p>
+        <p>
+          Contact Number Errors:
+          {{ patientForm.get("contactNumber")?.errors | json }}
+        </p>
+        <p>Email Errors: {{ patientForm.get("email")?.errors | json }}</p>
+      </div>
+
+      <!-- Form Fields -->
+      <div class="row">
+        <!-- First Name -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">First Name</label>
+          <input type="text" formControlName="firstName" class="form-control" />
+          <div
+            *ngIf="
+              firstName?.invalid && (firstName?.dirty || firstName?.touched)
+            "
+            class="text-danger mt-1"
+          >
+            <small *ngIf="firstName?.errors?.['required']"
+              >First name is required</small
+            >
+            <small *ngIf="firstName?.errors?.['minlength']"
+              >First name must be at least 3 characters</small
+            >
+            <small
+              *ngIf="firstName?.errors?.['serverError']"
+              >{{ firstName?.errors?.['serverError'] }}</small
+            >
+          </div>
+        </div>
+
+        <!-- Last Name -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Last Name</label>
+          <input type="text" formControlName="lastName" class="form-control" />
+          <div
+            *ngIf="lastName?.invalid && (lastName?.dirty || lastName?.touched)"
+            class="text-danger mt-1"
+          >
+            <small *ngIf="lastName?.errors?.['required']"
+              >Last name is required</small
+            >
+            <small *ngIf="lastName?.errors?.['minlength']"
+              >Last name must be at least 3 characters</small
+            >
+            <small
+              *ngIf="lastName?.errors?.['serverError']"
+              >{{ lastName?.errors?.['serverError'] }}</small
+            >
+          </div>
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Date of Birth</label>
+          <input
+            type="date"
+            formControlName="dateOfBirth"
+            class="form-control"
+          />
+          <div
+            *ngIf="
+              dateOfBirth?.invalid &&
+              (dateOfBirth?.dirty || dateOfBirth?.touched)
+            "
+            class="text-danger mt-1"
+          >
+            <small *ngIf="dateOfBirth?.errors?.['required']"
+              >Date of birth is required</small
+            >
+            <small
+              *ngIf="dateOfBirth?.errors?.['serverError']"
+              >{{ dateOfBirth?.errors?.['serverError'] }}</small
+            >
+          </div>
+        </div>
+
+        <!-- Gender -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Select Gender</label>
+          <select formControlName="genderID" class="form-select">
+            <option [ngValue]="null" disabled>Select gender</option>
+            <option [ngValue]="1">Male</option>
+            <option [ngValue]="2">Female</option>
+          </select>
+          <div
+            *ngIf="genderID?.invalid && (genderID?.dirty || genderID?.touched)"
+            class="text-danger mt-1"
+          >
+            <small *ngIf="genderID?.errors?.['required']"
+              >Gender is required</small
+            >
+            <small *ngIf="genderID?.errors?.['oneOf']"
+              >Please select a valid gender</small
+            >
+          </div>
+        </div>
+
+        <!-- Contact Number -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Contact Number</label>
+          <input
+            type="tel"
+            formControlName="contactNumber"
+            class="form-control"
+          />
+          <div
+            *ngIf="
+              contactNumber?.invalid &&
+              (contactNumber?.dirty || contactNumber?.touched)
+            "
+            class="text-danger mt-1"
+          >
+            <small *ngIf="contactNumber?.errors?.['required']"
+              >Contact number is required</small
+            >
+            <small
+              *ngIf="contactNumber?.errors?.['serverError']"
+              >{{ contactNumber?.errors?.['serverError'] }}</small
+            >
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" formControlName="email" class="form-control" />
+          <div
+            *ngIf="email?.invalid && (email?.dirty || email?.touched)"
+            class="text-danger mt-1"
+          >
+            <small *ngIf="email?.errors?.['required']">Email is required</small>
+            <small *ngIf="email?.errors?.['email']">Invalid email format</small>
+            <small
+              *ngIf="email?.errors?.['serverError']"
+              >{{ email?.errors?.['serverError'] }}</small
+            >
+          </div>
+        </div>
+
+        <!-- Select Doctor -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Select Doctor</label>
+
+          <select formControlName="patientDoctorID" class="form-select">
+            <option [ngValue]="null" disabled>Select doctor</option>
+            <option
+              *ngFor="let doctor of doctorRecords"
+              [ngValue]="doctor.userID"
+            >
+              {{ doctor.firstName }} {{ doctor.lastName }}
+            </option>
+            <option
+              *ngFor="let doctor of doctorRecords"
+              [ngValue]="{
+                doctorName: doctor.firstName + ' ' + doctor.lastName
+              }"
+            ></option>
+          </select>
+          <div
+            *ngIf="
+              patientDoctor?.invalid &&
+              (patientDoctor?.dirty || patientDoctor?.touched)
+            "
+            class="text-danger mt-1"
+          >
+            <small *ngIf="patientDoctor?.errors?.['required']"
+              >Doctor selection is required</small
+            >
+          </div>
+        </div>
+
+        <!-- Emergency Contact Name -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Emergency Contact Name</label>
+          <input
+            type="text"
+            formControlName="emergencyContactName"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Emergency Contact Number -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Emergency Contact Number</label>
+          <input
+            type="tel"
+            formControlName="emergencyContactNumber"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Insurance Provider -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Insurance Provider</label>
+          <input
+            type="text"
+            formControlName="insuranceProvider"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Insurance Number -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Insurance Number</label>
+          <input
+            type="text"
+            formControlName="insuranceNumber"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Address -->
+        <div class="col-12 mb-3">
+          <label class="form-label">Address</label>
+          <textarea
+            formControlName="address"
+            rows="3"
+            class="form-control"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Form Buttons -->
+      <div class="d-flex justify-content-between mt-4">
+        <button
+          type="button"
+          (click)="navigateBack()"
+          class="btn btn-secondary"
+        >
+          Cancel
+        </button>
+        <div>
+          <button
+            type="submit"
+            [disabled]="patientForm.invalid || isSubmitting"
+            class="btn btn-primary me-2"
+          >
+            {{ isSubmitting ? "Registering..." : "Register" }}
+          </button>
+          <!-- Debug Button -->
+          <button
+            type="button"
+            (click)="onSubmit()"
+            style="background-color: orange; display: none"
+          >
+            Force Submit (Debug)
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Messages -->
+      <div
+        *ngIf="errorMessages && errorMessages.length > 0"
+        class="alert alert-danger mt-3"
+      >
+        <ul class="mb-0">
+          <li *ngFor="let err of errorMessages">{{ err }}</li>
+        </ul>
+      </div>
+
+      <!-- Login Link -->
+      <p class="text-center mt-3">
+        Already have this patient? <a [routerLink]="['/login']">Login here</a>
+      </p>
+    </form>
+  </div>
 </div>

@@ -4,32 +4,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface Patient {
-  id?: number;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: Date;
-  gender: string;
-  contactNumber: string;
-  email: string;
-  address: string;
-  emergencyContactName: string;
-  emergencyContactNumber: string;
-  insuranceProvider: string;
-  insuranceNumber: string;
-}
-
-export interface MedicalRecord {
-  id?: number;
-  recordDate: Date;
-  diagnosis: string;
-  treatment: string;
-  medications: string;
-  notes: string;
-  isFollowUpRequired: boolean;
-  followUpDate?: Date;
-  patientId: number;
-}
+import { Patient } from '../models/patient.model';
+import { MedicalRecord } from '../models/medicalRecord.model';
+import { User } from '../models/user';
+import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -44,20 +22,24 @@ export class PatientService {
     return this.http.get<Patient[]>(`${this.apiUrl}/api/patients`);
   }
 
+  getDoctorList(id: number): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/api/auth/users/job/${id}`);
+  }
+
   getPatient(id: number): Observable<Patient> {
-    return this.http.get<Patient>(`${this.apiUrl}/patients/${id}`);
+    return this.http.get<Patient>(`${this.apiUrl}/api/patients/${id}`);
   }
 
   createPatient(patient: Patient): Observable<Patient> {
-    return this.http.post<Patient>(`${this.apiUrl}/patients`, patient);
+    return this.http.post<Patient>(`${this.apiUrl}/api/patients`, patient);
   }
 
   updatePatient(id: number, patient: Patient): Observable<Patient> {
-    return this.http.put<Patient>(`${this.apiUrl}/patients/${id}`, patient);
+    return this.http.put<Patient>(`${this.apiUrl}/api/patients/${id}`, patient);
   }
 
   deletePatient(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/patients/${id}`);
+    return this.http.delete(`${this.apiUrl}/api/patients/${id}`);
   }
 
   // Medical Records operations

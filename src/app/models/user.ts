@@ -6,4 +6,5 @@ export interface User {
   jobTitleId?: number; // Added for role-based routing
   firstName: string;
   lastName: string;
+  userID: number;
 }

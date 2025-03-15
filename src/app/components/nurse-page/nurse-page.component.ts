@@ -13,6 +13,7 @@ import { FormGroup } from '@angular/forms';
 })
 export class NursePageComponent {
   public curntUser!: User;
+  isPatientFormVisible = false;
   private authService!: AuthService;
   private router!: Router;
   loginForm!: FormGroup;
@@ -51,6 +52,14 @@ export class NursePageComponent {
     this.authService = authService;
     this.router = router;
   }
+
+  showPatientForm() {
+    console.log('showPatientForm method called');
+    this.isPatientFormVisible = true;
+    console.log('showPatientForm', this.isPatientFormVisible);
+    this.router.navigate(['/patient-form']);
+  }
+
   // convenience getter for easy access to form fields
   get f() {
     return this.loginForm.controls;

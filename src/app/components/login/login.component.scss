@@ -61,6 +61,40 @@
   }
 }
 
+// Password Field Styles
+.form-group-password {
+  width: 90%;
+  margin-bottom: 15px;
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 500;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+
+    &:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+      background-color: #f8f9fa;
+    }
+  }
+  // Error Message Styles
+  .error {
+    color: red;
+    text-align: center;
+    margin-top: 10px;
+  }
+}
+
 button[type="submit"] {
   width: 100%;
   padding: 10px;

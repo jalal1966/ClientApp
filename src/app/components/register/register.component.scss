@@ -1,57 +1,114 @@
+// Container Styles
 .register-container {
-  max-width: 85%; /* 85% of the viewport width */
+  max-width: 85%;
   margin: 10px auto;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background-color: #f9f9f9;
-  min-height: 60vh; /* 50% of the viewport height */
-}
-.register-container h2 {
-  text-align: center;
-  margin-bottom: 10px;
-  color: #333;
+  min-height: 60vh;
+
+  h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+  }
 }
 
+// Form Group Styles
 .form-group {
-  flex: 1; // Adjusts the width of the form group
+  flex: 1;
   display: flex;
   flex-direction: column;
   margin-bottom: 2px;
+
+  label {
+    width: 170px;
+    display: block;
+    margin-bottom: 2px;
+    color: #555;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+  }
+
+  .error {
+    color: red;
+    margin-top: 5px;
+    font-size: 12px;
+  }
 }
 
-.form-group label {
-  width: 170px;
-  display: block;
-  margin-bottom: 2px;
-
-  color: #555;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
-  margin-bottom: 5px;
-}
-
+// Form Container Styles
 .form-container {
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: row;
-  gap: 5px; // Adjusts the space between the two form groups
-  justify-content: center;
-}
-.form-group .error {
-  color: red;
-  margin-top: 5px;
-  font-size: 12px;
+  gap: 20px; // Increased gap for better spacing
+  justify-content: space-between; // Distribute space between fields
+
+  @media (max-width: 768px) {
+    flex-direction: column; // Stack fields vertically on smaller screens
+    gap: 10px; // Adjust gap for stacked layout
+  }
 }
 
+// Password Field Styles
+.form-group-password {
+  flex: 1; // Allow fields to take equal space
+  margin-bottom: 15px;
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 500;
+  }
+
+  .password-input-container {
+    display: flex;
+    align-items: center; // Align input and icon vertically
+    gap: 0px; // Space between input and icon
+
+    input {
+      flex: 1; // Allow input to take up remaining space
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+
+      &:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        background-color: #f8f9fa;
+      }
+    }
+
+    .input-group-text {
+      cursor: pointer;
+      i {
+        font-size: 30px; // Adjust icon size
+      }
+    }
+  }
+
+  .error {
+    color: red;
+    margin-top: 5px;
+    font-size: 12px;
+  }
+}
+
+// Button Styles
 button[type="submit"] {
   width: 100%;
   height: 40px;
@@ -63,27 +120,27 @@ button[type="submit"] {
   color: white;
   font-size: 16px;
   cursor: pointer;
+
+  &:disabled {
+    background-color: #ccc;
+  }
 }
 
-button[type="submit"]:disabled {
-  background-color: #ccc;
+.debug-button {
+  background-color: orange;
+  display: none;
 }
 
-.error {
-  color: red;
-  text-align: center;
-  margin-top: 10px;
-}
-
+// Link Styles
 p {
   text-align: center;
-}
 
-p a {
-  color: #007bff;
-  text-decoration: none;
-}
+  a {
+    color: #007bff;
+    text-decoration: none;
 
-p a:hover {
-  text-decoration: underline;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
