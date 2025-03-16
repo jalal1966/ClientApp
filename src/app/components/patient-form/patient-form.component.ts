@@ -7,7 +7,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Patient } from '../../models/patient.model';
 import { PatientService } from '../../services/patient.service';
 import { User } from '../../models/user';
 import { AuthService } from '../../services/auth.service';
@@ -19,12 +18,23 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './patient-form.component.scss',
 })
 export class PatientFormComponent implements OnInit {
-  patientForm: FormGroup;
+  patientForm!: FormGroup;
+  isSubmitting: boolean = false;
+
   currentUser: User | null = null;
   errorMessage: string | null = null; // For single error messages
   errorMessages: string[] = []; // For multiple error messages
-  isSubmitting: boolean = false;
   doctorRecords: User[] = [];
+  firstName: any;
+  lastName: any;
+  dateOfBirth: any;
+  genderID: any;
+  contactNumber: any;
+  email: any;
+  nursID: any;
+  nursName: any;
+  patientDoctorID: any;
+  patientDoctor: any;
 
   constructor(
     private fb: FormBuilder,
@@ -32,27 +42,10 @@ export class PatientFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService // Correct injection
-  ) {
-    this.patientForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(3)]],
-      lastName: ['', [Validators.required, Validators.minLength(3)]],
-      dateOfBirth: ['', Validators.required],
-      genderID: [null, [Validators.required, this.oneOf([1, 2])]], // Apply custom validator
-      contactNumber: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      emergencyContactName: [''],
-      emergencyContactNumber: [''],
-      insuranceProvider: [''],
-      insuranceNumber: [''],
-      address: [''],
-      nursID: ['', Validators.required],
-      nursName: ['', Validators.required],
-      patientDoctorID: ['', Validators.required],
-      patientDoctor: ['', Validators.required],
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
+    this.initializeForm();
     // Get current user (nurse) from AuthService
     this.authService.getCurrentUser().subscribe({
       next: (user) => {
@@ -76,6 +69,40 @@ export class PatientFormComponent implements OnInit {
         this.errorMessage = 'Failed to load user information';
       },
     });
+    // Fetch doctor list
+    this.patientService.getDoctorList(1).subscribe({
+      next: (doctors) => {
+        console.log('Doctors loaded:', doctors);
+        this.doctorRecords = doctors;
+      },
+      error: (err) => {
+        console.error('Error loading doctors:', err);
+        this.doctorRecords = [];
+      },
+    });
+
+    // Listen for changes in the doctor selection
+    this.patientForm
+      .get('patientDoctorID')
+      ?.valueChanges.subscribe((selectedUserID) => {
+        if (selectedUserID) {
+          const selectedDoctor = this.doctorRecords.find(
+            (doctor) => doctor.userID === selectedUserID
+          );
+          if (selectedDoctor) {
+            // Update the doctor's name in the form
+            this.patientForm.patchValue({
+              patientDoctorName: `${selectedDoctor.firstName} ${selectedDoctor.lastName}`,
+            });
+          }
+        } else {
+          // Reset the doctor's name if no doctor is selected
+          this.patientForm.patchValue({
+            patientDoctorName: '',
+          });
+        }
+      });
+
     // For debugging the form
     if (typeof window !== 'undefined') {
       // Check for SSR
@@ -94,31 +121,31 @@ export class PatientFormComponent implements OnInit {
           nursID: this.nursID?.errors,
           nursName: this.nursName?.errors,
           patientDoctorID: this.patientDoctorID?.errors,
-          patientDoctor: this.patientDoctor?.errors,
+          patientDoctorName: this.patientDoctor?.errors,
         });
-      });
-      // Fetch doctor list
-      this.patientService.getDoctorList(1).subscribe({
-        next: (doctors) => {
-          console.log('Doctors loaded:', doctors);
-          this.doctorRecords = doctors;
-
-          if (this.doctorRecords.length > 0) {
-            const firstDoctor = this.doctorRecords[0];
-            this.patientForm.patchValue({
-              patientDoctorID: firstDoctor.userID,
-              patientDoctor: `${firstDoctor.firstName} ${firstDoctor.lastName}`,
-            });
-          }
-        },
-        error: (err) => {
-          console.error('Error loading doctors:', err);
-          this.doctorRecords = [];
-        },
       });
     }
   }
 
+  private initializeForm(): void {
+    this.patientForm = this.fb.group({
+      firstName: ['', [Validators.required, Validators.minLength(3)]],
+      lastName: ['', [Validators.required, Validators.minLength(3)]],
+      dateOfBirth: ['', Validators.required],
+      genderID: [null, [Validators.required, this.oneOf([1, 2])]], // Apply custom validator
+      contactNumber: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      emergencyContactName: [''],
+      emergencyContactNumber: [''],
+      insuranceProvider: [''],
+      insuranceNumber: [''],
+      address: [''],
+      nursID: ['', Validators.required],
+      nursName: ['', Validators.required],
+      patientDoctorID: ['', Validators.required],
+      patientDoctorName: ['', Validators.required],
+    });
+  }
   // Custom validator for oneOf
   oneOf(validOptions: any[]) {
     return (control: any) => {
@@ -127,54 +154,33 @@ export class PatientFormComponent implements OnInit {
   }
 
   // Getter methods for form controls
-  get firstName() {
-    return this.patientForm.get('firstName');
+  get formControls() {
+    return this.patientForm.controls;
   }
-  get lastName() {
-    return this.patientForm.get('lastName');
-  }
-  get dateOfBirth() {
-    return this.patientForm.get('dateOfBirth');
-  }
-  get genderID() {
-    return this.patientForm.get('genderID');
-  }
-  get contactNumber() {
-    return this.patientForm.get('contactNumber');
-  }
-  get email() {
-    return this.patientForm.get('email');
-  }
-  get address() {
-    return this.patientForm.get('address');
-  }
-  get emergencyContactName() {
-    return this.patientForm.get('emergencyContactName');
-  }
-  get emergencyContactNumber() {
-    return this.patientForm.get('emergencyContactNumber');
-  }
-  get insuranceProvider() {
-    return this.patientForm.get('insuranceProvider');
-  }
-  get insuranceNumber() {
-    return this.patientForm.get('insuranceNumber');
-  }
-  get nursID() {
-    return this.patientForm.get('nursID');
-  }
-  get nursName() {
-    return this.patientForm.get('nursName');
-  }
-  get patientDoctorID() {
-    return this.patientForm.get('patientDoctorID');
-  }
-  get patientDoctor() {
-    return this.patientForm.get('patientDoctor');
+
+  async onSubmit(): Promise<void> {
+    if (this.patientForm.invalid) {
+      this.patientForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
+    try {
+      await this.patientService
+        .createPatient(this.patientForm.value)
+        .toPromise();
+      alert('Patient registered successfully!');
+      this.router.navigate(['/patients']);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Failed to submit form. Please try again.');
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 
   // Form submission
-  onSubmit(): void {
+  /*  onSubmit(): void {
     // Mark all fields as touched to trigger validation display
     this.patientForm.markAllAsTouched();
 
@@ -209,7 +215,7 @@ export class PatientFormComponent implements OnInit {
       // Form validation handling
       this.collectFormErrors();
     }
-  }
+  } */
 
   navigateBack(): void {
     this.router.navigate(['/patients']);
@@ -267,29 +273,7 @@ export class PatientFormComponent implements OnInit {
       },
     });
   }
-  // Load doctor information
-  /* loadDoctorInformation(): void {
-    this.patientService.getDoctorList(1).subscribe({
-      next: (doctor) => {
-        console.log('Doctor loaded:', doctor);
-        this.doctorRecords = doctor;
 
-        // Update form with doctor information
-        if (doctor) {
-          this.patientForm.patchValue({
-            patientDoctorID: doctor.userID,
-            patientDoctor: `${doctor.firstName} ${doctor.lastName}`,
-          });
-        }
-
-        // Check form validity after updating values
-        this.checkFormValidity();
-      },
-      error: (err) => {
-        console.error('Error loading doctor:', err);
-      },
-    });
-  } */
   // Debug method to check form validity
   checkFormValidity(): void {
     console.log('Checking form validity:');
@@ -306,7 +290,7 @@ export class PatientFormComponent implements OnInit {
       'nursID',
       'nursName',
       'patientDoctorID',
-      'patientDoctor',
+      'patientDoctorName',
     ];
 
     requiredFields.forEach((field) => {

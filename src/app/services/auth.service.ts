@@ -76,7 +76,9 @@ export class AuthService {
   }
 
   getCurrentUser(): Observable<User | null> {
-    return this.currentUserSubject.asObservable();
+    return this.currentUserSubject
+      .asObservable()
+      .pipe(catchError(this.handleError));
   }
 
   getToken(): string | null {
@@ -90,14 +92,18 @@ export class AuthService {
   }
 
   forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/api/auth/forgot-password`, { email });
+    return this.http
+      .post(`${this.apiUrl}/api/auth/forgot-password`, { email })
+      .pipe(catchError(this.handleError));
   }
 
   validateResetToken(email: string, token: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/validate-reset-token`, {
-      email,
-      token,
-    });
+    return this.http
+      .post(`${this.apiUrl}/validate-reset-token`, {
+        email,
+        token,
+      })
+      .pipe(catchError(this.handleError));
   }
 
   logout(): void {

@@ -14,5 +14,5 @@ export interface Patient {
   nursID: number;
   nursName: string;
   PatientDoctorID: number;
-  PatientDoctor: string;
+  PatientDoctorName: string;
 }
