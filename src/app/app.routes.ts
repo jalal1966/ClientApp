@@ -19,11 +19,14 @@ import { AuthGuard } from './services/authGuard';
 import { AdministratorComponent } from './components/administrator/administrator.component';
 import { PatientListComponent } from './components/patient-list/patient-list.component';
 import { PatientFormComponent } from './components/patient-form/patient-form.component';
+import { AppointmentComponent } from './components/appointment/appointment.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'appointments', component: AppointmentComponent },
+  { path: 'nurse', component: NursePageComponent },
   {
     path: 'products',
     component: ProductListComponent,

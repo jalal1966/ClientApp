@@ -56,6 +56,10 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.trackFormChanges();
+  }
+
+  trackFormChanges() {
     // For debugging the form
     if (typeof window !== 'undefined') {
       // Check for SSR
@@ -67,7 +71,6 @@ export class RegisterComponent implements OnInit {
       });
     }
   }
-
   // Custom validator for oneOf
   oneOf(validOptions: any[]) {
     return (control: any) => {
@@ -128,51 +131,49 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit() {
-    // Mark all fields as touched to trigger validation display
-    this.registerForm.markAllAsTouched();
-
     if (this.registerForm.valid) {
-      this.isSubmitting = true;
-      this.errorMessage = null;
-      this.errorMessages = [];
-
-      // Create a copy of the form value
-      const formData = { ...this.registerForm.value };
-
-      // Convert salary to number if it has a value
-      if (formData.salary) {
-        formData.salary = Number(formData.salary);
-      }
-
-      // Include confirmPassword in the payload
-      const registerModel = formData;
-
-      console.log('Submitting registration data:', registerModel);
-
-      this.authService.register(registerModel).subscribe({
-        next: (response) => {
-          console.log('Registration successful:', response);
-          // Show success message or redirect to login
-          this.router.navigate(['/login'], {
-            queryParams: { registered: 'true' },
-          });
-        },
-        error: (errors) => {
-          console.log('Registration errors:', errors);
-
-          this.errorMessages = Array.isArray(errors)
-            ? errors
-            : [errors.toString()];
-          this.isSubmitting = false;
-        },
-        complete: () => {
-          this.isSubmitting = false;
-        },
-      });
-    } else {
+      // Mark all fields as touched to trigger validation display
+      this.registerForm.markAllAsTouched();
       // Form validation handling
       this.collectFormErrors();
     }
+    this.isSubmitting = true;
+    this.errorMessage = null;
+    this.errorMessages = [];
+
+    // Create a copy of the form value
+    const formData = { ...this.registerForm.value };
+
+    // Convert salary to number if it has a value
+    if (formData.salary) {
+      formData.salary = Number(formData.salary);
+    }
+
+    // Include confirmPassword in the payload
+    const registerModel = formData;
+
+    console.log('Submitting registration data:', registerModel);
+
+    this.authService.register(registerModel).subscribe({
+      next: (response) => {
+        console.log('Registration successful:', response);
+        // Show success message or redirect to login
+        this.router.navigate(['/login'], {
+          queryParams: { registered: 'true' },
+        });
+      },
+      error: (errors) => {
+        console.log('Registration errors:', errors);
+
+        this.errorMessages = Array.isArray(errors)
+          ? errors
+          : [errors.toString()];
+        this.isSubmitting = false;
+      },
+      complete: () => {
+        this.isSubmitting = false;
+      },
+    });
   }
 
   private collectFormErrors() {

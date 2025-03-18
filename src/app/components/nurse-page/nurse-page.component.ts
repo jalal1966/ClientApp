@@ -14,6 +14,7 @@ import { FormGroup } from '@angular/forms';
 export class NursePageComponent {
   public curntUser!: User;
   isPatientFormVisible = false;
+  isaddPatientFormVisible = false;
   private authService!: AuthService;
   private router!: Router;
   loginForm!: FormGroup;
@@ -57,6 +58,12 @@ export class NursePageComponent {
     console.log('showPatientForm method called');
     this.isPatientFormVisible = true;
     console.log('showPatientForm', this.isPatientFormVisible);
+    this.router.navigate(['/patients']);
+  }
+  addPatientForm() {
+    console.log('addPatientForm method called');
+    this.isaddPatientFormVisible = true;
+    console.log('addPatientForm', this.isPatientFormVisible);
     this.router.navigate(['/patient-form']);
   }
 

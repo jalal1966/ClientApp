@@ -1,0 +1,174 @@
+<!-- src/app/components/appointment/appointment.component.html -->
+<div class="appointment-container">
+  <div *ngIf="loading" class="loading">
+    <p>Loading...</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button (click)="error = null">Dismiss</button>
+  </div>
+
+  <div *ngIf="!loading">
+    <div class="header">
+      <h2>{{ isNew ? "New Appointment" : "Appointment Details" }}</h2>
+      <div class="actions" *ngIf="!isNew && !isEditing">
+        <button (click)="toggleEdit()">Edit</button>
+        <button
+          (click)="cancelAppointment()"
+          [disabled]="
+            appointment?.status === 'Cancelled' ||
+            appointment?.status === 'Completed'
+          "
+        >
+          Cancel Appointment
+        </button>
+        <button
+          (click)="completeAppointment()"
+          [disabled]="appointment?.status !== 'Confirmed'"
+        >
+          Complete
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!isEditing && appointment" class="appointment-details">
+      <div class="detail-row">
+        <span class="label">Patient:</span>
+        <span class="value">{{ appointment.patientName }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Provider:</span>
+        <span class="value">{{ appointment.providerName }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Start Time:</span>
+        <span class="value">{{ appointment.startTime | date : "medium" }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">End Time:</span>
+        <span class="value">{{ appointment.endTime | date : "medium" }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Type:</span>
+        <span class="value">{{ appointment.type }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Status:</span>
+        <span class="value" [ngClass]="appointment.status.toLowerCase()">{{
+          appointment.status
+        }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Notes:</span>
+        <span class="value">{{ appointment.notes }}</span>
+      </div>
+    </div>
+
+    <form
+      *ngIf="isEditing"
+      [formGroup]="appointmentForm"
+      (ngSubmit)="saveAppointment()"
+      class="appointment-form"
+    >
+      <div class="form-group">
+        <label for="patientId">Patient ID</label>
+        <input
+          type="number"
+          id="patientId"
+          formControlName="patientId"
+          [disabled]="!isNew"
+        />
+        <div
+          *ngIf="appointmentForm.get('patientId')?.errors?.['required'] && appointmentForm.get('patientId')?.touched"
+          class="error"
+        >
+          Patient is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="providerId">Provider ID</label>
+        <input
+          type="number"
+          id="providerId"
+          formControlName="providerId"
+          [disabled]="!isNew"
+        />
+        <div
+          *ngIf="appointmentForm.get('providerId')?.errors?.['required'] && appointmentForm.get('providerId')?.touched"
+          class="error"
+        >
+          Provider is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="startTime">Start Time</label>
+        <input
+          type="datetime-local"
+          id="startTime"
+          formControlName="startTime"
+        />
+        <div
+          *ngIf="appointmentForm.get('startTime')?.errors?.['required'] && appointmentForm.get('startTime')?.touched"
+          class="error"
+        >
+          Start time is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="endTime">End Time</label>
+        <input type="datetime-local" id="endTime" formControlName="endTime" />
+        <div
+          *ngIf="appointmentForm.get('endTime')?.errors?.['required'] && appointmentForm.get('endTime')?.touched"
+          class="error"
+        >
+          End time is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="type">Appointment Type</label>
+        <select id="type" formControlName="type">
+          <option value="">Select type</option>
+          <option value="Consultation">Consultation</option>
+          <option value="Follow-up">Follow-up</option>
+          <option value="Checkup">Checkup</option>
+          <option value="Treatment">Treatment</option>
+          <option value="Emergency">Emergency</option>
+        </select>
+        <div
+          *ngIf="appointmentForm.get('type')?.errors?.['required'] && appointmentForm.get('type')?.touched"
+          class="error"
+        >
+          Type is required
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="!isNew">
+        <label for="status">Status</label>
+        <select id="status" formControlName="status">
+          <option value="Scheduled">Scheduled</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="Completed">Completed</option>
+          <option value="No-show">No-show</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" formControlName="notes" rows="4"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="appointmentForm.invalid">
+          {{ isNew ? "Create" : "Save" }}
+        </button>
+        <button type="button" (click)="toggleEdit()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

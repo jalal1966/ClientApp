@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PatientService } from '../../services/patient.service';
+import { AppointmentService } from '../../services/appointment.service';
 import { Patient } from '../../models/patient.model';
 
 @Component({
@@ -13,6 +14,7 @@ import { Patient } from '../../models/patient.model';
 export class PatientListComponent implements OnInit {
   patients: Patient[] = [];
   filteredPatients: Patient[] = [];
+  appoment: AppointmentService | undefined;
   loading = true;
   error = '';
 

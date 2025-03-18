@@ -1,0 +1,211 @@
+.appointment-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .loading {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+    color: #00796b;
+    background-color: #e0f7fa;
+    border-radius: 5px;
+  }
+
+  .error-message {
+    padding: 15px;
+    background-color: #ffebee;
+    color: #c62828;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    button {
+      background-color: #c62828;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+
+      &:hover {
+        background-color: #b71c1c;
+      }
+    }
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h2 {
+      color: #333;
+      margin: 0;
+    }
+
+    .actions {
+      button {
+        margin-left: 10px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          opacity: 0.9;
+        }
+
+        &:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+      }
+
+      button:first-child {
+        background-color: #1976d2;
+        color: white;
+      }
+
+      button:nth-child(2) {
+        background-color: #d32f2f;
+        color: white;
+      }
+
+      button:last-child {
+        background-color: #2e7d32;
+        color: white;
+      }
+    }
+  }
+
+  .appointment-details {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .detail-row {
+      display: flex;
+      margin-bottom: 15px;
+
+      .label {
+        font-weight: bold;
+        width: 120px;
+        color: #555;
+      }
+
+      .value {
+        flex: 1;
+        color: #333;
+
+        &.scheduled {
+          color: #1976d2;
+        }
+
+        &.confirmed {
+          color: #2e7d32;
+        }
+
+        &.cancelled {
+          color: #d32f2f;
+        }
+
+        &.completed {
+          color: #388e3c;
+        }
+
+        &.no-show {
+          color: #f57c00;
+        }
+      }
+    }
+  }
+
+  .appointment-form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .form-group {
+      margin-bottom: 15px;
+
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #555;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+
+        &:focus {
+          outline: none;
+          border-color: #1976d2;
+        }
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      .error {
+        color: #d32f2f;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+
+      button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          opacity: 0.9;
+        }
+
+        &[type="submit"] {
+          background-color: #1976d2;
+          color: white;
+        }
+
+        &[type="button"] {
+          background-color: #ccc;
+          color: #333;
+        }
+
+        &:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}

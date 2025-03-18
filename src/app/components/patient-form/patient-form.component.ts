@@ -42,10 +42,28 @@ export class PatientFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService // Correct injection
-  ) {}
+  ) {
+    this.patientForm = this.fb.group({
+      firstName: ['', [Validators.required, Validators.minLength(3)]],
+      lastName: ['', [Validators.required, Validators.minLength(3)]],
+      dateOfBirth: ['', Validators.required],
+      genderID: [null, [Validators.required, this.oneOf([1, 2])]], // Apply custom validator
+      contactNumber: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      emergencyContactName: [''],
+      emergencyContactNumber: [''],
+      insuranceProvider: [''],
+      insuranceNumber: [''],
+      address: [''],
+      nursID: ['', Validators.required],
+      nursName: ['', Validators.required],
+      patientDoctorID: ['', Validators.required],
+      patientDoctorName: ['', Validators.required],
+    });
+  }
 
   ngOnInit(): void {
-    this.initializeForm();
+    // this.initializeForm();
     // Get current user (nurse) from AuthService
     this.authService.getCurrentUser().subscribe({
       next: (user) => {
@@ -144,6 +162,7 @@ export class PatientFormComponent implements OnInit {
       nursName: ['', Validators.required],
       patientDoctorID: ['', Validators.required],
       patientDoctorName: ['', Validators.required],
+      registrationDate: [''],
     });
   }
   // Custom validator for oneOf

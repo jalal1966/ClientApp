@@ -13,6 +13,7 @@ export interface Patient {
   insuranceNumber: string;
   nursID: number;
   nursName: string;
-  PatientDoctorID: number;
-  PatientDoctorName: string;
+  patientDoctorID: number;
+  patientDoctorName: string;
+  registrationDate: Date;
 }
