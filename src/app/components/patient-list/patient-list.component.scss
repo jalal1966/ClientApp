@@ -8,12 +8,15 @@ $dark-gray: #6c757d;
   height: 500px;
   overflow: auto;
 }
+
 .sticky {
   position: sticky;
+  top: 0; // Ensure the headers stick to the top
 }
+
 // Container styling
 .container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: auto;
   padding: 1rem;
 }
@@ -72,6 +75,9 @@ $dark-gray: #6c757d;
   th {
     background-color: $primary-color;
     color: white;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1 !important;
   }
 
   tbody tr {

@@ -1,16 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AppointmentService } from '../../services/appointment.service';
-import { AppointmentDto } from '../../models/appointment.model';
-
-interface WaitingPatient {
-  appointment: AppointmentDto;
-  arrivalTime: Date;
-  waitTime: number; // in minutes
-  status: 'waiting' | 'in-progress' | 'completed' | 'no-show';
-}
+import { WaitingPatient } from '../../models/waiting.model';
+import { Patient } from '../../models/patient.model';
 
 @Component({
   selector: 'app-waiting-list',
@@ -20,19 +14,19 @@ interface WaitingPatient {
   styleUrls: ['./waiting-list.component.scss'],
 })
 export class WaitingListComponent implements OnInit, OnDestroy {
-  waitingPatients: WaitingPatient[] = [];
-  providerId: number | null = null;
+  waitingPatient: WaitingPatient[] = [];
   currentDate: Date = new Date();
   loading = false;
   error: string | null = null;
   refreshInterval: any;
   selectedStatus: string = 'all';
 
-  constructor(private appointmentService: AppointmentService) {}
+  constructor(
+    private appointmentService: AppointmentService,
+    private fb: FormBuilder
+  ) {}
 
   ngOnInit(): void {
-    // Initialize with provider ID 1 for demo purposes
-    this.providerId = 1;
     this.loadAppointments();
 
     // Refresh every minute to update wait times
@@ -48,15 +42,19 @@ export class WaitingListComponent implements OnInit, OnDestroy {
   }
 
   loadAppointments(): void {
-    if (!this.providerId) return;
+    //if (!this.providerId) return;
 
     this.loading = true;
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
 
+    // Format dates as ISO strings for the API call
+    const formattedStartDate = today.toISOString();
+    const formattedEndDate = tomorrow.toISOString();
+
     this.appointmentService
-      .getAppointmentsByDateRange(today, tomorrow, this.providerId)
+      .getAppointmentsByDateRange(formattedStartDate, formattedEndDate)
       .subscribe({
         next: (appointments) => {
           // Filter to only include today's confirmed appointments
@@ -69,14 +67,20 @@ export class WaitingListComponent implements OnInit, OnDestroy {
             );
           });
 
+          console.log('Filtered appointments:', todaysAppointments);
+
           // Map appointments to waiting patients
-          this.waitingPatients = todaysAppointments.map((app) => ({
+          this.waitingPatient = todaysAppointments.map((app) => ({
             appointment: app,
             arrivalTime: new Date(app.startTime),
             waitTime: this.calculateWaitTime(new Date(app.startTime)),
             status: 'waiting', // Default status
+            patientFirstName: app.patientFirstName || '', // Access directly from appointment
+            patientLastName: app.patientLastName || '', // Access directly from appointment
           }));
 
+          console.log('Waiting patients created:', this.waitingPatient);
+          this.updateWaitTimes();
           this.loading = false;
         },
         error: (err) => {
@@ -91,12 +95,13 @@ export class WaitingListComponent implements OnInit, OnDestroy {
     const diffInMinutes = Math.floor(
       (now.getTime() - arrivalTime.getTime()) / 60000
     );
-    return diffInMinutes;
+    return diffInMinutes > 0 ? diffInMinutes : 0;
   }
 
   updateWaitTimes(): void {
-    this.waitingPatients.forEach((patient) => {
-      if (patient.status === 'waiting') {
+    const now = new Date();
+    this.waitingPatient.forEach((patient) => {
+      if (patient.status === 'waiting' || patient.status === 'in-progress') {
         patient.waitTime = this.calculateWaitTime(patient.arrivalTime);
       }
     });
@@ -107,15 +112,41 @@ export class WaitingListComponent implements OnInit, OnDestroy {
     newStatus: 'in-progress' | 'completed' | 'no-show'
   ): void {
     patient.status = newStatus;
-    // You can also call a service method here to update the status on the server
+
+    // Update the appointment status in the backend
+    this.appointmentService
+      .updateAppointmentStatus(patient.appointment.id, newStatus)
+      .subscribe({
+        next: () => {
+          console.log(
+            `Status updated to ${newStatus} for patient ${patient.patientFirstName}`
+          );
+        },
+        error: (err: any) => {
+          console.error('Failed to update status:', err);
+          // Revert the status change in case of error
+          patient.status =
+            patient.status === newStatus ? 'waiting' : patient.status;
+        },
+      });
   }
 
   filterPatients(): WaitingPatient[] {
-    if (this.selectedStatus === 'all') {
-      return this.waitingPatients;
-    }
-    return this.waitingPatients.filter(
-      (patient) => patient.status === this.selectedStatus
-    );
+    console.log('Selected status:', this.selectedStatus);
+    const filtered =
+      this.selectedStatus === 'all'
+        ? this.waitingPatient
+        : this.waitingPatient.filter(
+            (patient) => patient.status === this.selectedStatus
+          );
+    console.log('Filtered patients:', filtered);
+    return filtered;
+  }
+
+  // Helper method to manually check in a patient who has arrived
+  checkInPatient(patient: WaitingPatient): void {
+    patient.arrivalTime = new Date();
+    patient.waitTime = 0;
+    patient.status = 'waiting';
   }
 }

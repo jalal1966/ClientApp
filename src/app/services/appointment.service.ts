@@ -2,35 +2,37 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
-  AppointmentDto,
-  AppointmentCreateDto,
-  AppointmentUpdateDto,
+  Appointment,
+  AppointmentCreate,
+  AppointmentUpdate,
 } from '../models/appointment.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppointmentService {
-  private apiUrl = 'https://localhost:7133/api/appointments';
+  private apiUrl = environment.apiUrl;
+  // private apiUrl = 'https://localhost:5000/api/appointments';
 
   constructor(private http: HttpClient) {}
 
-  getAppointments(): Observable<AppointmentDto[]> {
-    return this.http.get<AppointmentDto[]>(this.apiUrl);
+  getAppointments(): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(`${this.apiUrl}/api/appointments`);
   }
 
-  getAppointment(id: number): Observable<AppointmentDto> {
-    return this.http.get<AppointmentDto>(`${this.apiUrl}/${id}`);
+  getAppointment(id: number): Observable<Appointment> {
+    return this.http.get<Appointment>(`${this.apiUrl}/api/appointments/${id}`);
   }
 
-  getAppointmentsByProvider(providerId: number): Observable<AppointmentDto[]> {
-    return this.http.get<AppointmentDto[]>(
+  getAppointmentsByProvider(providerId: number): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(
       `${this.apiUrl}/api/provider/${providerId}`
     );
   }
 
-  getAppointmentsByPatient(patientId: number): Observable<AppointmentDto[]> {
-    return this.http.get<AppointmentDto[]>(
+  getAppointmentsByPatient(patientId: number): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(
       `${this.apiUrl}/api/patient/${patientId}`
     );
   }
@@ -42,10 +44,13 @@ export class AppointmentService {
     );
   }
 
-  createAppointment(
-    appointment: AppointmentCreateDto
-  ): Observable<AppointmentDto> {
-    return this.http.post<AppointmentDto>(
+  createAppointment(appointment: AppointmentCreate): Observable<Appointment> {
+    const doi = this.http.post<Appointment>(
+      `${this.apiUrl}/api/appointments`,
+      appointment
+    );
+    console.log('doi', doi);
+    return this.http.post<Appointment>(
       `${this.apiUrl}/api/appointments`,
       appointment
     );
@@ -53,36 +58,68 @@ export class AppointmentService {
 
   updateAppointment(
     id: number,
-    appointment: AppointmentUpdateDto
-  ): Observable<AppointmentDto> {
-    return this.http.put<AppointmentDto>(`${this.apiUrl}/${id}`, appointment);
+    appointment: AppointmentUpdate
+  ): Observable<Appointment> {
+    return this.http.put<Appointment>(
+      `${this.apiUrl}/api/appointments/${id}`,
+      appointment
+    );
   }
 
   deleteAppointment(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/api/appointments/${id}`);
   }
 
-  cancelAppointment(id: number): Observable<AppointmentDto> {
-    return this.http.patch<AppointmentDto>(`${this.apiUrl}/${id}/cancel`, {});
+  // TO DO
+  cancelAppointment(id: number): Observable<Appointment> {
+    return this.http.patch<Appointment>(`${this.apiUrl}/${id}/cancel`, {});
   }
 
   rescheduleAppointment(
     id: number,
     startTime: string,
     endTime: string
-  ): Observable<AppointmentDto> {
+  ): Observable<Appointment> {
     const rescheduleData = { startTime, endTime };
-    return this.http.patch<AppointmentDto>(
+    return this.http.patch<Appointment>(
       `${this.apiUrl}/${id}/reschedule`,
       rescheduleData
     );
   }
+  updateAppointmentStatus(
+    appointmentId: number,
+    status: string
+  ): Observable<Appointment> {
+    return this.http.patch<Appointment>(
+      `${this.apiUrl}/api/appointments/${appointmentId}/status`,
+      { status }
+    );
+  }
 
   getAppointmentsByDateRange(
+    startDate: string | Date,
+    endDate: string | Date
+  ): Observable<Appointment[]> {
+    // Format dates to ISO strings if they're Date objects
+    const formattedStartDate =
+      startDate instanceof Date ? startDate.toISOString() : startDate;
+    const formattedEndDate =
+      endDate instanceof Date ? endDate.toISOString() : endDate;
+    const test = this.http.get<Appointment[]>(
+      `${this.apiUrl}/api/appointments/date-range?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
+    );
+
+    console.log('test', test);
+    return this.http.get<Appointment[]>(
+      `${this.apiUrl}/api/appointments/date-range?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
+    );
+  }
+
+  getDoctorAppointmentsByDateRange(
     startDate: Date,
     endDate: Date,
     providerId?: number
-  ): Observable<AppointmentDto[]> {
+  ): Observable<Appointment[]> {
     let params = new HttpParams()
       .set('startDate', startDate.toISOString())
       .set('endDate', endDate.toISOString());
@@ -91,20 +128,19 @@ export class AppointmentService {
       params = params.set('providerId', providerId.toString());
     }
 
-    return this.http.get<AppointmentDto[]>(`${this.apiUrl}/date-range`, {
-      params,
-    });
-  }
-
-  confirmAppointment(id: number): Observable<AppointmentDto> {
-    return this.http.patch<AppointmentDto>(`${this.apiUrl}/${id}/confirm`, {});
-  }
-
-  completeAppointment(id: number, notes?: string): Observable<AppointmentDto> {
-    const data = notes ? { notes } : {};
-    return this.http.patch<AppointmentDto>(
-      `${this.apiUrl}/${id}/complete`,
-      data
+    return this.http.get<Appointment[]>(
+      `${this.apiUrl}/api/appointments/doctr-waiting-list?startDate=${startDate}&endDate=${endDate}providerId`,
+      {
+        params,
+      }
     );
+  }
+  confirmAppointment(id: number): Observable<Appointment> {
+    return this.http.patch<Appointment>(`${this.apiUrl}/${id}/confirm`, {});
+  }
+
+  completeAppointment(id: number, notes?: string): Observable<Appointment> {
+    const data = notes ? { notes } : {};
+    return this.http.patch<Appointment>(`${this.apiUrl}/${id}/complete`, data);
   }
 }

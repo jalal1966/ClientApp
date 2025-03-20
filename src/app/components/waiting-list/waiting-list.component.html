@@ -5,6 +5,14 @@
   <div *ngIf="loading" class="loading-message">Loading appointments...</div>
   <div *ngIf="error" class="error-message">{{ error }}</div>
 
+  <!-- Debug info - can be removed in production -->
+  <div class="debug-info">
+    <p>Total appointments loaded: {{ waitingPatient.length }}</p>
+    <button (click)="loadAppointments()" class="refresh-button">
+      Refresh List
+    </button>
+  </div>
+
   <!-- Status Filter Dropdown -->
   <div class="filter-container">
     <label for="status-filter">Filter by Status:</label>
@@ -18,58 +26,98 @@
   </div>
 
   <!-- Waiting List Table -->
-  <table *ngIf="!loading && !error">
-    <thead>
-      <tr>
-        <th>Patient Name</th>
-        <th>Appointment Time</th>
-        <th>Arrival Time</th>
-        <th>Wait Time</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let patient of filterPatients()" [class]="patient.status">
-        <td>{{ patient.appointment.patientName }}</td>
-        <td>{{ patient.appointment.startTime | date : "shortTime" }}</td>
-        <td>{{ patient.arrivalTime | date : "shortTime" }}</td>
-        <td>{{ patient.waitTime }} minutes</td>
-        <td>
-          <span class="status-badge">{{ patient.status }}</span>
-        </td>
-        <td>
-          <button
-            *ngIf="patient.status === 'waiting'"
-            (click)="changeStatus(patient, 'in-progress')"
-            class="action-button start-button"
-          >
-            Start
-          </button>
-          <button
-            *ngIf="patient.status === 'in-progress'"
-            (click)="changeStatus(patient, 'completed')"
-            class="action-button complete-button"
-          >
-            Complete
-          </button>
-          <button
-            *ngIf="patient.status === 'waiting'"
-            (click)="changeStatus(patient, 'no-show')"
-            class="action-button no-show-button"
-          >
-            No Show
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
+  <div *ngIf="!loading && waitingPatient.length > 0 && !error" class="card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Appointment Time</th>
+          <th>Arrival Time</th>
+          <th>Wait Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let patient of filterPatients()" [class]="patient.status">
+          <td>
+            {{ patient.patientFirstName }}
+            {{ patient.patientLastName }}
+          </td>
+          <td>{{ patient.appointment.startTime | date : "shortTime" }}</td>
+          <td>
+            <span
+              *ngIf="
+                patient.status !== 'waiting' &&
+                patient.status !== 'in-progress' &&
+                patient.status !== 'completed'
+              "
+            >
+              Not arrived
+            </span>
+            <span
+              *ngIf="
+                patient.status === 'waiting' ||
+                patient.status === 'in-progress' ||
+                patient.status === 'completed'
+              "
+            >
+              {{ patient.arrivalTime | date : "shortTime" }}
+            </span>
+          </td>
+          <td>{{ patient.waitTime }} minutes</td>
+          <td>
+            <span class="status-badge status-{{ patient.status }}">{{
+              patient.status
+            }}</span>
+          </td>
+          <td class="actions-cell">
+            <button
+              *ngIf="
+                patient.status !== 'waiting' &&
+                patient.status !== 'in-progress' &&
+                patient.status !== 'completed' &&
+                patient.status !== 'no-show'
+              "
+              (click)="checkInPatient(patient)"
+              class="action-button checkin-button"
+            >
+              Check In
+            </button>
+            <button
+              *ngIf="patient.status === 'waiting'"
+              (click)="changeStatus(patient, 'in-progress')"
+              class="action-button start-button"
+            >
+              Start
+            </button>
+            <button
+              *ngIf="patient.status === 'in-progress'"
+              (click)="changeStatus(patient, 'completed')"
+              class="action-button complete-button"
+            >
+              Complete
+            </button>
+            <button
+              *ngIf="patient.status === 'waiting'"
+              (click)="changeStatus(patient, 'no-show')"
+              class="action-button no-show-button"
+            >
+              No Show
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   <!-- No Patients Message -->
   <div
     *ngIf="filterPatients().length === 0 && !loading && !error"
     class="no-patients-message"
   >
-    No patients found.
+    <p>No patients found with the selected status.</p>
+    <p *ngIf="waitingPatient.length === 0">
+      There are no appointments for today.
+    </p>
   </div>
 </div>

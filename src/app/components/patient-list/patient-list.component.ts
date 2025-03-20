@@ -4,24 +4,71 @@ import { RouterModule } from '@angular/router';
 import { PatientService } from '../../services/patient.service';
 import { AppointmentService } from '../../services/appointment.service';
 import { Patient } from '../../models/patient.model';
-
+import { User } from '../../models/user';
+import { AuthService } from '../../services/auth.service';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 @Component({
   selector: 'app-patient-list',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './patient-list.component.html',
   styleUrl: './patient-list.component.scss',
 })
 export class PatientListComponent implements OnInit {
+  patientForm!: FormGroup;
+  currentUser: User | null = null;
   patients: Patient[] = [];
   filteredPatients: Patient[] = [];
   appoment: AppointmentService | undefined;
   loading = true;
   error = '';
 
-  constructor(private patientService: PatientService) {}
+  constructor(
+    private patientService: PatientService,
+    private authService: AuthService,
+    private fb: FormBuilder // Inject FormBuilder
+  ) {}
 
   ngOnInit(): void {
     this.loadPatients();
+    this.Initializing();
+  }
+
+  Initializing(): void {
+    this.initializeForm(); // Ensure form is initialized before using it
+    // this.initializeForm();
+    // Get current user (nurse) from AuthService
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        if (user) {
+          console.log('Full user object:', JSON.stringify(user)); // This will show all properties
+          console.log('Current user loaded:', user);
+          this.currentUser = user;
+
+          // Update form with nurse information
+          this.patientForm.patchValue({
+            // nursID: user.userID,
+            nursName: `${user.firstName} ${user.lastName}`,
+          });
+
+          // Now fetch doctor info after we have user info
+          // this.loadDoctorInformation();
+        }
+      },
+      error: (err) => {
+        console.error('Error getting current user:', err);
+        this.error = 'Failed to load user information';
+      },
+    });
+  }
+  initializeForm(): void {
+    this.patientForm = this.fb.group({
+      nursName: ['', Validators.required],
+    });
   }
 
   loadPatients(): void {

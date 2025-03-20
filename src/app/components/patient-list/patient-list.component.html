@@ -1,5 +1,7 @@
 <div class="container mx-auto p-4">
-  <h1 class="text-2xl font-bold">Patient List</h1>
+  <h1 class="text-2xl font-bold justify-content-between">
+    Patient List {{ currentUser?.firstName }} {{ currentUser?.lastName }}
+  </h1>
   <div class="d-flex justify-content-between mt-6 buttom">
     <input
       class="mb-10"
@@ -33,93 +35,76 @@
   >
     No patients found.
   </div>
-  <div *ngIf="!loading && !error" class="table-wrapper">
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>DateOfBirth</th>
-          <th>Gender</th>
-          <th>DoctorName</th>
-          <th>CreatedAt</th>
-        </tr>
-      </thead>
+  <div *ngIf="!loading && !error" class="card">
+    <div class="scrollable-table">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>DateOfBirth</th>
+            <th>Gender</th>
+            <th>DoctorName</th>
+            <th>CreatedAt</th>
+            <th>Contact Nu.</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
 
-      <tbody>
-        <tr *ngFor="let patient of filteredPatients">
-          <td>{{ patient.id }}</td>
-          <td>{{ patient.firstName }}{{ patient.lastName }}</td>
-          <td>{{ patient.dateOfBirth }}</td>
-          <td>
-            {{
-              +patient.genderID === 1
-                ? "Man"
-                : +patient.genderID === 2
-                ? "Woman"
-                : "Unknown"
-            }}
-          </td>
+        <tbody>
+          <tr *ngFor="let patient of filteredPatients">
+            <td>{{ patient.id }}</td>
+            <td>{{ patient.firstName }}{{ patient.lastName }}</td>
+            <td>{{ patient.dateOfBirth | date : "dd.MM.yyyy" }}</td>
+            <td>
+              {{
+                +patient.genderID === 1
+                  ? "Man"
+                  : +patient.genderID === 2
+                  ? "Woman"
+                  : "Unknown"
+              }}
+            </td>
 
-          <td>{{ patient.patientDoctorName }}</td>
+            <td>{{ patient.patientDoctorName }}</td>
 
-          <td>{{ patient.registrationDate | date }}</td>
-          <td>
-            <a
-              [routerLink]="['/appointments']"
-              class="btn btn btn-success btn-sm me-2"
-              >Appointments</a
-            >
+            <td>{{ patient.registrationDate | date : "dd.MM.yyyy" }}</td>
+            <td>{{ patient.contactNumber }}</td>
+            <td>
+              <a
+                [routerLink]="['/appointments']"
+                class="btn btn btn-success btn-sm me-2"
+                >Appointments</a
+              >
 
-            <a
-              [routerLink]="['/api/patients', patient.id]"
-              class="btn btn-info btn-sm me-2"
-              >View</a
-            >
-            <a
-              [routerLink]="['/patient', patient.id, 'edit']"
-              class="btn btn-warning btn-sm me-2"
-              >Edit</a
-            >
-            <button
-              (click)="deletePatient(patient.id!, $event)"
-              class="btn btn-danger btn-sm"
-            >
-              Delete
-            </button>
-          </td>
-        </tr>
-        <tr *ngIf="patients.length === 0">
-          <td colspan="6" class="text-center">No patients available</td>
-        </tr>
-      </tbody>
-    </table>
+              <a
+                [routerLink]="['/api/patients', patient.id]"
+                class="btn btn-info btn-sm me-2"
+                >View</a
+              >
+              <a
+                [routerLink]="['/patient', patient.id, 'edit']"
+                class="btn btn-warning btn-sm me-2"
+                >Edit</a
+              >
+              <button
+                (click)="deletePatient(patient.id!, $event)"
+                class="btn btn-danger btn-sm"
+              >
+                Delete
+              </button>
+              <a
+                [routerLink]="['/waitingList']"
+                class="btn btn btn-success btn-sm me-2"
+                >waiting List</a
+              >
+            </td>
+          </tr>
+          <tr *ngIf="patients.length === 0">
+            <td colspan="8" class="text-center">No patients available</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-  <!--<div class="grid gap-4 grid-cols-1 md:grid-cols-3">
-    <div
-      *ngFor="let patient of filteredPatients"
-      [routerLink]="['/patients', patient.id]"
-      class="border rounded p-4 cursor-pointer hover:bg-gray-50"
-    >
-      <h2 class="text-xl font-semibold">
-        {{ patient.firstName }} {{ patient.lastName }}
-      </h2>
-      <p class="text-gray-600">DOB: {{ patient.dateOfBirth | date }}</p>
-      <p class="text-gray-600">Contact: {{ patient.contactNumber }}</p>
-      <div class="mt-2 flex justify-end">
-        <button
-          [routerLink]="['/patients', patient.id, 'edit']"
-          class="text-blue-500 mr-2"
-          (click)="$event.stopPropagation()"
-        >
-          Edit
-        </button>
-        <button
-          class="text-red-500"
-          (click)="patient.id ? deletePatient(patient.id, $event) : null"
-        >
-          Delete
-        </button>
-      </div>
-    </div>-->
 </div>

@@ -9,8 +9,6 @@ import { ProductDetailsComponent } from './components/product-details/product-de
 import { ProductFormComponent } from './components/product-form/product-form.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
-import { inject } from '@angular/core';
-import { AuthService } from './services/auth.service';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { DoctorPageComponent } from './components/doctor-page/doctor-page.component';
 import { RoleGuard } from './services/roleguard';
@@ -20,12 +18,14 @@ import { AdministratorComponent } from './components/administrator/administrator
 import { PatientListComponent } from './components/patient-list/patient-list.component';
 import { PatientFormComponent } from './components/patient-form/patient-form.component';
 import { AppointmentComponent } from './components/appointment/appointment.component';
+import { WaitingListComponent } from './components/waiting-list/waiting-list.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'appointments', component: AppointmentComponent },
+  { path: 'waitingList', component: WaitingListComponent },
   { path: 'nurse', component: NursePageComponent },
   {
     path: 'products',
@@ -74,5 +74,6 @@ export const routes: Routes = [
     path: 'patient-form',
     component: PatientFormComponent,
   },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' }, // Wildcard route for a 404 page
 ];

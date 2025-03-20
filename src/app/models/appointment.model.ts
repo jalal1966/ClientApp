@@ -1,17 +1,23 @@
-export interface AppointmentDto {
+import { Patient } from './patient.model';
+
+export interface Appointment {
+  [x: string]: any;
+  patient: any;
   id: number;
   patientId: number;
-  patientName: string;
+  // patient: Patient;
+  patientFirstName?: string;
+  patientLastName?: string;
   providerId: number;
-  providerName: string;
-  startTime: string; // ISO date string
-  endTime: string; // ISO date string
+  providerFirstName?: string;
+  providerLastName?: string;
+  startTime: string | Date;
+  endTime: string | Date;
+  type: string;
   status: string;
   notes: string;
-  type: string;
 }
-
-export interface AppointmentCreateDto {
+export interface AppointmentCreate {
   patientId: number;
   providerId: number;
   startTime: string; // ISO date string
@@ -20,7 +26,9 @@ export interface AppointmentCreateDto {
   type: string;
 }
 
-export interface AppointmentUpdateDto {
+export interface AppointmentUpdate {
+  providerId: number;
+  patientId: number;
   startTime: string; // ISO date string
   endTime: string; // ISO date string
   status: string;

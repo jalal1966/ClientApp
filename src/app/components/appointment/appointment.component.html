@@ -1,9 +1,7 @@
-<!-- src/app/components/appointment/appointment.component.html -->
 <div class="appointment-container">
   <div *ngIf="loading" class="loading">
     <p>Loading...</p>
   </div>
-
   <div *ngIf="error" class="error-message">
     <p>{{ error }}</p>
     <button (click)="error = null">Dismiss</button>
@@ -14,32 +12,46 @@
       <h2>{{ isNew ? "New Appointment" : "Appointment Details" }}</h2>
       <div class="actions" *ngIf="!isNew && !isEditing">
         <button (click)="toggleEdit()">Edit</button>
-        <button
-          (click)="cancelAppointment()"
-          [disabled]="
-            appointment?.status === 'Cancelled' ||
-            appointment?.status === 'Completed'
-          "
-        >
-          Cancel Appointment
-        </button>
+
         <button
           (click)="completeAppointment()"
+          [class.disabled]="appointment?.status !== 'Confirmed'"
           [disabled]="appointment?.status !== 'Confirmed'"
         >
           Complete
         </button>
       </div>
     </div>
+    <!-- Status Filter Dropdown -->
+    <div class="filter-container">
+      <label for="status-filter">Filter by Status:</label>
+      <select id="status-filter" [(ngModel)]="selectedStatus">
+        <option value="all">All</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Scheduled">Scheduled</option>
+        <option value="CheckedIn">CheckedIn</option>
+        <option value="Completed">Completed</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="No-show">No Show</option>
+      </select>
+    </div>
 
     <div *ngIf="!isEditing && appointment" class="appointment-details">
       <div class="detail-row">
         <span class="label">Patient:</span>
-        <span class="value">{{ appointment.patientName }}</span>
+        <span class="value">{{ appointment.patientFirstName }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Patient:</span>
+        <span class="value">{{ appointment.patientLastName }}</span>
       </div>
       <div class="detail-row">
         <span class="label">Provider:</span>
-        <span class="value">{{ appointment.providerName }}</span>
+        <span class="value">{{ appointment.providerFirstName }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Provider:</span>
+        <span class="value">{{ appointment.providerLastName }}</span>
       </div>
       <div class="detail-row">
         <span class="label">Start Time:</span>
@@ -71,14 +83,16 @@
       (ngSubmit)="saveAppointment()"
       class="appointment-form"
     >
+      <!--
+    div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" formControlName="notes" rows="4"></textarea>
+      </div>
+    -->
+
       <div class="form-group">
         <label for="patientId">Patient ID</label>
-        <input
-          type="number"
-          id="patientId"
-          formControlName="patientId"
-          [disabled]="!isNew"
-        />
+        <input type="number" id="patientId" formControlName="patientId" />
         <div
           *ngIf="appointmentForm.get('patientId')?.errors?.['required'] && appointmentForm.get('patientId')?.touched"
           class="error"
@@ -89,12 +103,7 @@
 
       <div class="form-group">
         <label for="providerId">Provider ID</label>
-        <input
-          type="number"
-          id="providerId"
-          formControlName="providerId"
-          [disabled]="!isNew"
-        />
+        <input type="number" id="providerId" formControlName="providerId" />
         <div
           *ngIf="appointmentForm.get('providerId')?.errors?.['required'] && appointmentForm.get('providerId')?.touched"
           class="error"
@@ -170,5 +179,61 @@
         <button type="button" (click)="toggleEdit()">Cancel</button>
       </div>
     </form>
+  </div>
+  <!-- Need don't delete-->
+  <div *ngIf="!loading && !error" class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>PatientName</th>
+          <th>ProviderName</th>
+          <th>Status</th>
+          <th>startTime</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let appointment of filterAppointments()">
+          <td>{{ appointment.id }}</td>
+          <td>
+            {{ appointment.patientFirstName }} {{ appointment.patientLastName }}
+          </td>
+          <td>
+            {{ appointment.providerFirstName }}
+            {{ appointment.providerLastName }}
+          </td>
+          <td>{{ appointment.status }}</td>
+          <td>{{ appointment.startTime | date }}</td>
+          <td>
+            <button
+              class="btn btn-danger btn-sm me-2"
+              (click)="cancelAppointment(appointment)"
+            >
+              Cancel Appointment
+            </button>
+
+            <!--<button
+              (click)="deleteappointment(appointment.id)"
+              class="btn btn-danger btn-sm"
+            >
+              Delete
+            </button>-->
+          </td>
+        </tr>
+
+        <tr *ngIf="appointments.length === 0">
+          <td colspan="6" class="text-center">No appointments available</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div
+    *ngIf="filterAppointments().length === 0 && !loading && !error"
+    class="no-patients-message"
+  >
+    <p>No patients found with the selected status.</p>
+    <p *ngIf="appointments.length === 0">
+      There are no appointments for today.
+    </p>
   </div>
 </div>
