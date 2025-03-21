@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { User } from '../models/user';
+import { User } from '../../models/user';
 import { BehaviorSubject } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { environment } from '../../environments/environment';
-import { RegisterModel } from '../models/register.model';
+import { environment } from '../../../environments/environment';
+import { RegisterModel } from '../../models/register.model';
 
 @Injectable({
   providedIn: 'root',
@@ -163,6 +163,10 @@ export class AuthService {
         case 2:
           console.log('Routing to nurse dashboard');
           this.router.navigate(['/nurse']);
+          break;
+        case 3:
+          console.log('Routing to Management dashboard');
+          this.router.navigate(['/management']);
           break;
         default:
           console.log('No specific role matched, routing to home');

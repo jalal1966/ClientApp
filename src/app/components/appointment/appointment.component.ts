@@ -9,7 +9,7 @@ import {
   FormControl,
 } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { AppointmentService } from '../../services/appointment.service';
+import { AppointmentService } from '../../services/appointment/appointment.service';
 import { Appointment, AppointmentUpdate } from '../../models/appointment.model';
 
 @Component({
@@ -96,14 +96,6 @@ export class AppointmentComponent implements OnInit {
     }
   }
 
-  /* filterAppointments(event: Event): void {
-    const searchTerm = (event.target as HTMLInputElement).value.toLowerCase();
-    this.filteredAppointments = this.appointment.filter(
-      (data) =>
-        data.firstName.toLowerCase().includes(searchTerm) ||
-        data.lastName.toLowerCase().includes(searchTerm)
-    );
-  } */
   // Load appointment data from the service
   loadAppointment(id: number): void {
     this.loading = true;

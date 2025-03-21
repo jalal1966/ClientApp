@@ -8,7 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink, RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -48,7 +48,7 @@ export class RegisterComponent implements OnInit {
         telephoneNo: [''],
         salary: [0], // Will convert to number before submission if needed
         note: [''],
-        jobTitleID: [null, [Validators.required, this.oneOf([0, 1, 2])]],
+        jobTitleID: [null, [Validators.required, this.oneOf([0, 1, 2, 3])]],
         genderID: [null, [Validators.required, this.oneOf([1, 2])]],
       },
       { validators: this.passwordMatchValidator }

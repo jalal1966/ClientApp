@@ -2,11 +2,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { catchError } from 'rxjs/operators';
-import { Patient } from '../models/patient.model';
-import { MedicalRecord } from '../models/medicalRecord.model';
-import { User } from '../models/user';
+import { Patient } from '../../models/patient.model';
+import { MedicalRecord } from '../../models/medicalRecord.model';
+import { User } from '../../models/user';
+import { differenceInYears } from 'date-fns/differenceInYears';
 
 @Injectable({
   providedIn: 'root',
@@ -95,5 +96,9 @@ export class PatientService {
     const errorMessage =
       error.error?.message || 'An error occurred. Please try again.';
     return throwError(() => new Error(errorMessage));
+  }
+
+  getAge(dob: string | Date): number {
+    return differenceInYears(new Date(), new Date(dob));
   }
 }

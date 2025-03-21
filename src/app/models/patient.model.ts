@@ -3,7 +3,7 @@ export interface Patient {
   firstName: string;
   lastName: string;
   dateOfBirth: Date;
-  genderID: string;
+  genderID: number;
   contactNumber: string;
   email: string;
   address: string;

@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
-import {
+import { Patient } from '../../models/patient.model';
+import { MedicalRecord } from '../../models/medicalRecord.model';
+import { PatientService } from '../../services/patient/patient.service';
+/*import {
   MedicalRecord,
   Patient,
   PatientService,
-} from '../../services/patient.service';
+} from '../../services/patient/patient.service';*/
 
 @Component({
   selector: 'app-medical-records',

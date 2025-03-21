@@ -7,9 +7,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { PatientService } from '../../services/patient.service';
+import { PatientService } from '../../services/patient/patient.service';
 import { User } from '../../models/user';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth/auth.service';
+import { Location } from '@angular/common'; // Correct import
 
 @Component({
   selector: 'app-patient-form',
@@ -41,6 +42,7 @@ export class PatientFormComponent implements OnInit {
     private patientService: PatientService,
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
     private authService: AuthService // Correct injection
   ) {
     this.patientForm = this.fb.group({
@@ -145,26 +147,6 @@ export class PatientFormComponent implements OnInit {
     }
   }
 
-  private initializeForm(): void {
-    this.patientForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(3)]],
-      lastName: ['', [Validators.required, Validators.minLength(3)]],
-      dateOfBirth: ['', Validators.required],
-      genderID: [null, [Validators.required, this.oneOf([1, 2])]], // Apply custom validator
-      contactNumber: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      emergencyContactName: [''],
-      emergencyContactNumber: [''],
-      insuranceProvider: [''],
-      insuranceNumber: [''],
-      address: [''],
-      nursID: ['', Validators.required],
-      nursName: ['', Validators.required],
-      patientDoctorID: ['', Validators.required],
-      patientDoctorName: ['', Validators.required],
-      registrationDate: [''],
-    });
-  }
   // Custom validator for oneOf
   oneOf(validOptions: any[]) {
     return (control: any) => {
@@ -180,7 +162,7 @@ export class PatientFormComponent implements OnInit {
   async onSubmit(): Promise<void> {
     if (this.patientForm.invalid) {
       this.patientForm.markAllAsTouched();
-      return;
+      return this.navigateBack();
     }
 
     this.isSubmitting = true;
@@ -198,46 +180,8 @@ export class PatientFormComponent implements OnInit {
     }
   }
 
-  // Form submission
-  /*  onSubmit(): void {
-    // Mark all fields as touched to trigger validation display
-    this.patientForm.markAllAsTouched();
-
-    if (this.patientForm.valid) {
-      this.isSubmitting = true;
-      this.errorMessage = null;
-      this.errorMessages = [];
-
-      const patientData: Patient = {
-        ...this.patientForm.value,
-      };
-
-      this.patientService.createPatient(patientData).subscribe({
-        next: (response) => {
-          console.log('Registration Patient successful:', response);
-          // ToDo Update return URL
-          this.router.navigate(['/patients']);
-        },
-        error: (errors) => {
-          console.log('Registration Patient errors:', errors);
-
-          this.errorMessages = Array.isArray(errors)
-            ? errors
-            : [errors.toString()];
-          this.isSubmitting = false;
-        },
-        complete: () => {
-          this.isSubmitting = false;
-        },
-      });
-    } else {
-      // Form validation handling
-      this.collectFormErrors();
-    }
-  } */
-
   navigateBack(): void {
-    this.router.navigate(['/patients']);
+    this.location.back();
   }
 
   private collectFormErrors() {

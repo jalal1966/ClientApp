@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
-import { RefreshService } from './services/refresh.service';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -27,11 +26,10 @@ import { RefreshService } from './services/refresh.service';
 })
 export class AppComponent {
   title = 'Angular Standalone + C# .NEt8.0 + MSSQL Demo';
-  constructor(private rfresh: RefreshService) {}
+  constructor() {}
   ngOnInit(): void {
     // Clear localStorage when the application starts
     localStorage.clear();
     console.log('localStorage has been cleared.');
-    this.rfresh.checkForRefresh();
   }
 }

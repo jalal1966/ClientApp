@@ -1,20 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { PatientService } from '../../services/patient.service';
-import { AppointmentService } from '../../services/appointment.service';
+import { Route, Router, RouterModule } from '@angular/router';
+import { PatientService } from '../../services/patient/patient.service';
+import { AppointmentService } from '../../services/appointment/appointment.service';
 import { Patient } from '../../models/patient.model';
 import { User } from '../../models/user';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth/auth.service';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { GenderPipe } from '../../pipes/gender/gender.pipe';
+
 @Component({
   selector: 'app-patient-list',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, GenderPipe],
   templateUrl: './patient-list.component.html',
   styleUrl: './patient-list.component.scss',
 })
@@ -30,6 +32,7 @@ export class PatientListComponent implements OnInit {
   constructor(
     private patientService: PatientService,
     private authService: AuthService,
+    private router: Router,
     private fb: FormBuilder // Inject FormBuilder
   ) {}
 
@@ -114,5 +117,9 @@ export class PatientListComponent implements OnInit {
         },
       });
     }
+  }
+  // Method to navigate back
+  goBack() {
+    this.router.navigate(['/previous-route']); // Replace '/previous-route' with the desired route
   }
 }

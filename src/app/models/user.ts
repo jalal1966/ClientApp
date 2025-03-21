@@ -7,4 +7,7 @@ export interface User {
   firstName: string;
   lastName: string;
   userID: number;
+  telephoneNo: number;
+  specialist: string;
+  availability: string;
 }

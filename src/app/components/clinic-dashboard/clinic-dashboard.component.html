@@ -1,0 +1,388 @@
+<div class="dashboard-container container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <span
+      >Welcome, {{ currentUser?.firstName }} {{ currentUser?.lastName }}</span
+    >
+    <button (click)="logout()" class="btn btn-outline-danger btn-sm">
+      Logout
+    </button>
+  </div>
+
+  <nav class="nav nav-pills mb-4">
+    <a
+      *ngFor="let tab of tabs"
+      class="nav-link"
+      [class.active]="activeTab === tab.key"
+      (click)="setActiveTab(tab.key)"
+    >
+      {{ tab.label }}
+    </a>
+  </nav>
+
+  <main>
+    <!-- waitingList Tab -->
+    <section *ngIf="activeTab === 'waitingList'" class="tab-content">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Status Filter Dropdown -->
+        <h2 class="h5">Today's Waiting List</h2>
+        <p>Total appointments loaded: {{ waitingPatient.length }}</p>
+        <button (click)="loadWaitingList()" class="btn btn-sm btn-success me-2">
+          Refresh List
+        </button>
+        <div class="filter-container">
+          <label for="status-filter">Filter by Status:</label>
+          <select id="status-filter" [(ngModel)]="selectedStatus">
+            <option value="all">All</option>
+            <option value="waiting">Waiting</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="no-show">No Show</option>
+          </select>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && waitingPatient.length > 0 && !error" class="card">
+        <table
+          class="table table-bordered table-striped table-hover patients-table"
+        >
+          <thead class="table-light">
+            <tr>
+              <th>Patient Name</th>
+              <th>Appointment Time</th>
+              <th>Arrival Time</th>
+              <th>Wait Time</th>
+              <th>Status</th>
+              <th>Doctor</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let waitingList of filterWitings()"
+              [class]="waitingList.status"
+            >
+              <td>
+                {{ waitingList.patientFirstName }}
+                {{ waitingList.patientLastName }}
+              </td>
+
+              <td>
+                {{ waitingList.appointment.startTime | date : "shortTime" }}
+              </td>
+              <td>
+                <span
+                  *ngIf="
+                    waitingList.status !== 'waiting' &&
+                    waitingList.status !== 'in-progress' &&
+                    waitingList.status !== 'completed'
+                  "
+                >
+                  Not arrived
+                </span>
+                <span
+                  *ngIf="
+                    waitingList.status === 'waiting' ||
+                    waitingList.status === 'in-progress' ||
+                    waitingList.status === 'completed'
+                  "
+                >
+                  {{ waitingList.arrivalTime | date : "shortTime" }}
+                </span>
+              </td>
+              <td>{{ waitingList.waitTime }} minutes</td>
+              <td>
+                <span class="status-badge status-{{ waitingList.status }}">{{
+                  waitingList.status
+                }}</span>
+              </td>
+              <td>
+                {{ waitingList.appointment.providerFirstName }}
+                {{ waitingList.appointment.providerLastName }}
+              </td>
+              <td class="actions-cell">
+                <button
+                  *ngIf="
+                    waitingList.status !== 'waiting' &&
+                    waitingList.status !== 'in-progress' &&
+                    waitingList.status !== 'completed' &&
+                    waitingList.status !== 'no-show'
+                  "
+                  (click)="checkInPatient(waitingList)"
+                  class="action-button checkin-button"
+                >
+                  Check In
+                </button>
+                <button
+                  *ngIf="waitingList.status === 'waiting'"
+                  (click)="changeStatus(waitingList, 'in-progress')"
+                  class="btn btn-sm btn-success me-2"
+                >
+                  Start
+                </button>
+                <button
+                  *ngIf="waitingList.status === 'in-progress'"
+                  (click)="changeStatus(waitingList, 'completed')"
+                  class="btn btn-sm btn-danger me-2"
+                >
+                  Complete
+                </button>
+                <button
+                  *ngIf="waitingList.status === 'waiting'"
+                  (click)="changeStatus(waitingList, 'no-show')"
+                  class="btn btn-sm btn-danger me-2"
+                >
+                  No Show
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Appointments Tab -->
+    <section *ngIf="activeTab === 'appointments'" class="tab-content">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5">All Appointments</h2>
+        <button class="btn btn-primary" (click)="showNewAppointmentForm = true">
+          + New Appointment
+        </button>
+      </div>
+
+      <div *ngIf="showNewAppointmentForm" class="modal fade show d-block">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title">Schedule New Appointment</h3>
+              <button
+                type="button"
+                class="btn-close"
+                (click)="showNewAppointmentForm = false"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="mb-3">
+                  <label class="form-label">Patient</label>
+                  <select class="form-select" [(ngModel)]="selectedPatient">
+                    <option
+                      *ngFor="let patient of patients"
+                      [value]="patient.id"
+                    >
+                      {{ patient.firstName }} {{ patient.lastName }}
+                    </option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Doctor</label>
+                  <select class="form-select" [(ngModel)]="selectedDoctor">
+                    <option
+                      *ngFor="let doctor of doctors"
+                      [value]="doctor.userID"
+                    >
+                      {{ doctor.firstName }} {{ doctor.lastName }} -
+                      {{ doctor.specialist }}
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Date</label>
+                  <input type="date" />
+                </div>
+                <div class="form-group">
+                  <label>Time</label>
+                  <input type="time" />
+                </div>
+                <div class="form-group">
+                  <label>Reason</label>
+                  <textarea></textarea>
+                </div>
+                <div class="d-flex justify-content-end">
+                  <button
+                    type="button"
+                    class="btn btn-secondary me-2"
+                    (click)="showNewAppointmentForm = false"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-success">
+                    Schedule
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive p-2 border rounded">
+        <table
+          class="table table-bordered table-striped table-hover patients-table"
+        >
+          <thead class="table-light">
+            <tr>
+              <th>Time</th>
+              <th>Patient</th>
+              <th>Doctor</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let appointment of appointments"
+              [class]="appointment.status"
+            >
+              <td>{{ appointment.startTime }}</td>
+              <td>
+                {{ appointment.patientFirstName }}
+                {{ appointment.patientLastName }}
+              </td>
+              <td>
+                {{ appointment.providerFirstName }}
+                {{ appointment.providerLastName }}
+              </td>
+              <td>
+                <span class="badge bg-info">{{ appointment.status }}</span>
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-danger me-2"
+                  (click)="updateAppointmentStatus(appointment.id, 'completed')"
+                >
+                  Complete
+                </button>
+                <button
+                  class="btn btn-sm btn-success me-2"
+                  (click)="updateAppointmentStatus(appointment.id, 'cancelled')"
+                >
+                  Cancel
+                </button>
+                <button
+                  class="btn btn-sm btn-danger me-2"
+                  (click)="openPatientRecord(appointment)"
+                >
+                  View Record
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Patients Tab -->
+    <section *ngIf="activeTab === 'patients'" class="tab-content">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5">Patient Records</h2>
+        <div class="search-box">
+          <input
+            type="text"
+            placeholder="Search patients..."
+            class="p-2 border rounded w-full"
+            (input)="filterPatients($event)"
+          />
+        </div>
+        <!-- TODO Cancel and Save-->
+        <button
+          [routerLink]="['/patient-form']"
+          class="btn btn-primary"
+          style="margin-right: 10px"
+        >
+          Add Patient
+        </button>
+      </div>
+      <div
+        *ngIf="!loading && filteredPatients.length === 0"
+        class="text-center py-4"
+      >
+        No patients found.
+      </div>
+      <div class="table-responsive p-2 border rounded">
+        <table
+          class="table table-bordered table-striped table-hover patients-table"
+        >
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Contact</th>
+              <th>Last Visit</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let patient of filteredPatients">
+              <td>{{ patient.firstName }} {{ patient.lastName }}</td>
+              <td>{{ patient.dateOfBirth | age }}</td>
+              <td>{{ patient.genderID | gender }}</td>
+              <td>{{ patient.contactNumber }}</td>
+              <td>2023-12-15</td>
+              <!-- This would be dynamic in a real app -->
+              <td>
+                <button
+                  class="btn btn-sm btn-info me-2"
+                  (click)="viewPatientDetails(patient.id)"
+                >
+                  View
+                </button>
+                <button
+                  class="btn btn-sm btn-success me-2"
+                  (click)="editPatientDetails(patient.id)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-secondary me-2"
+                  (click)="scheduleAppointment(patient.id)"
+                >
+                  Schedule
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Analytics Tab -->
+    <section *ngIf="activeTab === 'analytics'" class="tab-content">
+      <h2>Clinic Analytics</h2>
+
+      <div class="analytics-cards">
+        <div class="card">
+          <h3>Total Appointments</h3>
+          <p class="big-number">{{ totalAppointments }}</p>
+          <p class="comparison">+12% from last month</p>
+        </div>
+        <div class="card">
+          <h3>No-shows</h3>
+          <p class="big-number">{{ noShowPercentage }}%</p>
+          <p class="comparison">-3% from last month</p>
+        </div>
+        <div class="card">
+          <h3>New Patients</h3>
+          <p class="big-number">{{ newPatients }}</p>
+          <p class="comparison">+8% from last month</p>
+        </div>
+        <div class="card">
+          <h3>Revenue</h3>
+          <p class="big-number">${{ revenue.toLocaleString() }}</p>
+          <p class="comparison">+5% from last month</p>
+        </div>
+      </div>
+
+      <div class="charts-section">
+        <div class="chart">
+          <h3>Appointments by Department</h3>
+          <p>Chart visualization would go here</p>
+        </div>
+        <div class="chart">
+          <h3>Monthly Trend</h3>
+          <p>Chart visualization would go here</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

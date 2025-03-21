@@ -1,4 +1,5 @@
 // Variables
+@use "sass:color";
 $primary-color: #007bff;
 $danger-color: #dc3545;
 $light-gray: #f8f9fa;
@@ -43,7 +44,7 @@ $dark-gray: #6c757d;
     transition: background 0.3s;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 }
@@ -104,7 +105,7 @@ $dark-gray: #6c757d;
     background-color: #17a2b8;
     color: white;
     &:hover {
-      background-color: darken(#17a2b8, 10%);
+      background-color: color.adjust(#17a2b8, $lightness: -10%);
     }
   }
 
@@ -112,7 +113,7 @@ $dark-gray: #6c757d;
     background-color: #ffc107;
     color: black;
     &:hover {
-      background-color: darken(#ffc107, 10%);
+      background-color: color.adjust(#ffc107, $lightness: -10%);
     }
   }
 
@@ -120,7 +121,7 @@ $dark-gray: #6c757d;
     background-color: $danger-color;
     color: white;
     &:hover {
-      background-color: darken($danger-color, 10%);
+      background-color: color.adjust($danger-color, $lightness: -10%);
     }
   }
 }

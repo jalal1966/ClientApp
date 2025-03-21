@@ -11,14 +11,15 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { DoctorPageComponent } from './components/doctor-page/doctor-page.component';
-import { RoleGuard } from './services/roleguard';
+import { RoleGuard } from './services/roleGuard/role-guard.service';
 import { NursePageComponent } from './components/nurse-page/nurse-page.component';
-import { AuthGuard } from './services/authGuard';
+import { AuthGuard } from './services/authGuard/auth-guard.service';
 import { AdministratorComponent } from './components/administrator/administrator.component';
 import { PatientListComponent } from './components/patient-list/patient-list.component';
 import { PatientFormComponent } from './components/patient-form/patient-form.component';
 import { AppointmentComponent } from './components/appointment/appointment.component';
 import { WaitingListComponent } from './components/waiting-list/waiting-list.component';
+import { ClinicDashboardComponent } from './components/clinic-dashboard/clinic-dashboard.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -27,6 +28,7 @@ export const routes: Routes = [
   { path: 'appointments', component: AppointmentComponent },
   { path: 'waitingList', component: WaitingListComponent },
   { path: 'nurse', component: NursePageComponent },
+  { path: 'management', component: ClinicDashboardComponent },
   {
     path: 'products',
     component: ProductListComponent,
