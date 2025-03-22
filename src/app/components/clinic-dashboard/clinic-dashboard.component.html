@@ -33,9 +33,13 @@
           <label for="status-filter">Filter by Status:</label>
           <select id="status-filter" [(ngModel)]="selectedStatus">
             <option value="all">All</option>
-            <option value="waiting">Waiting</option>
-            <option value="in-progress">In Progress</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="checkedIn">CheckedIn</option>
+            <option value="in-progress">InProgress</option>
             <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="waiting">Waiting</option>
             <option value="no-show">No Show</option>
           </select>
         </div>
@@ -51,6 +55,7 @@
               <th>Appointment Time</th>
               <th>Arrival Time</th>
               <th>Wait Time</th>
+              <th>The Reason</th>
               <th>Status</th>
               <th>Doctor</th>
               <th>Actions</th>
@@ -72,24 +77,30 @@
               <td>
                 <span
                   *ngIf="
-                    waitingList.status !== 'waiting' &&
-                    waitingList.status !== 'in-progress' &&
-                    waitingList.status !== 'completed'
+                    waitingList.appointment.status !== 'waiting' &&
+                    waitingList.appointment.status !== 'in-progress' &&
+                    waitingList.appointment.status !== 'completed'
                   "
                 >
                   Not arrived
                 </span>
                 <span
                   *ngIf="
-                    waitingList.status === 'waiting' ||
-                    waitingList.status === 'in-progress' ||
-                    waitingList.status === 'completed'
+                    waitingList.appointment.status === 'waiting' ||
+                    waitingList.appointment.status === 'in-progress' ||
+                    waitingList.appointment.status === 'completed'
                   "
                 >
                   {{ waitingList.arrivalTime | date : "shortTime" }}
                 </span>
               </td>
               <td>{{ waitingList.waitTime }} minutes</td>
+              <td>
+                <span
+                  class="status-badge status-{{ waitingList.appointment.type }}"
+                  >{{ waitingList.appointment.type }}</span
+                >
+              </td>
               <td>
                 <span class="status-badge status-{{ waitingList.status }}">{{
                   waitingList.status
@@ -144,6 +155,7 @@
     <section *ngIf="activeTab === 'appointments'" class="tab-content">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h5">All Appointments</h2>
+        <p>Total Appointments: {{ appointments.length }}</p>
         <button class="btn btn-primary" (click)="showNewAppointmentForm = true">
           + New Appointment
         </button>
@@ -161,13 +173,17 @@
               ></button>
             </div>
             <div class="modal-body">
-              <form>
+              <form
+                [formGroup]="appointmentForm"
+                (ngSubmit)="scheduleNewAppointment()"
+              >
                 <div class="mb-3">
                   <label class="form-label">Patient</label>
-                  <select class="form-select" [(ngModel)]="selectedPatient">
+                  <select class="form-select" formControlName="patientId">
+                    <option [ngValue]="null">Select Patient</option>
                     <option
                       *ngFor="let patient of patients"
-                      [value]="patient.id"
+                      [ngValue]="patient.id"
                     >
                       {{ patient.firstName }} {{ patient.lastName }}
                     </option>
@@ -175,28 +191,74 @@
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Doctor</label>
-                  <select class="form-select" [(ngModel)]="selectedDoctor">
+                  <select class="form-select" formControlName="doctorId">
+                    <option [ngValue]="null">Select Doctor</option>
                     <option
                       *ngFor="let doctor of doctors"
-                      [value]="doctor.userID"
+                      [ngValue]="doctor.userID"
                     >
-                      {{ doctor.firstName }} {{ doctor.lastName }} -
-                      {{ doctor.specialist }}
+                      Dr. {{ doctor.firstName }} {{ doctor.lastName }}
+                      <span *ngIf="doctor.specialist"
+                        >({{ doctor.specialist }})</span
+                      >
                     </option>
                   </select>
                 </div>
-                <div class="form-group">
-                  <label>Date</label>
-                  <input type="date" />
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label"> start Date</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      formControlName="appointmentDate"
+                    />
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Time</label>
+                    <input
+                      type="time"
+                      class="form-control"
+                      formControlName="appointmentTime"
+                    />
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label>Time</label>
-                  <input type="time" />
+
+                <div class="mb-3">
+                  <label class="form-label">Reason</label>
+                  <select class="form-select" formControlName="appointmentType">
+                    <option [ngValue]="null">Select Reason</option>
+                    <option
+                      *ngFor="let type of appointmentTypes"
+                      [ngValue]="type"
+                    >
+                      {{ type.label }}
+                    </option>
+                  </select>
                 </div>
-                <div class="form-group">
-                  <label>Reason</label>
-                  <textarea></textarea>
+                <div class="mb-3">
+                  <label class="form-label">Status</label>
+                  <select
+                    class="form-select"
+                    formControlName="appointmentStatus"
+                  >
+                    <option [ngValue]="null">Select Status</option>
+                    <option
+                      *ngFor="let status of appointmentStatuses"
+                      [ngValue]="status"
+                    >
+                      {{ status.label }}
+                    </option>
+                  </select>
                 </div>
+                <div class="mb-3">
+                  <label class="form-label">Notes</label>
+                  <textarea
+                    class="form-control"
+                    formControlName="notes"
+                    rows="3"
+                  ></textarea>
+                </div>
+
                 <div class="d-flex justify-content-end">
                   <button
                     type="button"
@@ -205,7 +267,11 @@
                   >
                     Cancel
                   </button>
-                  <button type="submit" class="btn btn-success">
+                  <button
+                    type="submit"
+                    class="btn btn-success"
+                    [disabled]="appointmentForm.invalid"
+                  >
                     Schedule
                   </button>
                 </div>
@@ -275,6 +341,7 @@
     <section *ngIf="activeTab === 'patients'" class="tab-content">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h5">Patient Records</h2>
+        <p>Total Patients: {{ filteredPatients.length }}</p>
         <div class="search-box">
           <input
             type="text"
@@ -284,11 +351,7 @@
           />
         </div>
         <!-- TODO Cancel and Save-->
-        <button
-          [routerLink]="['/patient-form']"
-          class="btn btn-primary"
-          style="margin-right: 10px"
-        >
+        <button [routerLink]="['/patient-form']" class="btn btn-primary">
           Add Patient
         </button>
       </div>

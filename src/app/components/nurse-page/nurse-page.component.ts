@@ -12,6 +12,7 @@ import { FormGroup } from '@angular/forms';
   styleUrl: './nurse-page.component.scss',
 })
 export class NursePageComponent {
+  public curntUserToSave!: User;
   public curntUser!: User;
   isPatientFormVisible = false;
   isaddPatientFormVisible = false;
@@ -50,6 +51,10 @@ export class NursePageComponent {
   }
   constructor(authService: AuthService, router: Router) {
     this.curntUser = authService.currentUserValue ?? ({} as User);
+    sessionStorage.setItem(
+      'savedData',
+      JSON.stringify(authService.currentUserValue ?? ({} as User))
+    );
     this.authService = authService;
     this.router = router;
   }

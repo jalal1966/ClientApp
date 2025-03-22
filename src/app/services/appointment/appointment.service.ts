@@ -45,11 +45,6 @@ export class AppointmentService {
   }
 
   createAppointment(appointment: AppointmentCreate): Observable<Appointment> {
-    const doi = this.http.post<Appointment>(
-      `${this.apiUrl}/api/appointments`,
-      appointment
-    );
-    console.log('doi', doi);
     return this.http.post<Appointment>(
       `${this.apiUrl}/api/appointments`,
       appointment

@@ -29,7 +29,7 @@ export class AppComponent {
   constructor() {}
   ngOnInit(): void {
     // Clear localStorage when the application starts
-    localStorage.clear();
+    //localStorage.clear();
     console.log('localStorage has been cleared.');
   }
 }

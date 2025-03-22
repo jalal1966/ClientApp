@@ -26,7 +26,6 @@ export class AuthService {
   }
 
   public get currentUserValue(): User | null {
-    console.log('Getting currentUserValue:', this.currentUserSubject.value);
     return this.currentUserSubject.value;
   }
 
@@ -45,9 +44,10 @@ export class AuthService {
 
           // Store user info with consistent casing
           localStorage.setItem('currentUser', JSON.stringify(user));
+          localStorage.setItem('currentUser', JSON.stringify(user));
           localStorage.setItem('token', user.token); // Store token separately
           localStorage.setItem('expiration', user.expiration.toString());
-
+          this.currentUserSubject.next(user);
           // Store job title ID for role-based routing
           // Make sure jobTitleId is stored explicitly as a number
           if (user.jobTitleId !== undefined) {
@@ -81,6 +81,12 @@ export class AuthService {
       .pipe(catchError(this.handleError));
   }
 
+  getCurrentUserByJop(id: number): Observable<User[]> {
+    const doctor = this.http.get<User>(`${this.apiUrl}/api/user/jop/${id}`);
+    console.log('doctor', doctor);
+    return this.http.get<User[]>(`${this.apiUrl}/api/Auth/users/job/${id}`);
+  }
+
   getToken(): string | null {
     return localStorage.getItem('token');
   }
@@ -108,6 +114,7 @@ export class AuthService {
 
   logout(): void {
     // Remove stored token and username
+    localStorage.clear();
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     localStorage.removeItem('expiration');

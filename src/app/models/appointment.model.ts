@@ -1,7 +1,6 @@
 import { Patient } from './patient.model';
 
 export interface Appointment {
-  [x: string]: any;
   patient: any;
   id: number;
   patientId: number;
@@ -17,13 +16,28 @@ export interface Appointment {
   status: string;
   notes: string;
 }
-export interface AppointmentCreate {
+/* export interface AppointmentCreate {
   patientId: number;
   providerId: number;
   startTime: string; // ISO date string
   endTime: string; // ISO date string
   notes: string;
   type: string;
+} */
+
+// First, add this interface to your models if it doesn't exist already
+export interface AppointmentCreate {
+  patientId: number;
+  providerId: number;
+  startTime: string;
+  endTime: string;
+  type: string;
+  status: string;
+  notes?: string;
+  /*patientFirstName: string;
+  patientLastName: string;
+  providerFirstName: string;
+  providerLastName: string;*/
 }
 
 export interface AppointmentUpdate {

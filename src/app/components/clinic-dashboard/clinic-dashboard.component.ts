@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Appointment } from '../../models/appointment.model';
+import { Appointment, AppointmentCreate } from '../../models/appointment.model';
 import { Patient } from '../../models/patient.model';
 import { User } from '../../models/user';
 import { AuthService } from '../../services/auth/auth.service';
@@ -19,9 +19,11 @@ import { AppointmentService } from '../../services/appointment/appointment.servi
 import { AgePipe } from '../../pipes/age/age.pipe';
 import { GenderPipe } from '../../pipes/gender/gender.pipe';
 import { WaitingPatient } from '../../models/waiting.model';
+import { AppointmentType, AppointmentStatus } from '../../models/enums.model';
 
 @Component({
   selector: 'app-clinic-dashboard',
+  standalone: true,
   imports: [
     CommonModule,
     RouterModule,
@@ -36,17 +38,19 @@ import { WaitingPatient } from '../../models/waiting.model';
 export class ClinicDashboardComponent implements OnInit {
   error = '';
   patientForm!: FormGroup;
+  // Form for new appointments
+  appointmentForm!: FormGroup;
   appoment: AppointmentService | undefined;
   loading = true;
   filteredPatients: Patient[] = [];
   activeTab: string = 'waitingList';
+  doctors: User[] = [];
   currentUser: User | null = null;
   appointments: Appointment[] = [];
 
   waitingPatient: WaitingPatient[] = [];
 
   patients: Patient[] = [];
-  doctors: User[] = [];
   searchTerm: string = '';
   showNewAppointmentForm: boolean = false;
   showNewPatientForm: boolean = false;
@@ -61,6 +65,34 @@ export class ClinicDashboardComponent implements OnInit {
   patient!: Patient[] | [];
   selectedStatus: string = 'all';
   refreshInterval: any;
+  startTime: Date | undefined;
+  endTime: Date | undefined;
+  type: any;
+
+  // Then update your appointment form initialization to use these enums
+  appointmentTypes = [
+    { value: AppointmentType.CheckUp, label: 'Check Up' },
+    { value: AppointmentType.FollowUp, label: 'Follow Up' },
+    { value: AppointmentType.Consultation, label: 'Consultation' },
+    { value: AppointmentType.Emergency, label: 'Emergency' },
+    { value: AppointmentType.Vaccination, label: 'Vaccination' },
+    { value: AppointmentType.Procedure, label: 'Procedure' },
+    { value: AppointmentType.Regular, label: 'Regular' },
+    { value: AppointmentType.Urgent, label: 'Urgent' },
+  ];
+
+  appointmentStatuses = [
+    { value: AppointmentStatus.Scheduled, label: 'Scheduled' },
+    { value: AppointmentStatus.Confirmed, label: 'Confirmed' },
+    { value: AppointmentStatus.Waiting, label: 'Waiting' },
+    { value: AppointmentStatus.InProgress, label: 'In Progress' },
+    { value: AppointmentStatus.Completed, label: 'Completed' },
+    { value: AppointmentStatus.CheckedIn, label: 'Checked In' },
+    { value: AppointmentStatus.Cancelled, label: 'Cancelled' },
+    { value: AppointmentStatus.NoShow, label: 'No Show' },
+  ];
+
+  appointment: Appointment | null = null;
 
   tabs = [
     { key: 'waitingList', label: 'WaitingList' },
@@ -73,20 +105,22 @@ export class ClinicDashboardComponent implements OnInit {
     private http: HttpClient,
     private router: Router,
     private patientService: PatientService,
+    private docorsService: AuthService,
     private appointmentService: AppointmentService,
     private authService: AuthService,
     private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
+    this.Initializing();
     this.loadAppointments();
     this.loadPatients();
     this.loadDoctors();
     this.loadWaitingList();
-    this.Initializing();
     // Refresh every minute to update wait times
     this.refreshInterval = setInterval(() => {
       this.updateWaitTimes();
+      this.Initializing();
     }, 60000);
   }
 
@@ -96,8 +130,25 @@ export class ClinicDashboardComponent implements OnInit {
     }
   }
 
+  // Initialize the appointment form in ngOnInit or in a dedicated method
+  initializeAppointmentForm(): void {
+    this.appointmentForm = this.fb.group({
+      patientId: [null, Validators.required],
+      doctorId: [null, Validators.required],
+      appointmentDate: [
+        new Date().toISOString().split('T')[0],
+        Validators.required,
+      ],
+      appointmentTime: ['09:00', Validators.required],
+      appointmentType: [null, Validators.required],
+      appointmentStatus: ['Scheduled', Validators.required],
+      notes: [''],
+    });
+  }
+
   Initializing(): void {
     this.initializeForm(); // Ensure form is initialized before using it
+    this.initializeAppointmentForm();
     // this.initializeForm();
     // Get current user (nurse) from AuthService
     this.authService.getCurrentUser().subscribe({
@@ -228,7 +279,19 @@ export class ClinicDashboardComponent implements OnInit {
 
   loadDoctors(): void {
     // In a real application, this would be an API call
-    this.doctors;
+    this.loading = true;
+    this.docorsService.getCurrentUserByJop(1).subscribe({
+      next: (data) => {
+        this.doctors = data || [];
+        //this.filteredPatients = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to load Doctors. Please try again.';
+        this.loading = false;
+      },
+    });
+    //this.doctors;
   }
 
   filterWitings(): WaitingPatient[] {
@@ -323,6 +386,90 @@ export class ClinicDashboardComponent implements OnInit {
             patient.status === newStatus ? 'waiting' : patient.status;
         },
       });
+  }
+
+  // Then update your scheduleNewAppointment method
+  scheduleNewAppointment(): void {
+    if (this.appointmentForm.invalid) {
+      // Mark all fields as touched to trigger validation messages
+      Object.keys(this.appointmentForm.controls).forEach((key) => {
+        const control = this.appointmentForm.get(key);
+        control?.markAsTouched();
+      });
+      return;
+    }
+
+    const formValues = this.appointmentForm.value;
+
+    // Create ISO string date directly
+    const dateStr = formValues.appointmentDate; // "2025-03-22"
+    const timeStr = formValues.appointmentTime; // "09:00"
+    const startTimeISO = `${dateStr}T${timeStr}:00.000Z`;
+
+    // Calculate end time (30 min later)
+    const startDate = new Date(startTimeISO);
+    const endTimeISO = new Date(startDate.getTime() + 30 * 60000).toISOString();
+
+    // Get patient and doctor data
+    const patient = this.patients.find((p) => p.id === formValues.patientId);
+    const doctor = this.doctors.find((d) => d.userID === formValues.doctorId);
+
+    if (!patient || !doctor) {
+      this.error = 'Invalid patient or doctor selection';
+      return;
+    }
+
+    // Create appointment object with ISO string dates
+    const appointment: AppointmentCreate = {
+      patientId: formValues.patientId,
+      providerId: formValues.doctorId,
+      startTime: startTimeISO,
+      endTime: endTimeISO,
+      type: formValues.appointmentType.value.toString(),
+      status: formValues.appointmentStatus.value.toString(),
+      notes: formValues.notes || '',
+    };
+    console.log('appointment', appointment);
+    // Call your service to create appointment
+    this.appointmentService.createAppointment(appointment).subscribe({
+      next: (newAppointment) => {
+        console.log('Appointment created successfully:', newAppointment);
+        this.loadAppointments();
+        this.showNewAppointmentForm = false;
+        this.appointmentForm.reset({
+          appointmentDate: new Date().toISOString().split('T')[0],
+          appointmentTime: '09:00',
+          appointmentStatus: 'Scheduled',
+        });
+      },
+      error: (err) => {
+        console.error('Error creating appointment:', err);
+        console.error('Error details:', err.error); // This will show the server response
+        console.error('Attempted to send:', appointment); // This will show what you sent
+        this.error = 'Failed to schedule appointment. Please try again.';
+      },
+    });
+  }
+
+  // Helper methods to get patient and doctor names
+  getPatientFirstName(patientId: number): string {
+    const patient = this.patients.find((p) => p.id === patientId);
+    return patient ? patient.firstName : '';
+  }
+
+  getPatientLastName(patientId: number): string {
+    const patient = this.patients.find((p) => p.id === patientId);
+    return patient ? patient.lastName : '';
+  }
+
+  getDoctorFirstName(doctorId: number): string {
+    const doctor = this.doctors.find((d) => d.userID === doctorId);
+    return doctor ? doctor.firstName : '';
+  }
+
+  getDoctorLastName(doctorId: number): string {
+    const doctor = this.doctors.find((d) => d.userID === doctorId);
+    return doctor ? doctor.lastName : '';
   }
 
   logout(): void {
