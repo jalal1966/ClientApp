@@ -287,7 +287,8 @@
         >
           <thead class="table-light">
             <tr>
-              <th>Time</th>
+              <th class="th-spacing">Today's</th>
+              <th class="th-spacing">Time</th>
               <th>Patient</th>
               <th>Doctor</th>
               <th>Status</th>
@@ -299,13 +300,22 @@
               *ngFor="let appointment of appointments"
               [class]="appointment.status"
             >
-              <td>{{ appointment.startTime }}</td>
+              <td>
+                <span class="dateSpace"
+                  >📅 {{ appointment.startTime | date : "yyyy-MM-dd" }}</span
+                >
+              </td>
+              <td>
+                <span class="time"
+                  >⌚{{ appointment.startTime | date : "HH:mm" }}</span
+                >
+              </td>
               <td>
                 {{ appointment.patientFirstName }}
                 {{ appointment.patientLastName }}
               </td>
               <td>
-                {{ appointment.providerFirstName }}
+                Dr. {{ appointment.providerFirstName }}
                 {{ appointment.providerLastName }}
               </td>
               <td>
@@ -314,13 +324,13 @@
               <td>
                 <button
                   class="btn btn-sm btn-danger me-2"
-                  (click)="updateAppointmentStatus(appointment.id, 'completed')"
+                  (click)="updateAppointmentStatus(appointment.id, 'Completed')"
                 >
                   Complete
                 </button>
                 <button
                   class="btn btn-sm btn-success me-2"
-                  (click)="updateAppointmentStatus(appointment.id, 'cancelled')"
+                  (click)="updateAppointmentStatus(appointment.id, 'Cancelled')"
                 >
                   Cancel
                 </button>

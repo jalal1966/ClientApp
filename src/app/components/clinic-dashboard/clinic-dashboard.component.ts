@@ -317,15 +317,33 @@ export class ClinicDashboardComponent implements OnInit {
 
   updateAppointmentStatus(
     id: number,
-    status: 'completed' | 'cancelled' | 'no-show'
+    status: 'Completed' | 'Cancelled' | 'No Show'
   ): void {
-    // In a real application, this would be an API call
     const appointment = this.appointments.find((a) => a.id === id);
     if (appointment) {
-      appointment.status = status;
+      const statusValue = this.findAppointmentStatus(status);
+      console.log('statusValue', statusValue);
+      console.log('appointment', appointment.id, appointment.status);
+
+      this.appointmentService
+        .updateAppointmentStatus(appointment.id, statusValue.toString())
+        .subscribe({
+          next: () => {
+            console.log('Status updated successfully');
+            // Only reload appointments after the update is successful
+            this.loadAppointments();
+          },
+          error: (error) => console.error('Error updating status:', error),
+        });
     }
   }
 
+  findAppointmentStatus(status: string): AppointmentStatus | 'Not Found' {
+    return (
+      this.appointmentStatuses.find((item) => item.label === status)?.value ||
+      'Not Found'
+    );
+  }
   openPatientRecord(appointment: Appointment): void {
     console.log('Opening patient record for');
     // In a real application, this would navigate to the patient's record

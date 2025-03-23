@@ -107,6 +107,21 @@ table {
   padding: 0.25rem 0.5rem;
 }
 ///////////////////////////////////////////////////////
+///
+///
+///
+///
+.th-spacing {
+  padding-left: 40px; /* Adjust spacing as needed */
+  padding-right: 40px;
+  letter-spacing: 1px; /* Adds spacing between letters */
+  word-spacing: 100px; /* Adjust spacing as needed */
+}
+
+.dateSpace {
+  margin-right: 5px; /* Adjust spacing between date and time */
+}
+
 .search-box {
   margin-right: 15px;
 }

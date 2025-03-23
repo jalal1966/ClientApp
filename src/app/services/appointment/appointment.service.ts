@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   Appointment,
@@ -7,6 +7,8 @@ import {
   AppointmentUpdate,
 } from '../../models/appointment.model';
 import { environment } from '../../../environments/environment';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -61,6 +63,18 @@ export class AppointmentService {
     );
   }
 
+  updateAppointmentStatus(
+    appointmentId: number,
+    status: string
+  ): Observable<Appointment> {
+    const url = `${this.apiUrl}/api/appointments/${appointmentId}/status`;
+    return this.http.put<Appointment>(url, JSON.stringify(status), {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+      }),
+    });
+  }
+
   deleteAppointment(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/api/appointments/${id}`);
   }
@@ -79,15 +93,6 @@ export class AppointmentService {
     return this.http.patch<Appointment>(
       `${this.apiUrl}/${id}/reschedule`,
       rescheduleData
-    );
-  }
-  updateAppointmentStatus(
-    appointmentId: number,
-    status: string
-  ): Observable<Appointment> {
-    return this.http.patch<Appointment>(
-      `${this.apiUrl}/api/appointments/${appointmentId}/status`,
-      { status }
     );
   }
 
