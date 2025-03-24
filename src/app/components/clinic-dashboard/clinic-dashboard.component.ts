@@ -20,6 +20,7 @@ import { AgePipe } from '../../pipes/age/age.pipe';
 import { GenderPipe } from '../../pipes/gender/gender.pipe';
 import { WaitingPatient } from '../../models/waiting.model';
 import { AppointmentType, AppointmentStatus } from '../../models/enums.model';
+import { StatusFilterComponent } from '../shared/status-filter/status-filter.component';
 
 @Component({
   selector: 'app-clinic-dashboard',
@@ -31,6 +32,7 @@ import { AppointmentType, AppointmentStatus } from '../../models/enums.model';
     ReactiveFormsModule,
     AgePipe,
     GenderPipe,
+    StatusFilterComponent,
   ],
   templateUrl: './clinic-dashboard.component.html',
   styleUrl: './clinic-dashboard.component.scss',
@@ -71,8 +73,8 @@ export class ClinicDashboardComponent implements OnInit {
 
   // Then update your appointment form initialization to use these enums
   appointmentTypes = [
-    { value: AppointmentType.CheckUp, label: 'Check Up' },
-    { value: AppointmentType.FollowUp, label: 'Follow Up' },
+    { value: AppointmentType.CheckUp, label: 'CheckUp' },
+    { value: AppointmentType.FollowUp, label: 'FollowUp' },
     { value: AppointmentType.Consultation, label: 'Consultation' },
     { value: AppointmentType.Emergency, label: 'Emergency' },
     { value: AppointmentType.Vaccination, label: 'Vaccination' },
@@ -85,11 +87,11 @@ export class ClinicDashboardComponent implements OnInit {
     { value: AppointmentStatus.Scheduled, label: 'Scheduled' },
     { value: AppointmentStatus.Confirmed, label: 'Confirmed' },
     { value: AppointmentStatus.Waiting, label: 'Waiting' },
-    { value: AppointmentStatus.InProgress, label: 'In Progress' },
+    { value: AppointmentStatus.InProgress, label: 'InProgress' },
     { value: AppointmentStatus.Completed, label: 'Completed' },
     { value: AppointmentStatus.CheckedIn, label: 'Checked In' },
     { value: AppointmentStatus.Cancelled, label: 'Cancelled' },
-    { value: AppointmentStatus.NoShow, label: 'No Show' },
+    { value: AppointmentStatus.NoShow, label: 'NoShow' },
   ];
 
   appointment: Appointment | null = null;
@@ -185,6 +187,7 @@ export class ClinicDashboardComponent implements OnInit {
   }
 
   loadAppointments(): void {
+    this.selectedStatus = 'All';
     this.appointmentService.getAppointments().subscribe({
       next: (appointments) => {
         this.appointments = appointments;
@@ -202,6 +205,7 @@ export class ClinicDashboardComponent implements OnInit {
     this.loading = true;
     const today = new Date();
     const tomorrow = new Date();
+    this.selectedStatus = 'All';
     tomorrow.setDate(today.getDate() + 1);
 
     // Format dates as ISO strings for the API call
@@ -294,16 +298,28 @@ export class ClinicDashboardComponent implements OnInit {
     //this.doctors;
   }
 
-  filterWitings(): WaitingPatient[] {
+  // Filtering
+
+  filterStatuess(type: 'waiting'): WaitingPatient[];
+  filterStatuess(type: 'appointments'): Appointment[];
+  filterStatuess(
+    type: 'waiting' | 'appointments'
+  ): WaitingPatient[] | Appointment[] {
     console.log('Selected status:', this.selectedStatus);
-    const filtered =
-      this.selectedStatus === 'all'
+
+    if (type === 'waiting') {
+      return this.selectedStatus === 'All'
         ? this.waitingPatient
         : this.waitingPatient.filter(
             (patient) => patient.status === this.selectedStatus
           );
-    console.log('Filtered patients:', filtered);
-    return filtered;
+    } else {
+      return this.selectedStatus === 'All'
+        ? this.appointments
+        : this.appointments.filter(
+            (appointment) => appointment.status === this.selectedStatus
+          );
+    }
   }
 
   filterPatients(event: Event): void {
@@ -313,29 +329,6 @@ export class ClinicDashboardComponent implements OnInit {
         patient.firstName.toLowerCase().includes(searchTerm) ||
         patient.lastName.toLowerCase().includes(searchTerm)
     );
-  }
-
-  updateAppointmentStatus(
-    id: number,
-    status: 'Completed' | 'Cancelled' | 'No Show'
-  ): void {
-    const appointment = this.appointments.find((a) => a.id === id);
-    if (appointment) {
-      const statusValue = this.findAppointmentStatus(status);
-      console.log('statusValue', statusValue);
-      console.log('appointment', appointment.id, appointment.status);
-
-      this.appointmentService
-        .updateAppointmentStatus(appointment.id, statusValue.toString())
-        .subscribe({
-          next: () => {
-            console.log('Status updated successfully');
-            // Only reload appointments after the update is successful
-            this.loadAppointments();
-          },
-          error: (error) => console.error('Error updating status:', error),
-        });
-    }
   }
 
   findAppointmentStatus(status: string): AppointmentStatus | 'Not Found' {
@@ -379,31 +372,51 @@ export class ClinicDashboardComponent implements OnInit {
   checkInPatient(patient: WaitingPatient): void {
     patient.arrivalTime = new Date();
     patient.waitTime = 0;
-    patient.status = 'waiting';
+    patient.status = 'Waiting';
   }
 
-  changeStatus(
-    patient: WaitingPatient,
-    newStatus: 'in-progress' | 'completed' | 'no-show'
+  updateStatus(
+    patientOrId: WaitingPatient | number,
+    newStatus: 'InProgress' | 'Completed' | 'Cancelled' | 'NoShow'
   ): void {
-    patient.status = newStatus;
+    let appointmentId: number | undefined;
 
-    // Update the appointment status in the backend
-    this.appointmentService
-      .updateAppointmentStatus(patient.appointment.id, newStatus)
-      .subscribe({
-        next: () => {
-          console.log(
-            `Status updated to ${newStatus} for patient ${patient.patientFirstName}`
-          );
-        },
-        error: (err: any) => {
-          console.error('Failed to update status:', err);
-          // Revert the status change in case of error
-          patient.status =
-            patient.status === newStatus ? 'waiting' : patient.status;
-        },
-      });
+    // Determine the appointment ID based on input type
+    if (typeof patientOrId === 'number') {
+      appointmentId = patientOrId;
+    } else if ('appointment' in patientOrId) {
+      appointmentId = patientOrId.appointment.id;
+      patientOrId.status = newStatus; // Update status for UI
+    }
+
+    if (appointmentId !== undefined) {
+      const statusValue = this.findAppointmentStatus(newStatus);
+      console.log(
+        `Updating status to ${newStatus} for appointment ID: ${appointmentId}`
+      );
+
+      this.appointmentService
+        .updateAppointmentStatus(appointmentId, statusValue.toString())
+        .subscribe({
+          next: () => {
+            console.log(`Status updated successfully to ${newStatus}`);
+
+            // Reload UI data
+            this.loadAppointments();
+            this.loadWaitingList();
+          },
+          error: (err: any) => {
+            console.error('Error updating status:', err);
+
+            // Revert the status change in case of error
+            if (typeof patientOrId !== 'number') {
+              patientOrId.status = 'waiting';
+            }
+          },
+        });
+    } else {
+      console.error('Invalid appointment data!');
+    }
   }
 
   // Then update your scheduleNewAppointment method

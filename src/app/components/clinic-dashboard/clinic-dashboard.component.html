@@ -25,24 +25,15 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Status Filter Dropdown -->
         <h2 class="h5">Today's Waiting List</h2>
-        <p>Total appointments loaded: {{ waitingPatient.length }}</p>
+        <p>Total Waitings loaded: {{ waitingPatient.length }}</p>
         <button (click)="loadWaitingList()" class="btn btn-sm btn-success me-2">
           Refresh List
         </button>
-        <div class="filter-container">
-          <label for="status-filter">Filter by Status:</label>
-          <select id="status-filter" [(ngModel)]="selectedStatus">
-            <option value="all">All</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="checkedIn">CheckedIn</option>
-            <option value="in-progress">InProgress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="waiting">Waiting</option>
-            <option value="no-show">No Show</option>
-          </select>
-        </div>
+        <app-status-filter
+          [selectedStatus]="selectedStatus"
+          (statusChange)="selectedStatus = $event"
+        >
+        </app-status-filter>
       </div>
 
       <div *ngIf="!loading && waitingPatient.length > 0 && !error" class="card">
@@ -63,7 +54,7 @@
           </thead>
           <tbody>
             <tr
-              *ngFor="let waitingList of filterWitings()"
+              *ngFor="let waitingList of filterStatuess('waiting')"
               [class]="waitingList.status"
             >
               <td>
@@ -77,18 +68,18 @@
               <td>
                 <span
                   *ngIf="
-                    waitingList.appointment.status !== 'waiting' &&
-                    waitingList.appointment.status !== 'in-progress' &&
-                    waitingList.appointment.status !== 'completed'
+                    waitingList.appointment.status !== 'Waiting' &&
+                    waitingList.appointment.status !== 'InProgress' &&
+                    waitingList.appointment.status !== 'Completed'
                   "
                 >
                   Not arrived
                 </span>
                 <span
                   *ngIf="
-                    waitingList.appointment.status === 'waiting' ||
-                    waitingList.appointment.status === 'in-progress' ||
-                    waitingList.appointment.status === 'completed'
+                    waitingList.appointment.status === 'Waiting' ||
+                    waitingList.appointment.status === 'InProgress' ||
+                    waitingList.appointment.status === 'Completed'
                   "
                 >
                   {{ waitingList.arrivalTime | date : "shortTime" }}
@@ -113,33 +104,33 @@
               <td class="actions-cell">
                 <button
                   *ngIf="
-                    waitingList.status !== 'waiting' &&
-                    waitingList.status !== 'in-progress' &&
-                    waitingList.status !== 'completed' &&
-                    waitingList.status !== 'no-show'
+                    waitingList.status !== 'Waiting' &&
+                    waitingList.status !== 'InProgress' &&
+                    waitingList.status !== 'Completed' &&
+                    waitingList.status !== 'NoShow'
                   "
                   (click)="checkInPatient(waitingList)"
-                  class="action-button checkin-button"
+                  class="btn btn-sm btn-success me-2"
                 >
                   Check In
                 </button>
                 <button
-                  *ngIf="waitingList.status === 'waiting'"
-                  (click)="changeStatus(waitingList, 'in-progress')"
+                  *ngIf="waitingList.status === 'Waiting'"
+                  (click)="updateStatus(waitingList, 'InProgress')"
                   class="btn btn-sm btn-success me-2"
                 >
                   Start
                 </button>
                 <button
-                  *ngIf="waitingList.status === 'in-progress'"
-                  (click)="changeStatus(waitingList, 'completed')"
+                  *ngIf="waitingList.status === 'InProgress'"
+                  (click)="updateStatus(waitingList, 'Completed')"
                   class="btn btn-sm btn-danger me-2"
                 >
                   Complete
                 </button>
                 <button
-                  *ngIf="waitingList.status === 'waiting'"
-                  (click)="changeStatus(waitingList, 'no-show')"
+                  *ngIf="waitingList.status === 'Waiting'"
+                  (click)="updateStatus(waitingList, 'NoShow')"
                   class="btn btn-sm btn-danger me-2"
                 >
                   No Show
@@ -156,6 +147,11 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h5">All Appointments</h2>
         <p>Total Appointments: {{ appointments.length }}</p>
+        <app-status-filter
+          [selectedStatus]="selectedStatus"
+          (statusChange)="selectedStatus = $event"
+        >
+        </app-status-filter>
         <button class="btn btn-primary" (click)="showNewAppointmentForm = true">
           + New Appointment
         </button>
@@ -297,7 +293,7 @@
           </thead>
           <tbody>
             <tr
-              *ngFor="let appointment of appointments"
+              *ngFor="let appointment of filterStatuess('appointments')"
               [class]="appointment.status"
             >
               <td>
@@ -324,13 +320,13 @@
               <td>
                 <button
                   class="btn btn-sm btn-danger me-2"
-                  (click)="updateAppointmentStatus(appointment.id, 'Completed')"
+                  (click)="updateStatus(appointment.id, 'Completed')"
                 >
                   Complete
                 </button>
                 <button
                   class="btn btn-sm btn-success me-2"
-                  (click)="updateAppointmentStatus(appointment.id, 'Cancelled')"
+                  (click)="updateStatus(appointment.id, 'Cancelled')"
                 >
                   Cancel
                 </button>
