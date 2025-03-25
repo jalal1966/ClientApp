@@ -1,4 +1,4 @@
-export interface Patient {
+export interface Patients {
   id?: number;
   firstName: string;
   lastName: string;
@@ -16,4 +16,18 @@ export interface Patient {
   patientDoctorID: number;
   patientDoctorName: string;
   registrationDate: Date;
+  patientDetails: PatientDetails;
+}
+
+export interface PatientDetails {
+  id?: number;
+  PatientId: number;
+  firstName: string;
+  lastName: string;
+  roomNumber: string;
+  bedNumber: string;
+  dateOfBirth: Date;
+  primaryDiagnosis: string;
+  admissionDate: Date;
+  profileImageUrl?: string;
 }

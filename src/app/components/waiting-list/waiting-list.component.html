@@ -39,7 +39,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let patient of filterPatients()" [class]="patient.status">
+        <tr
+          *ngFor="let patient of filterPatients()"
+          [class]="patient.appointment.status"
+        >
           <td>
             {{ patient.patientFirstName }}
             {{ patient.patientLastName }}
@@ -48,18 +51,18 @@
           <td>
             <span
               *ngIf="
-                patient.status !== 'waiting' &&
-                patient.status !== 'in-progress' &&
-                patient.status !== 'completed'
+                patient.appointment.status !== 'waiting' &&
+                patient.appointment.status !== 'in-progress' &&
+                patient.appointment.status !== 'completed'
               "
             >
               Not arrived
             </span>
             <span
               *ngIf="
-                patient.status === 'waiting' ||
-                patient.status === 'in-progress' ||
-                patient.status === 'completed'
+                patient.appointment.status === 'waiting' ||
+                patient.appointment.status === 'in-progress' ||
+                patient.appointment.status === 'completed'
               "
             >
               {{ patient.arrivalTime | date : "shortTime" }}
@@ -67,17 +70,18 @@
           </td>
           <td>{{ patient.waitTime }} minutes</td>
           <td>
-            <span class="status-badge status-{{ patient.status }}">{{
-              patient.status
-            }}</span>
+            <span
+              class="status-badge status-{{ patient.appointment.status }}"
+              >{{ patient.appointment.status }}</span
+            >
           </td>
           <td class="actions-cell">
             <button
               *ngIf="
-                patient.status !== 'waiting' &&
-                patient.status !== 'in-progress' &&
-                patient.status !== 'completed' &&
-                patient.status !== 'no-show'
+                patient.appointment.status !== 'waiting' &&
+                patient.appointment.status !== 'in-progress' &&
+                patient.appointment.status !== 'completed' &&
+                patient.appointment.status !== 'no-show'
               "
               (click)="checkInPatient(patient)"
               class="action-button checkin-button"
@@ -85,21 +89,21 @@
               Check In
             </button>
             <button
-              *ngIf="patient.status === 'waiting'"
+              *ngIf="patient.appointment.status === 'waiting'"
               (click)="changeStatus(patient, 'in-progress')"
               class="action-button start-button"
             >
               Start
             </button>
             <button
-              *ngIf="patient.status === 'in-progress'"
+              *ngIf="patient.appointment.status === 'in-progress'"
               (click)="changeStatus(patient, 'completed')"
               class="action-button complete-button"
             >
               Complete
             </button>
             <button
-              *ngIf="patient.status === 'waiting'"
+              *ngIf="patient.appointment.status === 'waiting'"
               (click)="changeStatus(patient, 'no-show')"
               class="action-button no-show-button"
             >

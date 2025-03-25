@@ -1,7 +1,7 @@
-import { Patient } from './patient.model';
+import { Patients } from './patient.model';
 
 export interface Appointment {
-  patient: any;
+  patients: any;
   id: number;
   patientId: number;
   // patient: Patient;

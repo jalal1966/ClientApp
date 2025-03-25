@@ -4,7 +4,7 @@ export interface WaitingPatient {
   appointment: Appointment;
   arrivalTime: Date;
   waitTime: number; // in minutes
-  status: string;
+  // status: string;
   patientFirstName: string;
   patientLastName: string;
 }

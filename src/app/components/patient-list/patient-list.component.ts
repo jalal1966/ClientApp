@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Route, Router, RouterModule } from '@angular/router';
 import { PatientService } from '../../services/patient/patient.service';
 import { AppointmentService } from '../../services/appointment/appointment.service';
-import { Patient } from '../../models/patient.model';
+import { Patients } from '../../models/patient.model';
 import { User } from '../../models/user';
 import { AuthService } from '../../services/auth/auth.service';
 import {
@@ -23,8 +23,8 @@ import { GenderPipe } from '../../pipes/gender/gender.pipe';
 export class PatientListComponent implements OnInit {
   patientForm!: FormGroup;
   currentUser: User | null = null;
-  patients: Patient[] = [];
-  filteredPatients: Patient[] = [];
+  patients: Patients[] = [];
+  filteredPatients: Patients[] = [];
   appoment: AppointmentService | undefined;
   loading = true;
   error = '';

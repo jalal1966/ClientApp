@@ -4,7 +4,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { catchError } from 'rxjs/operators';
-import { Patient } from '../../models/patient.model';
+import { Patients } from '../../models/patient.model';
 import { MedicalRecord } from '../../models/medicalRecord.model';
 import { User } from '../../models/user';
 import { differenceInYears } from 'date-fns/differenceInYears';
@@ -18,9 +18,9 @@ export class PatientService {
   constructor(private http: HttpClient) {}
 
   /** Fetch all patients */
-  getPatients(): Observable<Patient[]> {
+  getPatients(): Observable<Patients[]> {
     return this.http
-      .get<Patient[]>(`${this.apiUrl}/api/patients`)
+      .get<Patients[]>(`${this.apiUrl}/api/patients`)
       .pipe(catchError(this.handleError));
   }
 
@@ -30,21 +30,21 @@ export class PatientService {
       .pipe(catchError(this.handleError));
   }
 
-  getPatient(id: number): Observable<Patient> {
+  getPatient(id: number): Observable<Patients> {
     return this.http
-      .get<Patient>(`${this.apiUrl}/api/patients/${id}`)
+      .get<Patients>(`${this.apiUrl}/api/patients/${id}`)
       .pipe(catchError(this.handleError));
   }
 
-  createPatient(patient: Patient): Observable<Patient> {
+  createPatient(patient: Patients): Observable<Patients> {
     return this.http
-      .post<Patient>(`${this.apiUrl}/api/patients`, patient)
+      .post<Patients>(`${this.apiUrl}/api/patients`, patient)
       .pipe(catchError(this.handleError));
   }
 
-  updatePatient(id: number, patient: Patient): Observable<Patient> {
+  updatePatient(id: number, patient: Patients): Observable<Patients> {
     return this.http
-      .put<Patient>(`${this.apiUrl}/api/patients/${id}`, patient)
+      .put<Patients>(`${this.apiUrl}/api/patients/${id}`, patient)
       .pipe(catchError(this.handleError));
   }
 

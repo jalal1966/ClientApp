@@ -20,6 +20,7 @@ import { PatientFormComponent } from './components/patient-form/patient-form.com
 import { AppointmentComponent } from './components/appointment/appointment.component';
 import { WaitingListComponent } from './components/waiting-list/waiting-list.component';
 import { ClinicDashboardComponent } from './components/clinic-dashboard/clinic-dashboard.component';
+import { TaskDashboardComponent } from './components/task-dashboard/task-dashboard.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -29,6 +30,7 @@ export const routes: Routes = [
   { path: 'waitingList', component: WaitingListComponent },
   { path: 'nurse', component: NursePageComponent },
   { path: 'management', component: ClinicDashboardComponent },
+  { path: 'task-dashboard', component: TaskDashboardComponent },
   {
     path: 'products',
     component: ProductListComponent,

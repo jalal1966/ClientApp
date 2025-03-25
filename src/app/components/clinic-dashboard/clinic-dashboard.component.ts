@@ -11,7 +11,7 @@ import {
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Appointment, AppointmentCreate } from '../../models/appointment.model';
-import { Patient } from '../../models/patient.model';
+import { Patients } from '../../models/patient.model';
 import { User } from '../../models/user';
 import { AuthService } from '../../services/auth/auth.service';
 import { PatientService } from '../../services/patient/patient.service';
@@ -44,7 +44,7 @@ export class ClinicDashboardComponent implements OnInit {
   appointmentForm!: FormGroup;
   appoment: AppointmentService | undefined;
   loading = true;
-  filteredPatients: Patient[] = [];
+  filteredPatients: Patients[] = [];
   activeTab: string = 'waitingList';
   doctors: User[] = [];
   currentUser: User | null = null;
@@ -52,7 +52,7 @@ export class ClinicDashboardComponent implements OnInit {
 
   waitingPatient: WaitingPatient[] = [];
 
-  patients: Patient[] = [];
+  patients: Patients[] = [];
   searchTerm: string = '';
   showNewAppointmentForm: boolean = false;
   showNewPatientForm: boolean = false;
@@ -64,7 +64,7 @@ export class ClinicDashboardComponent implements OnInit {
   noShowPercentage: number = 8;
   newPatients: number = 24;
   revenue: number = 42500;
-  patient!: Patient[] | [];
+  patient!: Patients[] | [];
   selectedStatus: string = 'all';
   refreshInterval: any;
   startTime: Date | undefined;
@@ -121,6 +121,7 @@ export class ClinicDashboardComponent implements OnInit {
     this.loadWaitingList();
     // Refresh every minute to update wait times
     this.refreshInterval = setInterval(() => {
+      this.loadWaitingList();
       this.updateWaitTimes();
       this.Initializing();
     }, 60000);
@@ -192,6 +193,7 @@ export class ClinicDashboardComponent implements OnInit {
       next: (appointments) => {
         this.appointments = appointments;
         this.loading = false;
+        console.log('Appointments Loaded:', this.appointments);
       },
       error: (err) => {
         this.error = 'Failed to load appointments';
@@ -222,7 +224,7 @@ export class ClinicDashboardComponent implements OnInit {
             return (
               appDate.toDateString() === today.toDateString() &&
               app.status !== 'Cancelled' &&
-              app.status !== 'No-Show'
+              app.status !== 'NoShow'
             );
           });
 
@@ -260,7 +262,11 @@ export class ClinicDashboardComponent implements OnInit {
   updateWaitTimes(): void {
     const now = new Date();
     this.waitingPatient.forEach((patient) => {
-      if (patient.status === 'waiting' || patient.status === 'in-progress') {
+      if (
+        patient.appointment &&
+        (patient.appointment.status === 'Waiting' ||
+          patient.appointment.status === 'InProgress')
+      ) {
         patient.waitTime = this.calculateWaitTime(patient.arrivalTime);
       }
     });
@@ -300,25 +306,43 @@ export class ClinicDashboardComponent implements OnInit {
 
   // Filtering
 
-  filterStatuess(type: 'waiting'): WaitingPatient[];
-  filterStatuess(type: 'appointments'): Appointment[];
-  filterStatuess(
+  filterStatuses(type: 'waiting'): WaitingPatient[];
+  filterStatuses(type: 'appointments'): Appointment[];
+  filterStatuses(
     type: 'waiting' | 'appointments'
   ): WaitingPatient[] | Appointment[] {
-    console.log('Selected status:', this.selectedStatus);
-
     if (type === 'waiting') {
-      return this.selectedStatus === 'All'
-        ? this.waitingPatient
-        : this.waitingPatient.filter(
-            (patient) => patient.status === this.selectedStatus
-          );
+      if (!this.waitingPatient || this.waitingPatient.length === 0) {
+        console.warn('No waiting patients found');
+        return [];
+      }
+
+      const filteredPatients =
+        this.selectedStatus === 'All'
+          ? this.waitingPatient
+          : this.waitingPatient.filter(
+              (patient) =>
+                patient.appointment &&
+                patient.appointment.status === this.selectedStatus
+            );
+
+      console.log('Filtered Waiting Patients:', filteredPatients); // Debugging line
+      return filteredPatients;
     } else {
-      return this.selectedStatus === 'All'
-        ? this.appointments
-        : this.appointments.filter(
-            (appointment) => appointment.status === this.selectedStatus
-          );
+      if (!this.appointments || this.appointments.length === 0) {
+        console.warn('No appointments found');
+        return [];
+      }
+
+      const filteredAppointments =
+        this.selectedStatus === 'All'
+          ? this.appointments
+          : this.appointments.filter(
+              (appointment) => appointment.status === this.selectedStatus
+            );
+
+      console.log('Filtered Appointments:', filteredAppointments); // Debugging line
+      return filteredAppointments;
     }
   }
 
@@ -372,7 +396,7 @@ export class ClinicDashboardComponent implements OnInit {
   checkInPatient(patient: WaitingPatient): void {
     patient.arrivalTime = new Date();
     patient.waitTime = 0;
-    patient.status = 'Waiting';
+    this.appointment!.patients.status = 'Waiting';
   }
 
   updateStatus(
@@ -386,7 +410,7 @@ export class ClinicDashboardComponent implements OnInit {
       appointmentId = patientOrId;
     } else if ('appointment' in patientOrId) {
       appointmentId = patientOrId.appointment.id;
-      patientOrId.status = newStatus; // Update status for UI
+      patientOrId.appointment!.status = newStatus; // Update status for UI
     }
 
     if (appointmentId !== undefined) {
@@ -410,7 +434,7 @@ export class ClinicDashboardComponent implements OnInit {
 
             // Revert the status change in case of error
             if (typeof patientOrId !== 'number') {
-              patientOrId.status = 'waiting';
+              patientOrId.appointment.status = 'waiting';
             }
           },
         });

@@ -4,7 +4,8 @@ import { FormBuilder, FormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AppointmentService } from '../../services/appointment/appointment.service';
 import { WaitingPatient } from '../../models/waiting.model';
-import { Patient } from '../../models/patient.model';
+import { Patients } from '../../models/patient.model';
+import { Appointment } from '../../models/appointment.model';
 
 @Component({
   selector: 'app-waiting-list',
@@ -15,6 +16,7 @@ import { Patient } from '../../models/patient.model';
 })
 export class WaitingListComponent implements OnInit, OnDestroy {
   waitingPatient: WaitingPatient[] = [];
+  appointments: Appointment[] = [];
   currentDate: Date = new Date();
   loading = false;
   error: string | null = null;
@@ -101,7 +103,10 @@ export class WaitingListComponent implements OnInit, OnDestroy {
   updateWaitTimes(): void {
     const now = new Date();
     this.waitingPatient.forEach((patient) => {
-      if (patient.status === 'waiting' || patient.status === 'in-progress') {
+      if (
+        patient.appointment.status === 'waiting' ||
+        patient.appointment.status === 'in-progress'
+      ) {
         patient.waitTime = this.calculateWaitTime(patient.arrivalTime);
       }
     });
@@ -111,7 +116,7 @@ export class WaitingListComponent implements OnInit, OnDestroy {
     patient: WaitingPatient,
     newStatus: 'in-progress' | 'completed' | 'no-show'
   ): void {
-    patient.status = newStatus;
+    patient.appointment.status = newStatus;
 
     // Update the appointment status in the backend
     this.appointmentService
@@ -125,8 +130,10 @@ export class WaitingListComponent implements OnInit, OnDestroy {
         error: (err: any) => {
           console.error('Failed to update status:', err);
           // Revert the status change in case of error
-          patient.status =
-            patient.status === newStatus ? 'waiting' : patient.status;
+          patient.appointment.status =
+            patient.appointment.status === newStatus
+              ? 'waiting'
+              : patient.appointment.status;
         },
       });
   }
@@ -137,7 +144,7 @@ export class WaitingListComponent implements OnInit, OnDestroy {
       this.selectedStatus === 'all'
         ? this.waitingPatient
         : this.waitingPatient.filter(
-            (patient) => patient.status === this.selectedStatus
+            (patient) => patient.appointment.status === this.selectedStatus
           );
     console.log('Filtered patients:', filtered);
     return filtered;
@@ -147,6 +154,6 @@ export class WaitingListComponent implements OnInit, OnDestroy {
   checkInPatient(patient: WaitingPatient): void {
     patient.arrivalTime = new Date();
     patient.waitTime = 0;
-    patient.status = 'waiting';
+    patient.appointment.status = 'waiting';
   }
 }

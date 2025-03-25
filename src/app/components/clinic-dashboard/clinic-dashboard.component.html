@@ -20,7 +20,7 @@
   </nav>
 
   <main>
-    <!-- waitingList Tab -->
+    <!-- Waiting List Tab -->
     <section *ngIf="activeTab === 'waitingList'" class="tab-content">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Status Filter Dropdown -->
@@ -54,8 +54,8 @@
           </thead>
           <tbody>
             <tr
-              *ngFor="let waitingList of filterStatuess('waiting')"
-              [class]="waitingList.status"
+              *ngFor="let waitingList of filterStatuses('waiting')"
+              [class]="waitingList?.appointment?.status || ''"
             >
               <td>
                 {{ waitingList.patientFirstName }}
@@ -63,23 +63,17 @@
               </td>
 
               <td>
-                {{ waitingList.appointment.startTime | date : "shortTime" }}
+                {{ waitingList?.appointment?.startTime | date : "shortTime" }}
               </td>
               <td>
-                <span
-                  *ngIf="
-                    waitingList.appointment.status !== 'Waiting' &&
-                    waitingList.appointment.status !== 'InProgress' &&
-                    waitingList.appointment.status !== 'Completed'
-                  "
-                >
+                <span *ngIf="!waitingList.appointment?.status">
                   Not arrived
                 </span>
                 <span
                   *ngIf="
-                    waitingList.appointment.status === 'Waiting' ||
-                    waitingList.appointment.status === 'InProgress' ||
-                    waitingList.appointment.status === 'Completed'
+                    waitingList.appointment?.status === 'Waiting' ||
+                    waitingList.appointment?.status === 'InProgress' ||
+                    waitingList.appointment?.status === 'Completed'
                   "
                 >
                   {{ waitingList.arrivalTime | date : "shortTime" }}
@@ -88,26 +82,33 @@
               <td>{{ waitingList.waitTime }} minutes</td>
               <td>
                 <span
-                  class="status-badge status-{{ waitingList.appointment.type }}"
-                  >{{ waitingList.appointment.type }}</span
+                  class="status-badge status-{{
+                    waitingList?.appointment?.type || 'Unknown'
+                  }}"
                 >
+                  {{ waitingList?.appointment?.type || "Unknown" }}
+                </span>
               </td>
               <td>
-                <span class="status-badge status-{{ waitingList.status }}">{{
-                  waitingList.status
-                }}</span>
+                <span
+                  class="status-badge status-{{
+                    waitingList?.appointment?.status || 'Unknown'
+                  }}"
+                >
+                  {{ waitingList?.appointment?.status || "Unknown" }}
+                </span>
               </td>
               <td>
-                {{ waitingList.appointment.providerFirstName }}
-                {{ waitingList.appointment.providerLastName }}
+                {{ waitingList?.appointment?.providerFirstName }}
+                {{ waitingList?.appointment?.providerLastName }}
               </td>
               <td class="actions-cell">
                 <button
                   *ngIf="
-                    waitingList.status !== 'Waiting' &&
-                    waitingList.status !== 'InProgress' &&
-                    waitingList.status !== 'Completed' &&
-                    waitingList.status !== 'NoShow'
+                    waitingList.appointment?.status !== 'Waiting' &&
+                    waitingList.appointment?.status !== 'InProgress' &&
+                    waitingList.appointment?.status !== 'Completed' &&
+                    waitingList.appointment?.status !== 'NoShow'
                   "
                   (click)="checkInPatient(waitingList)"
                   class="btn btn-sm btn-success me-2"
@@ -115,21 +116,21 @@
                   Check In
                 </button>
                 <button
-                  *ngIf="waitingList.status === 'Waiting'"
+                  *ngIf="waitingList.appointment?.status === 'Waiting'"
                   (click)="updateStatus(waitingList, 'InProgress')"
                   class="btn btn-sm btn-success me-2"
                 >
                   Start
                 </button>
                 <button
-                  *ngIf="waitingList.status === 'InProgress'"
+                  *ngIf="waitingList.appointment?.status === 'InProgress'"
                   (click)="updateStatus(waitingList, 'Completed')"
                   class="btn btn-sm btn-danger me-2"
                 >
                   Complete
                 </button>
                 <button
-                  *ngIf="waitingList.status === 'Waiting'"
+                  *ngIf="waitingList.appointment?.status === 'Waiting'"
                   (click)="updateStatus(waitingList, 'NoShow')"
                   class="btn btn-sm btn-danger me-2"
                 >
@@ -286,6 +287,7 @@
               <th class="th-spacing">Today's</th>
               <th class="th-spacing">Time</th>
               <th>Patient</th>
+              <th>The Reason</th>
               <th>Doctor</th>
               <th>Status</th>
               <th>Actions</th>
@@ -293,7 +295,7 @@
           </thead>
           <tbody>
             <tr
-              *ngFor="let appointment of filterStatuess('appointments')"
+              *ngFor="let appointment of filterStatuses('appointments')"
               [class]="appointment.status"
             >
               <td>
@@ -309,6 +311,9 @@
               <td>
                 {{ appointment.patientFirstName }}
                 {{ appointment.patientLastName }}
+              </td>
+              <td>
+                {{ appointment.type }}
               </td>
               <td>
                 Dr. {{ appointment.providerFirstName }}

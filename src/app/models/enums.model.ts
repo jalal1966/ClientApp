@@ -19,3 +19,17 @@ export enum AppointmentStatus {
   Cancelled = 6,
   NoShow = 7,
 }
+
+export enum TaskStatus {
+  NotStarted = 'NotStarted',
+  InProgress = 'InProgress',
+  Completed = 'Completed',
+  Overdue = 'Overdue',
+}
+
+export enum TaskPriority {
+  Low = 'Low',
+  Medium = 'Medium',
+  High = 'High',
+  Critical = 'Critical',
+}

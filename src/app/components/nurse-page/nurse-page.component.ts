@@ -40,15 +40,6 @@ export class NursePageComponent {
     },
   ];
 
-  onAction(action: string) {
-    console.log(`${action} clicked`);
-    // Implement navigation or logic for each button click
-  }
-  ngOnInit(): void {}
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
   constructor(authService: AuthService, router: Router) {
     this.curntUser = authService.currentUserValue ?? ({} as User);
     sessionStorage.setItem(
@@ -57,6 +48,42 @@ export class NursePageComponent {
     );
     this.authService = authService;
     this.router = router;
+  }
+  onAction(action: string) {
+    console.log(`${action} clicked`);
+
+    // Implement navigation or logic for each button click
+    switch (action) {
+      case 'viewTasks':
+        this.navigateToTasks();
+        break;
+      case 'recordVitals':
+        this.navigateToVitalSigns();
+        break;
+      case 'medicationLog':
+        this.navigateToMedicationLog();
+        break;
+      default:
+        console.warn(`Unhandled action: ${action}`);
+    }
+  }
+
+  private navigateToTasks() {
+    this.router.navigate(['/task-dashboard']);
+  }
+
+  private navigateToVitalSigns() {
+    this.router.navigate(['/vital-signs']);
+  }
+
+  private navigateToMedicationLog() {
+    this.router.navigate(['/medication-log']);
+  }
+
+  ngOnInit(): void {}
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   showPatientForm() {
