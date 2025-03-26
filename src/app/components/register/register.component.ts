@@ -29,6 +29,7 @@ export class RegisterComponent implements OnInit {
   errorMessages: string[] = []; // For multiple error messages
   isSubmitting: boolean = false;
   showPassword: boolean = false;
+  showConfirmPassword: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -210,7 +211,12 @@ export class RegisterComponent implements OnInit {
       this.errorMessages.push('Passwords do not match');
     }
   }
-  togglePassword() {
-    this.showPassword = !this.showPassword;
+
+  togglePassword(field: string) {
+    if (field === 'password') {
+      this.showPassword = !this.showPassword;
+    } else if (field === 'confirmPassword') {
+      this.showConfirmPassword = !this.showConfirmPassword;
+    }
   }
 }

@@ -36,6 +36,7 @@ export class PatientFormComponent implements OnInit {
   nursName: any;
   patientDoctorID: any;
   patientDoctor: any;
+  lastVisitDate: any;
 
   constructor(
     private fb: FormBuilder,
@@ -61,6 +62,7 @@ export class PatientFormComponent implements OnInit {
       nursName: ['', Validators.required],
       patientDoctorID: ['', Validators.required],
       patientDoctorName: ['', Validators.required],
+      lastVisitDate: [''],
     });
   }
 
@@ -142,6 +144,7 @@ export class PatientFormComponent implements OnInit {
           nursName: this.nursName?.errors,
           patientDoctorID: this.patientDoctorID?.errors,
           patientDoctorName: this.patientDoctor?.errors,
+          lastVisitDate: this.lastVisitDate,
         });
       });
     }
@@ -171,7 +174,7 @@ export class PatientFormComponent implements OnInit {
         .createPatient(this.patientForm.value)
         .toPromise();
       alert('Patient registered successfully!');
-      this.router.navigate(['/patients']);
+      this.location.back();
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('Failed to submit form. Please try again.');
@@ -254,6 +257,7 @@ export class PatientFormComponent implements OnInit {
       'nursName',
       'patientDoctorID',
       'patientDoctorName',
+      'lastVisitDate',
     ];
 
     requiredFields.forEach((field) => {
@@ -263,5 +267,25 @@ export class PatientFormComponent implements OnInit {
         control?.errors
       );
     });
+  }
+
+  // Alternative method using input event
+  convertToUppercase(event: any) {
+    const input = event.target as HTMLInputElement;
+    const startPos = input.selectionStart;
+    const endPos = input.selectionEnd;
+
+    input.value = input.value.toUpperCase();
+    input.setSelectionRange(startPos, endPos);
+    // Add this to convert input to uppercase
+    this.patientForm
+      .get('insuranceProvider')
+      ?.valueChanges.subscribe((value) => {
+        if (value && value !== value.toUpperCase()) {
+          this.patientForm
+            .get('insuranceProvider')
+            ?.setValue(value.toUpperCase(), { emitEvent: false });
+        }
+      });
   }
 }

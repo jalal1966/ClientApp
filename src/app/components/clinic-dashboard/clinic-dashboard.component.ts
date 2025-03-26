@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import {
@@ -42,6 +42,7 @@ export class ClinicDashboardComponent implements OnInit {
   patientForm!: FormGroup;
   // Form for new appointments
   appointmentForm!: FormGroup;
+  appointmentDoctorsForm!: FormGroup;
   appoment: AppointmentService | undefined;
   loading = true;
   filteredPatients: Patients[] = [];
@@ -49,12 +50,14 @@ export class ClinicDashboardComponent implements OnInit {
   doctors: User[] = [];
   currentUser: User | null = null;
   appointments: Appointment[] = [];
+  appointmentsDoctor: Appointment[] = [];
 
   waitingPatient: WaitingPatient[] = [];
 
   patients: Patients[] = [];
   searchTerm: string = '';
   showNewAppointmentForm: boolean = false;
+  showNewAppointmentDoctorForm: boolean = false;
   showNewPatientForm: boolean = false;
   showNewWitingsForm: boolean = false;
   selectedPatient: number | null = null;
@@ -68,9 +71,9 @@ export class ClinicDashboardComponent implements OnInit {
   selectedStatus: string = 'all';
   refreshInterval: any;
   startTime: Date | undefined;
-  endTime: Date | undefined;
+  endTid: Date | undefined;
   type: any;
-
+  doctorID!: number;
   // Then update your appointment form initialization to use these enums
   appointmentTypes = [
     { value: AppointmentType.CheckUp, label: 'CheckUp' },
@@ -99,6 +102,7 @@ export class ClinicDashboardComponent implements OnInit {
   tabs = [
     { key: 'waitingList', label: 'WaitingList' },
     { key: 'appointments', label: 'Appointments' },
+    { key: 'appointmentsDoctor', label: 'Doctor schedule' },
     { key: 'patients', label: 'Patients' },
     { key: 'analytics', label: 'Analytics' },
   ];
@@ -203,6 +207,23 @@ export class ClinicDashboardComponent implements OnInit {
     });
   }
 
+  loadAppointmentsDoctor(value: number): void {
+    this.selectedStatus = 'All';
+    // TODO
+    this.appointmentService.getAppointmentsByProvider(value).subscribe({
+      next: (appointments) => {
+        this.appointmentsDoctor = appointments;
+        this.loading = false;
+        console.log('Appointments Loaded:', this.appointmentsDoctor);
+      },
+      error: (err) => {
+        this.error = 'Failed to load appointments Doctor';
+        this.loading = false;
+        console.error(err);
+      },
+    });
+  }
+
   loadWaitingList(): void {
     this.loading = true;
     const today = new Date();
@@ -277,6 +298,7 @@ export class ClinicDashboardComponent implements OnInit {
     this.patientService.getPatients().subscribe({
       next: (data) => {
         this.patients = data;
+        console.log('this.patients', this.patients);
         this.filteredPatients = data;
         this.loading = false;
       },
@@ -484,6 +506,7 @@ export class ClinicDashboardComponent implements OnInit {
       status: formValues.appointmentStatus.value.toString(),
       notes: formValues.notes || '',
     };
+
     console.log('appointment', appointment);
     // Call your service to create appointment
     this.appointmentService.createAppointment(appointment).subscribe({
@@ -496,14 +519,33 @@ export class ClinicDashboardComponent implements OnInit {
           appointmentTime: '09:00',
           appointmentStatus: 'Scheduled',
         });
+        // Clear any previous errors
+        this.error = '';
       },
       error: (err) => {
         console.error('Error creating appointment:', err);
-        console.error('Error details:', err.error); // This will show the server response
-        console.error('Attempted to send:', appointment); // This will show what you sent
-        this.error = 'Failed to schedule appointment. Please try again.';
+
+        // Check for specific time slot unavailability error
+        if (err.error && err.error.includes('time slot is not available')) {
+          this.error =
+            'The requested time slot is not available. Please choose another time.';
+        } else {
+          // Generic error for other types of failures
+          this.error = 'Failed to schedule appointment. Please try again.';
+        }
+
+        // Optional: you might want to add a method to show an alert
+        this.showErrorAlert(this.error);
       },
     });
+  }
+
+  showErrorAlert(message: string): void {
+    // Example using Angular Material snackbar
+    // this.snackBar.open(message, 'Close', { duration: 5000 });
+
+    // Or using a custom alert method
+    alert(message);
   }
 
   // Helper methods to get patient and doctor names

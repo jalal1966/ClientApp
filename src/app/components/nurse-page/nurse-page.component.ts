@@ -21,6 +21,12 @@ export class NursePageComponent {
   loginForm!: FormGroup;
   sections = [
     {
+      title: 'View Patients',
+      description: 'Patient records and biographies',
+      buttonText: 'View Patients',
+      action: 'View Patients',
+    },
+    {
       title: 'Patient Care',
       description: 'Manage patient care tasks',
       buttonText: 'View Tasks',
@@ -54,6 +60,9 @@ export class NursePageComponent {
 
     // Implement navigation or logic for each button click
     switch (action) {
+      case 'View Patients':
+        this.navigatePatientsView();
+        break;
       case 'viewTasks':
         this.navigateToTasks();
         break;
@@ -78,6 +87,12 @@ export class NursePageComponent {
 
   private navigateToMedicationLog() {
     this.router.navigate(['/medication-log']);
+  }
+  private navigatePatientsView() {
+    console.log('showPatientForm method called');
+    this.isPatientFormVisible = true;
+    console.log('showPatientForm', this.isPatientFormVisible);
+    this.router.navigate(['/patients']);
   }
 
   ngOnInit(): void {}

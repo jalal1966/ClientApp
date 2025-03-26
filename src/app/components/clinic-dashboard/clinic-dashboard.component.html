@@ -1,6 +1,6 @@
 <div class="dashboard-container container-fluid py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <span
+    <span style="background-color: aquamarine"
       >Welcome, {{ currentUser?.firstName }} {{ currentUser?.lastName }}</span
     >
     <button (click)="logout()" class="btn btn-outline-danger btn-sm">
@@ -348,6 +348,77 @@
       </div>
     </section>
 
+    <!-- Doctor schedule Tab -->
+    <section *ngIf="activeTab === 'appointmentsDoctor'" class="tab-content">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5">Doctor schedule</h2>
+
+        <div class="mb-3">
+          <select class="form-select" formControlName="doctorId">
+            <option [ngValue]="null">Select Doctor</option>
+            <option
+              *ngFor="let doctor of doctors"
+              [ngValue]="loadAppointmentsDoctor(doctor.userID)"
+            >
+              Dr. {{ doctor.firstName }} {{ doctor.lastName }}
+              <span *ngIf="doctor.specialist">({{ doctor.specialist }})</span>
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="table-responsive p-2 border rounded">
+        <table
+          class="table table-bordered table-striped table-hover patients-table"
+        >
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Contact</th>
+              <th>Last Visit</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let patient of appointmentsDoctor">
+              <td>
+                {{ patient.patientFirstName }} {{ patient.patientLastName }}
+              </td>
+              <td>{{ patient.patients.dateOfBirth | age }}</td>
+              <td>{{ patient.patients.genderID | gender }}</td>
+              <td>{{ patient.patients.contactNumber }}</td>
+              <td>
+                {{ patient.patients.lastVisitDate | date }}
+                <!-- This would be dynamic in a real app -->
+              </td>
+
+              <td>
+                <button
+                  class="btn btn-sm btn-info me-2"
+                  (click)="viewPatientDetails(patient.id)"
+                >
+                  View
+                </button>
+                <button
+                  class="btn btn-sm btn-success me-2"
+                  (click)="editPatientDetails(patient.id)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-secondary me-2"
+                  (click)="scheduleAppointment(patient.id)"
+                >
+                  Schedule
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- Patients Tab -->
     <section *ngIf="activeTab === 'patients'" class="tab-content">
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -392,8 +463,11 @@
               <td>{{ patient.dateOfBirth | age }}</td>
               <td>{{ patient.genderID | gender }}</td>
               <td>{{ patient.contactNumber }}</td>
-              <td>2023-12-15</td>
-              <!-- This would be dynamic in a real app -->
+              <td>
+                {{ patient.lastVisitDate | date }}
+                <!-- This would be dynamic in a real app -->
+              </td>
+
               <td>
                 <button
                   class="btn btn-sm btn-info me-2"

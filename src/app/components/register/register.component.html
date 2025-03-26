@@ -83,7 +83,7 @@
                 [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
                 id="togglePassword"
                 style="cursor: pointer"
-                (click)="togglePassword()"
+                (click)="togglePassword('password')"
               ></i>
             </span>
           </div>
@@ -105,6 +105,7 @@
           <div class="password-input-container">
             <input
               type="password"
+              [type]="showConfirmPassword ? 'text' : 'password'"
               id="confirmPassword"
               formControlName="confirmPassword"
               required
@@ -112,10 +113,10 @@
             <span class="input-group-text">
               <i
                 class="fa"
-                [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
                 id="toggleConfirmPassword"
                 style="cursor: pointer"
-                (click)="togglePassword()"
+                (click)="togglePassword('confirmPassword')"
               ></i>
             </span>
           </div>

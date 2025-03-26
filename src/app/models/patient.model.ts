@@ -17,6 +17,7 @@ export interface Patients {
   patientDoctorName: string;
   registrationDate: Date;
   patientDetails: PatientDetails;
+  lastVisitDate: Date;
 }
 
 export interface PatientDetails {

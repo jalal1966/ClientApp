@@ -9,23 +9,9 @@
         This is the Nurse interface. Here you can manage patient care, vital
         signs, and medications.
       </p>
-      <div class="row mt-4">
-        <div class="col-md-4">
-          <div class="card mb-3">
-            <div class="card-header">Patients</div>
-            <div class="card-body">
-              <p>Patient records and biographies</p>
-              <button
-                (click)="showPatientForm()"
-                class="btn btn-outline-primary"
-              >
-                View Patients
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="row mt-4">
-          <div class="col-md-4" *ngFor="let section of sections">
+      <div class="row mt-6">
+        <div class="row mt-6">
+          <div class="col-md-6" *ngFor="let section of sections">
             <div class="card mb-3">
               <div class="card-header">{{ section.title }}</div>
               <div class="card-body">
@@ -42,7 +28,7 @@
         </div>
       </div>
     </div>
-    <div class="mt-4">
+    <div class="mt-6">
       <button class="btn btn-danger" (click)="logout()">Logout</button>
     </div>
   </div>
