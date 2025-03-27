@@ -354,12 +354,9 @@
         <h2 class="h5">Doctor schedule</h2>
 
         <div class="mb-3">
-          <select class="form-select" formControlName="doctorId">
-            <option [ngValue]="null">Select Doctor</option>
-            <option
-              *ngFor="let doctor of doctors"
-              [ngValue]="loadAppointmentsDoctor(doctor.userID)"
-            >
+          <select class="form-select" (change)="onDoctorSelect($event)">
+            <option [value]="null">Select Doctor</option>
+            <option *ngFor="let doctor of doctors" [value]="doctor.userID">
               Dr. {{ doctor.firstName }} {{ doctor.lastName }}
               <span *ngIf="doctor.specialist">({{ doctor.specialist }})</span>
             </option>
@@ -373,10 +370,10 @@
           <thead class="table-light">
             <tr>
               <th>Name</th>
-              <th>Age</th>
-              <th>Gender</th>
-              <th>Contact</th>
-              <th>Last Visit</th>
+              <th class="th-spacing">Today's</th>
+              <th class="th-spacing">Time</th>
+              <th>Resin</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -385,32 +382,47 @@
               <td>
                 {{ patient.patientFirstName }} {{ patient.patientLastName }}
               </td>
-              <td>{{ patient.patients.dateOfBirth | age }}</td>
-              <td>{{ patient.patients.genderID | gender }}</td>
-              <td>{{ patient.patients.contactNumber }}</td>
               <td>
-                {{ patient.patients.lastVisitDate | date }}
-                <!-- This would be dynamic in a real app -->
+                <span class="dateSpace"
+                  >📅 {{ patient.startTime | date : "yyyy-MM-dd" }}</span
+                >
+              </td>
+              <td>
+                <span class="time"
+                  >⌚{{ patient.startTime | date : "HH:mm" }}</span
+                >
+              </td>
+              <td>
+                <span class="badge bg-info">{{ patient.type }}</span>
+              </td>
+              <td>
+                <span class="badge bg-info">{{ patient.status }}</span>
               </td>
 
               <td>
                 <button
                   class="btn btn-sm btn-info me-2"
-                  (click)="viewPatientDetails(patient.id)"
+                  (click)="viewPatientDetails(patient.patientId)"
                 >
                   View
                 </button>
                 <button
                   class="btn btn-sm btn-success me-2"
-                  (click)="editPatientDetails(patient.id)"
+                  (click)="editPatientDetails(patient.patientId)"
                 >
                   Edit
                 </button>
                 <button
                   class="btn btn-sm btn-secondary me-2"
-                  (click)="scheduleAppointment(patient.id)"
+                  (click)="scheduleAppointment(patient.patientId)"
                 >
                   Schedule
+                </button>
+                <button
+                  class="btn btn-sm btn-danger me-2"
+                  (click)="cancelAppointment(patient.id)"
+                >
+                  Cancel
                 </button>
               </td>
             </tr>

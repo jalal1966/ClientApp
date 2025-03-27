@@ -74,6 +74,7 @@ export class ClinicDashboardComponent implements OnInit {
   endTid: Date | undefined;
   type: any;
   doctorID!: number;
+
   // Then update your appointment form initialization to use these enums
   appointmentTypes = [
     { value: AppointmentType.CheckUp, label: 'CheckUp' },
@@ -137,6 +138,16 @@ export class ClinicDashboardComponent implements OnInit {
     }
   }
 
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
+    if (tab === 'appointmentsDoctor') {
+      this.loadDoctors();
+    } else {
+      // Clear doctor appointments and reset selection
+      this.appointmentsDoctor = [];
+      this.selectedDoctor = null;
+    }
+  }
   // Initialize the appointment form in ngOnInit or in a dedicated method
   initializeAppointmentForm(): void {
     this.appointmentForm = this.fb.group({
@@ -187,10 +198,6 @@ export class ClinicDashboardComponent implements OnInit {
     });
   }
 
-  setActiveTab(tab: string): void {
-    this.activeTab = tab;
-  }
-
   loadAppointments(): void {
     this.selectedStatus = 'All';
     this.appointmentService.getAppointments().subscribe({
@@ -207,9 +214,12 @@ export class ClinicDashboardComponent implements OnInit {
     });
   }
 
-  loadAppointmentsDoctor(value: number): void {
+  loadAppointmentsDoctor(value: number | null): void {
+    if (!value) return; // Prevent API call if no doctor is selected
+
     this.selectedStatus = 'All';
-    // TODO
+    this.loading = true;
+
     this.appointmentService.getAppointmentsByProvider(value).subscribe({
       next: (appointments) => {
         this.appointmentsDoctor = appointments;
@@ -222,6 +232,12 @@ export class ClinicDashboardComponent implements OnInit {
         console.error(err);
       },
     });
+  }
+
+  onDoctorSelect(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const value = selectElement.value ? +selectElement.value : null;
+    this.loadAppointmentsDoctor(value);
   }
 
   loadWaitingList(): void {
@@ -388,6 +404,12 @@ export class ClinicDashboardComponent implements OnInit {
     // In a real application, this would navigate to the patient's record
   }
 
+  cancelAppointment(appointmentId: number | undefined): void {
+    console.log('Scheduling appointment for appointment ID', appointmentId);
+    const statusValue = '6';
+    this.doUpdateStatus(appointmentId, statusValue.toString());
+  }
+
   viewPatientDetails(id: number | undefined): void {
     console.log('Viewing details for patient ID', id);
     // In a real application, this would navigate to patient details
@@ -440,31 +462,26 @@ export class ClinicDashboardComponent implements OnInit {
       console.log(
         `Updating status to ${newStatus} for appointment ID: ${appointmentId}`
       );
-
-      this.appointmentService
-        .updateAppointmentStatus(appointmentId, statusValue.toString())
-        .subscribe({
-          next: () => {
-            console.log(`Status updated successfully to ${newStatus}`);
-
-            // Reload UI data
-            this.loadAppointments();
-            this.loadWaitingList();
-          },
-          error: (err: any) => {
-            console.error('Error updating status:', err);
-
-            // Revert the status change in case of error
-            if (typeof patientOrId !== 'number') {
-              patientOrId.appointment.status = 'waiting';
-            }
-          },
-        });
+      this.doUpdateStatus(appointmentId, statusValue.toString());
     } else {
       console.error('Invalid appointment data!');
     }
   }
 
+  // do update
+  doUpdateStatus(value1: number | undefined, value2: string): void {
+    this.appointmentService.updateAppointmentStatus(value1!, value2).subscribe({
+      next: () => {
+        // Reload UI data
+        this.loadAppointments();
+        this.loadWaitingList();
+        this.loadDoctors();
+      },
+      error: (err: any) => {
+        console.error('Error updating status:', err);
+      },
+    });
+  }
   // Then update your scheduleNewAppointment method
   scheduleNewAppointment(): void {
     if (this.appointmentForm.invalid) {

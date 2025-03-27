@@ -19,17 +19,20 @@ export class AppointmentService {
 
   constructor(private http: HttpClient) {}
 
+  // Active
   getAppointments(): Observable<Appointment[]> {
     return this.http.get<Appointment[]>(`${this.apiUrl}/api/appointments`);
   }
 
+  // Active
   getAppointment(id: number): Observable<Appointment> {
     return this.http.get<Appointment>(`${this.apiUrl}/api/appointments/${id}`);
   }
 
+  // Active
   getAppointmentsByProvider(providerId: number): Observable<Appointment[]> {
     return this.http.get<Appointment[]>(
-      `${this.apiUrl}/api/provider/${providerId}`
+      `${this.apiUrl}/api/Appointments/provider/${providerId}`
     );
   }
 
@@ -46,6 +49,7 @@ export class AppointmentService {
     );
   }
 
+  // Active
   createAppointment(appointment: AppointmentCreate): Observable<Appointment> {
     return this.http.post<Appointment>(
       `${this.apiUrl}/api/appointments`,
@@ -63,6 +67,7 @@ export class AppointmentService {
     );
   }
 
+  // active
   updateAppointmentStatus(
     appointmentId: number,
     status: string
@@ -77,11 +82,6 @@ export class AppointmentService {
 
   deleteAppointment(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/api/appointments/${id}`);
-  }
-
-  // TO DO
-  cancelAppointment(id: number): Observable<Appointment> {
-    return this.http.patch<Appointment>(`${this.apiUrl}/${id}/cancel`, {});
   }
 
   rescheduleAppointment(
