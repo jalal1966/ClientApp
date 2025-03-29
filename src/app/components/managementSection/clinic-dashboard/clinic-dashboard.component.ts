@@ -204,8 +204,8 @@ export class ClinicDashboardComponent implements OnInit {
   }
 
   openMap(): void {
-    //this.router.navigate(['/doctor-map']);
-    this.router.navigate(['usersList']);
+    this.router.navigate(['/doctor-map']);
+    // this.router.navigate(['usersList']);
   }
 
   loadAppointments(): void {

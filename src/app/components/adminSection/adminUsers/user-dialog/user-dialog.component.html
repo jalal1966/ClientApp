@@ -1,0 +1,192 @@
+<!-- user-dialog/user-dialog.component.html -->
+<div class="modal-header">
+  <h5 class="modal-title">{{ dialogTitle }}</h5>
+  <button
+    type="button"
+    class="btn-close"
+    (click)="onCancel()"
+    aria-label="Close"
+  ></button>
+</div>
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <div class="modal-body">
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label for="firstName" class="form-label">First Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="firstName"
+          formControlName="firstName"
+          placeholder="First Name"
+        />
+        <div
+          *ngIf="userForm.get('firstName')?.invalid"
+          class="invalid-feedback d-block"
+        >
+          {{ getErrorMessage("firstName") }}
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="lastName" class="form-label">Last Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="lastName"
+          formControlName="lastName"
+          placeholder="Last Name"
+        />
+        <div
+          *ngIf="userForm.get('lastName')?.invalid"
+          class="invalid-feedback d-block"
+        >
+          {{ getErrorMessage("lastName") }}
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        formControlName="email"
+        placeholder="Email"
+      />
+      <div
+        *ngIf="userForm.get('email')?.invalid"
+        class="invalid-feedback d-block"
+      >
+        {{ getErrorMessage("email") }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input
+        type="text"
+        class="form-control"
+        id="username"
+        formControlName="username"
+        placeholder="Username"
+      />
+      <div
+        *ngIf="userForm.get('username')?.invalid"
+        class="invalid-feedback d-block"
+      >
+        {{ getErrorMessage("username") }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="jobTitleId" class="form-label">Role</label>
+      <select class="form-select" id="jobTitleId" formControlName="jobTitleId">
+        <option *ngFor="let job of data.jobTitles" [value]="job.id">
+          {{ job.name }}
+        </option>
+      </select>
+      <div
+        *ngIf="userForm.get('jobTitleId')?.invalid"
+        class="invalid-feedback d-block"
+      >
+        {{ getErrorMessage("jobTitleId") }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="telephoneNo" class="form-label">Phone Number</label>
+      <input
+        type="text"
+        class="form-control"
+        id="telephoneNo"
+        formControlName="telephoneNo"
+        placeholder="Phone Number"
+      />
+      <div
+        *ngIf="userForm.get('telephoneNo')?.invalid"
+        class="invalid-feedback d-block"
+      >
+        {{ getErrorMessage("telephoneNo") }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="specialist" class="form-label">Specialization</label>
+      <input
+        type="text"
+        class="form-control"
+        id="specialist"
+        formControlName="specialist"
+        placeholder="Specialization"
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="availability" class="form-label">Availability</label>
+      <input
+        type="text"
+        class="form-control"
+        id="availability"
+        formControlName="availability"
+        placeholder="Availability"
+      />
+    </div>
+
+    <!-- Password fields - only for new users -->
+    <ng-container *ngIf="!isEditMode">
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            formControlName="password"
+            placeholder="Password"
+          />
+          <div
+            *ngIf="userForm.get('password')?.invalid"
+            class="invalid-feedback d-block"
+          >
+            {{ getErrorMessage("password") }}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="confirmPassword" class="form-label"
+            >Confirm Password</label
+          >
+          <input
+            type="password"
+            class="form-control"
+            id="confirmPassword"
+            formControlName="confirmPassword"
+            placeholder="Confirm Password"
+          />
+          <div
+            *ngIf="userForm.get('confirmPassword')?.invalid"
+            class="invalid-feedback d-block"
+          >
+            {{ getErrorMessage("confirmPassword") }}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="onCancel()"
+    >
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid">
+      {{ isEditMode ? "Save Changes" : "Add User" }}
+    </button>
+  </div>
+</form>

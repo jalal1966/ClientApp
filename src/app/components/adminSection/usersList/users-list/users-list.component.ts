@@ -35,9 +35,14 @@ export class UsersListComponent implements OnInit {
           .getNurses()
           .subscribe((users) => (this.users = users));
         break;
-      case 'Patients':
+      case 'Management':
         this.usersService
-          .getPatients()
+          .getManagement()
+          .subscribe((users) => (this.users = users));
+        break;
+      case 'Admin':
+        this.usersService
+          .getAdministrator()
           .subscribe((users) => (this.users = users));
         break;
       default:

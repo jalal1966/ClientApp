@@ -11,18 +11,10 @@ export class UsersService {
   private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
-
+  // active
   getUsers(): Observable<User[]> {
     console.log(this.http.get<User[]>(`${this.apiUrl}/api/Users`));
     return this.http.get<User[]>(`${this.apiUrl}/api/Users`);
-  }
-
-  getUser(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`);
-  }
-
-  getProviders(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/providers`);
   }
 
   getDoctors(): Observable<User[]> {
@@ -30,11 +22,20 @@ export class UsersService {
   }
 
   getNurses(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/nurses`);
+    return this.http.get<User[]>(`${this.apiUrl}/api/Users/nurses`);
   }
 
-  getPatients(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/patients`);
+  getAdministrator(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/api/Users/Administrator`);
+  }
+
+  getManagement(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/api/Users/Management`);
+  }
+
+  // Not Active Yet ///////////////////////77//////////////////////////////////////////777
+  getUser(id: number): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${id}`);
   }
 
   createUser(user: User): Observable<User> {

@@ -1,0 +1,141 @@
+/* admin-users.component.scss */
+.users-container {
+  padding: 24px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-weight: 500;
+      color: #333;
+    }
+  }
+
+  .filters-container {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+
+    .filters-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+
+      mat-form-field {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .reset-button {
+        height: 56px;
+      }
+    }
+  }
+
+  .users-table-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      padding: 48px 0;
+    }
+
+    .no-users {
+      text-align: center;
+      padding: 48px 0;
+      color: #666;
+    }
+
+    .users-table {
+      width: 100%;
+
+      .mat-mdc-row:hover {
+        background-color: #f5f5f5;
+      }
+
+      .mat-mdc-cell {
+        padding: 16px 8px;
+      }
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .role-0 {
+      // Admin
+      background-color: #e91e63;
+      color: white;
+    }
+
+    .role-1 {
+      // Doctor
+      background-color: #2196f3;
+      color: white;
+    }
+
+    .role-2 {
+      // Nurse
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .role-3 {
+      // Management
+      background-color: #ff9800;
+      color: white;
+    }
+
+    .role-4 {
+      // Patient
+      background-color: #9c27b0;
+      color: white;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .users-container {
+    padding: 16px;
+
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .filters-form {
+      flex-direction: column;
+      align-items: stretch;
+
+      mat-form-field {
+        width: 100%;
+      }
+    }
+
+    .users-table {
+      // Hide less important columns on mobile
+      .mat-column-userID,
+      .mat-column-email {
+        display: none;
+      }
+    }
+  }
+}
