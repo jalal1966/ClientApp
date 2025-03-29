@@ -7,20 +7,21 @@ import {
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { ProductDetailsComponent } from './components/product-details/product-details.component';
 import { ProductFormComponent } from './components/product-form/product-form.component';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
-import { DoctorPageComponent } from './components/doctor-page/doctor-page.component';
-import { RoleGuard } from './services/roleGuard/role-guard.service';
-import { NursePageComponent } from './components/nurse-page/nurse-page.component';
+import { LoginComponent } from './components/commonSection/login/login.component';
+import { RegisterComponent } from './components/commonSection/register/register.component';
+import { ForgotPasswordComponent } from './components/commonSection/forgot-password/forgot-password.component';
+import { AppointmentComponent } from './components/commonSection/appointment/appointment.component';
+import { WaitingListComponent } from './components/commonSection/waiting-list/waiting-list.component';
+import { NursePageComponent } from './components/nursingSection/nurse-page/nurse-page.component';
+import { ClinicDashboardComponent } from './components/managementSection/clinic-dashboard/clinic-dashboard.component';
+import { TaskDashboardComponent } from './components/nursingSection/task-dashboard/task-dashboard.component';
 import { AuthGuard } from './services/authGuard/auth-guard.service';
-import { AdministratorComponent } from './components/administrator/administrator.component';
-import { PatientListComponent } from './components/patient-list/patient-list.component';
-import { PatientFormComponent } from './components/patient-form/patient-form.component';
-import { AppointmentComponent } from './components/appointment/appointment.component';
-import { WaitingListComponent } from './components/waiting-list/waiting-list.component';
-import { ClinicDashboardComponent } from './components/clinic-dashboard/clinic-dashboard.component';
-import { TaskDashboardComponent } from './components/task-dashboard/task-dashboard.component';
+import { AdministratorComponent } from './components/adminSection/administrator/administrator.component';
+import { RoleGuard } from './services/roleGuard/role-guard.service';
+import { DoctorPageComponent } from './components/doctorsSection/doctor-page/doctor-page.component';
+import { PatientListComponent } from './components/patientsSection/patient-list/patient-list.component';
+import { DoctorMapScheduleComponent } from './components/commonSection/doctor-map-schedule/doctor-map-schedule.component';
+import { UsersListComponent } from './components/adminSection/usersList/users-list/users-list.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -31,6 +32,8 @@ export const routes: Routes = [
   { path: 'nurse', component: NursePageComponent },
   { path: 'management', component: ClinicDashboardComponent },
   { path: 'task-dashboard', component: TaskDashboardComponent },
+  { path: 'doctor-map', component: DoctorMapScheduleComponent },
+  { path: 'usersList', component: UsersListComponent },
   {
     path: 'products',
     component: ProductListComponent,
@@ -76,7 +79,7 @@ export const routes: Routes = [
   },
   {
     path: 'patient-form',
-    component: PatientFormComponent,
+    component: PatientListComponent,
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' }, // Wildcard route for a 404 page

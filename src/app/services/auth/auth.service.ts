@@ -49,9 +49,9 @@ export class AuthService {
           localStorage.setItem('expiration', user.expiration.toString());
           this.currentUserSubject.next(user);
           // Store job title ID for role-based routing
-          // Make sure jobTitleId is stored explicitly as a number
-          if (user.jobTitleId !== undefined) {
-            localStorage.setItem('jobTitleId', user.jobTitleId.toString());
+          // Make sure jobTitelD is stored explicitly as a number
+          if (user.jobTitelD !== undefined) {
+            localStorage.setItem('jobTitelD', user.jobTitelD.toString());
           }
 
           this.currentUserSubject.next(user);
@@ -148,11 +148,11 @@ export class AuthService {
       return;
     }
 
-    // Ensure jobTitleId is treated as a number
+    // Ensure jobTitelD is treated as a number
     const roleId =
-      typeof user.jobTitleId === 'string'
-        ? parseInt(user.jobTitleId, 10)
-        : user.jobTitleId;
+      typeof user.jobTitleID === 'string'
+        ? parseInt(user.jobTitleID, 10)
+        : user.jobTitleID;
 
     console.log('Navigating based on role ID:', roleId);
 
@@ -185,7 +185,7 @@ export class AuthService {
 
   // Check if the user has a specific role
   hasRole(roleId: number): boolean {
-    return this.currentUserValue?.jobTitleId === roleId;
+    return this.currentUserValue?.jobTitleID === roleId;
   }
 
   // Check if the current token is expired

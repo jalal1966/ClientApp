@@ -37,7 +37,7 @@ export class RoleGuard implements CanActivate {
 
     // Check if route has required role
     const requiredRoleId = route.data['roleId'] as number;
-    if (requiredRoleId && user.jobTitleId !== requiredRoleId) {
+    if (requiredRoleId && user.jobTitleID !== requiredRoleId) {
       // User doesn't have required role, redirect to appropriate page
       this.authService.navigateByRole();
       return false;

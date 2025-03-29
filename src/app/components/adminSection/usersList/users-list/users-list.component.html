@@ -1,0 +1,50 @@
+<div class="users-list-container">
+  <h2>Users List</h2>
+
+  <div class="filter-section">
+    <label for="userRoleSelect">Filter by Role:</label>
+    <select
+      id="userRoleSelect"
+      [(ngModel)]="selectedUserRole"
+      (change)="loadUsers()"
+    >
+      <option value="All">All Users</option>
+      <option value="Admin">Admin</option>
+      <option value="Doctors">Doctors</option>
+      <option value="Nurses">Nurses</option>
+    </select>
+  </div>
+  <div class="table-responsive p-2 border rounded">
+    <table
+      class="table table-bordered table-striped table-hover patients-table"
+    >
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Email</th>
+          <th>JobTile</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.userID }}</td>
+          <td>{{ user.firstName }}</td>
+          <td>{{ user.lastName }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.jobTitleID | jobTitle }}</td>
+          <td>
+            <button
+              (click)="deleteUser(user.userID)"
+              class="btn btn-sm btn-danger"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

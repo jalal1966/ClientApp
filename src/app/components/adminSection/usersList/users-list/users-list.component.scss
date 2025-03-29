@@ -1,0 +1,118 @@
+.users-list-container {
+  padding: 20px;
+
+  .filter-section {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+
+    label {
+      margin-right: 10px;
+    }
+
+    select {
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+
+    .waiting .status-badge {
+      background-color: #fff3e0;
+      color: #ef6c00;
+    }
+
+    .in-progress .status-badge {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .completed .status-badge {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .no-show .status-badge {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+
+    .action-button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-right: 5px;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+
+    .start-button {
+      background-color: #1976d2;
+      color: white;
+    }
+
+    .complete-button {
+      background-color: #2e7d32;
+      color: white;
+    }
+
+    .no-show-button {
+      background-color: #c62828;
+      color: white;
+    }
+  }
+}
+.chart {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart h3 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}

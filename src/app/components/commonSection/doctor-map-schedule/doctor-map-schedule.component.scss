@@ -1,0 +1,91 @@
+.doctor-schedule-container {
+  font-family: Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.legend {
+  display: flex;
+  gap: 15px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-item::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+}
+
+.legend-item.available::before {
+  background-color: #4caf50;
+}
+.legend-item.booked::before {
+  background-color: #ff9800;
+}
+.legend-item.unavailable::before {
+  background-color: #f44336;
+}
+
+.schedule-grid {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+}
+
+.day-column {
+  flex: 1;
+  min-width: 200px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.day-header {
+  background-color: #f0f0f0;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.time-slots {
+  display: flex;
+  flex-direction: column;
+}
+
+.slot {
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.slot.available {
+  background-color: #e8f5e9;
+}
+.slot.booked {
+  background-color: #fff3e0;
+}
+.slot.unavailable {
+  background-color: #ffebee;
+}
+
+.slot-time {
+  font-weight: bold;
+}
+
+.slot-patient {
+  color: #666;
+}

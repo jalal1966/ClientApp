@@ -1,0 +1,30 @@
+<div class="doctor-schedule-container">
+  <div class="schedule-header">
+    <h2>Dr. {{ doctorName }}'s Schedule</h2>
+    <div class="legend">
+      <span class="legend-item available">Available</span>
+      <span class="legend-item booked">Booked</span>
+      <span class="legend-item unavailable">Unavailable</span>
+    </div>
+  </div>
+
+  <div class="schedule-grid">
+    <div *ngFor="let day of schedule" class="day-column">
+      <div class="day-header">
+        {{ day.date | date : "EEE, MMM d" }}
+      </div>
+      <div class="time-slots">
+        <div
+          *ngFor="let slot of day.slots"
+          class="slot"
+          [ngClass]="slot.status"
+        >
+          <div class="slot-time">{{ slot.startTime }} - {{ slot.endTime }}</div>
+          <div *ngIf="slot.patient" class="slot-patient">
+            {{ slot.patient }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

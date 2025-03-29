@@ -16,14 +16,6 @@ export interface Appointment {
   status: string;
   notes: string;
 }
-/* export interface AppointmentCreate {
-  patientId: number;
-  providerId: number;
-  startTime: string; // ISO date string
-  endTime: string; // ISO date string
-  notes: string;
-  type: string;
-} */
 
 // First, add this interface to your models if it doesn't exist already
 export interface AppointmentCreate {
@@ -34,10 +26,6 @@ export interface AppointmentCreate {
   type: string;
   status: string;
   notes?: string;
-  /*patientFirstName: string;
-  patientLastName: string;
-  providerFirstName: string;
-  providerLastName: string;*/
 }
 
 export interface AppointmentUpdate {
@@ -48,4 +36,16 @@ export interface AppointmentUpdate {
   status: string;
   notes: string;
   type: string;
+}
+
+export interface AppointmentSlot {
+  startTime: string;
+  endTime: string;
+  status: 'available' | 'booked' | 'unavailable';
+  patient?: string;
+}
+
+export interface DaySchedule {
+  date: Date;
+  slots: AppointmentSlot[];
 }
