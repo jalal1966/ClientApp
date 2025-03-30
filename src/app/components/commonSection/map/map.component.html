@@ -1,0 +1,134 @@
+<!-- src/app/components/map/map.component.html -->
+<div class="doctor-map-container">
+  <!--<h3 class="text-center mb-4">Doctor Appointment Schedule</h3>-->
+  <!-- Legend -->
+  <div class="schedule-legend mt-3">
+    <div class="legend-item">
+      <div class="legend-color bg-primary"></div>
+      <div class="legend-label">Scheduled</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color bg-success"></div>
+      <div class="legend-label">Completed</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color bg-danger"></div>
+      <div class="legend-label">Cancelled</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color bg-warning"></div>
+      <div class="legend-label">In Progress</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color lunch-color"></div>
+      <div class="legend-label">Lunch Break</div>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- Filters -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="form-group">
+        <label for="date-picker">Date:</label>
+        <input
+          type="date"
+          id="date-picker"
+          class="form-control"
+          [value]="selectedDate"
+          (change)="onDateChange($event)"
+        />
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group">
+        <label for="status-filter">Status:</label>
+        <select
+          id="status-filter"
+          class="form-select"
+          [(ngModel)]="selectedStatus"
+          (change)="onStatusChange($event)"
+        >
+          <option value="all">All Statuses</option>
+          <option value="Scheduled">Scheduled</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Map -->
+  <div class="schedule-map" *ngIf="!loading && scheduleSlots.length > 0">
+    <div class="schedule-header">
+      <div class="time-column header-cell" style="background-color: #343a40">
+        Time
+      </div>
+      <div
+        class="provider-column header-cell"
+        *ngFor="let provider of providers"
+      >
+        {{ provider.name }}
+      </div>
+    </div>
+
+    <div class="schedule-body">
+      <div class="schedule-row" *ngFor="let slot of scheduleSlots">
+        <div class="time-column">{{ slot.time }}</div>
+        <div class="provider-column" *ngFor="let provider of providers">
+          <!-- Appointment cell -->
+          <div
+            *ngIf="slot.appointments[provider.id]"
+            class="appointment-cell"
+            [ngClass]="getAppointmentClass(slot.appointments[provider.id])"
+            (click)="viewAppointment(slot.appointments[provider.id])"
+          >
+            <span class="patient-name"
+              >{{ slot.appointments[provider.id]?.patientFirstName }}
+              {{ slot.appointments[provider.id]?.patientLastName }}</span
+            >
+            <span class="appointment-type">
+              The reason: {{ slot.appointments[provider.id]?.type }}</span
+            >
+          </div>
+
+          <!-- Lunch time cell -->
+          <div
+            *ngIf="
+              !slot.appointments[provider.id] &&
+              isLunchTimeCell(slot, provider.id)
+            "
+            class="lunch-time-cell"
+          >
+            <i class="bi bi-cup-hot-fill"></i> Lunch Break
+          </div>
+
+          <!-- Empty cell -->
+          <div
+            *ngIf="
+              !slot.appointments[provider.id] &&
+              !isLunchTimeCell(slot, provider.id)
+            "
+            class="empty-cell"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && scheduleSlots.length === 0" class="text-center">
+    No appointments found for the selected criteria.
+  </div>
+</div>

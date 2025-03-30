@@ -4,7 +4,7 @@ export interface Appointment {
   patients: any;
   id: number;
   patientId: number;
-  // patient: Patient;
+  // patient: Patients;
   patientFirstName?: string;
   patientLastName?: string;
   providerId: number;
@@ -15,6 +15,7 @@ export interface Appointment {
   type: string;
   status: string;
   notes: string;
+  lastVisitDate: string | Date;
 }
 
 // First, add this interface to your models if it doesn't exist already
@@ -48,4 +49,18 @@ export interface AppointmentSlot {
 export interface DaySchedule {
   date: Date;
   slots: AppointmentSlot[];
+}
+
+export interface ScheduleSlot {
+  time: string;
+  appointments: { [providerId: string]: Appointment | null };
+  isLunchTime?: boolean; // New property to mark lunch time
+}
+
+export interface Provider {
+  id: number;
+  name: string;
+  namePatient?: string;
+  lunchStart?: string; // Optional lunch start time
+  lunchEnd?: string; // Optional lunch end time
 }

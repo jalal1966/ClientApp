@@ -348,13 +348,21 @@
       </div>
     </section>
 
+    <!--Doctor schedule Tab 
+    ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    -->
+    <section *ngIf="activeTab === 'mapSchedule'" class="tab-content">
+      <app-doctor-map></app-doctor-map>
+    </section>
+
     <!-- Doctor schedule Tab -->
     <section *ngIf="activeTab === 'appointmentsDoctor'" class="tab-content">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h5">Doctor schedule</h2>
-        <button class="btn btn-sm btn-secondary me-2" (click)="openMap()">
+        <!--<button class="btn btn-sm btn-secondary me-2" (click)="openMap()">
           Map-Schedule
-        </button>
+        </button>-->
         <div class="mb-3">
           <select class="form-select" (change)="onDoctorSelect($event)">
             <option [value]="null">Select Doctor</option>
@@ -376,6 +384,7 @@
               <th class="th-spacing">Time</th>
               <th>Resin</th>
               <th>Status</th>
+              <th>Last Visit</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -400,7 +409,11 @@
               <td>
                 <span class="badge bg-info">{{ patient.status }}</span>
               </td>
-
+              <td>
+                <span style="color: black"
+                  >📅 {{ patient.lastVisitDate | date : "yyyy-MM-dd" }}</span
+                >
+              </td>
               <td>
                 <button
                   class="btn btn-sm btn-info me-2"

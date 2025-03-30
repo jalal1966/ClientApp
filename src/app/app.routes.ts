@@ -22,6 +22,7 @@ import { DoctorPageComponent } from './components/doctorsSection/doctor-page/doc
 import { PatientListComponent } from './components/patientsSection/patient-list/patient-list.component';
 import { DoctorMapScheduleComponent } from './components/commonSection/doctor-map-schedule/doctor-map-schedule.component';
 import { UsersListComponent } from './components/adminSection/usersList/users-list/users-list.component';
+import { MapComponent } from './components/commonSection/map/map.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -34,6 +35,7 @@ export const routes: Routes = [
   { path: 'task-dashboard', component: TaskDashboardComponent },
   { path: 'doctor-map', component: DoctorMapScheduleComponent },
   { path: 'usersList', component: UsersListComponent },
+  { path: 'doctor-schedule', component: MapComponent },
   {
     path: 'products',
     component: ProductListComponent,

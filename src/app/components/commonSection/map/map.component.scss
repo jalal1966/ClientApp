@@ -1,0 +1,189 @@
+// src/app/components/map/map.component.scss
+
+.doctor-map-container {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-map {
+  overflow-x: auto;
+
+  .schedule-header {
+    display: flex;
+    background-color: #343a40;
+    color: white;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    .header-cell {
+      padding: 5px;
+      text-align: center;
+      border-right: 1px solid #dee2e6;
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+
+  .schedule-body {
+    .schedule-row {
+      display: flex;
+      border-bottom: 1px solid #dee2e6;
+      min-height: 40px;
+
+      &:nth-child(even) {
+        background-color: rgba(0, 0, 0, 0.03);
+      }
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.07);
+      }
+    }
+  }
+
+  .time-column {
+    width: 100px;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    border-right: 1px solid #dee2e6;
+    background-color: #f1f3f5;
+  }
+
+  .provider-column {
+    flex: 1;
+    min-width: 150px;
+    border-right: 1px solid #dee2e6;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  .appointment-cell {
+    height: 100%;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      transform: scale(1.02);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .patient-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .appointment-type {
+      font-size: 0.8rem;
+    }
+  }
+
+  // Lunch time cell styling
+  .lunch-time-cell {
+    height: 100%;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #6c757d;
+    background-color: #fff3cd;
+    border: 1px dashed #ffc107;
+    font-size: 0.9rem;
+
+    i {
+      margin-bottom: 4px;
+      font-size: 1.1rem;
+    }
+  }
+
+  .empty-cell {
+    height: 100%;
+  }
+}
+
+// Legend for appointment statuses
+.schedule-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 20px;
+  justify-content: center;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      border-radius: 4px;
+
+      &.lunch-color {
+        background-color: #fff3cd;
+        border: 1px dashed #ffc107;
+      }
+    }
+
+    .legend-label {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Status colors are handled by Bootstrap classes:
+// .bg-primary (blue) for Scheduled
+// .bg-success (green) for Completed
+// .bg-danger (red) for Cancelled
+// .bg-warning (yellow) for In Progress
+// .bg-info (cyan) for other statuses
+
+// Media queries for responsiveness
+@media (max-width: 768px) {
+  .schedule-map {
+    font-size: 0.85rem;
+
+    .time-column {
+      width: 80px;
+      min-width: 80px;
+    }
+
+    .provider-column {
+      min-width: 120px;
+    }
+
+    .lunch-time-cell {
+      font-size: 0.8rem;
+    }
+  }
+
+  .schedule-legend {
+    gap: 10px;
+
+    .legend-item {
+      .legend-color {
+        width: 16px;
+        height: 16px;
+      }
+
+      .legend-label {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}

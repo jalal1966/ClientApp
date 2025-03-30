@@ -26,6 +26,7 @@ import {
 } from '../../../models/enums.model';
 import { PatientService } from '../../../services/patient/patient.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { MapComponent } from '../../commonSection/map/map.component';
 
 @Component({
   selector: 'app-clinic-dashboard',
@@ -38,6 +39,7 @@ import { AuthService } from '../../../services/auth/auth.service';
     AgePipe,
     GenderPipe,
     StatusFilterComponent,
+    MapComponent,
   ],
   templateUrl: './clinic-dashboard.component.html',
   styleUrl: './clinic-dashboard.component.scss',
@@ -108,6 +110,7 @@ export class ClinicDashboardComponent implements OnInit {
   tabs = [
     { key: 'waitingList', label: 'WaitingList' },
     { key: 'appointments', label: 'Appointments' },
+    { key: 'mapSchedule', label: 'AppointmentsMap' },
     { key: 'appointmentsDoctor', label: 'Doctor schedule' },
     { key: 'patients', label: 'Patients' },
     { key: 'analytics', label: 'Analytics' },
@@ -205,7 +208,7 @@ export class ClinicDashboardComponent implements OnInit {
 
   openMap(): void {
     this.router.navigate(['/doctor-map']);
-    // this.router.navigate(['usersList']);
+    //this.router.navigate(['/doctor-schedule']);
   }
 
   loadAppointments(): void {
