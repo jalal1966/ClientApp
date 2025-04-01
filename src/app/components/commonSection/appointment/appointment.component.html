@@ -1,239 +1,194 @@
 <div class="appointment-container">
-  <div *ngIf="loading" class="loading">
-    <p>Loading...</p>
-  </div>
-  <div *ngIf="error" class="error-message">
-    <p>{{ error }}</p>
-    <button (click)="error = null">Dismiss</button>
-  </div>
-
-  <div *ngIf="!loading">
-    <div class="header">
-      <h2>{{ isNew ? "New Appointment" : "Appointment Details" }}</h2>
-      <div class="actions" *ngIf="!isNew && !isEditing">
-        <button (click)="toggleEdit()">Edit</button>
-
-        <button
-          (click)="completeAppointment()"
-          [class.disabled]="appointment?.status !== 'Confirmed'"
-          [disabled]="appointment?.status !== 'Confirmed'"
-        >
-          Complete
-        </button>
-      </div>
-    </div>
-    <!-- Status Filter Dropdown -->
-    <div class="filter-container">
-      <label for="status-filter">Filter by Status:</label>
-      <select id="status-filter" [(ngModel)]="selectedStatus">
-        <option value="all">All</option>
-        <option value="Confirmed">Confirmed</option>
-        <option value="Scheduled">Scheduled</option>
-        <option value="CheckedIn">CheckedIn</option>
-        <option value="Completed">Completed</option>
-        <option value="Cancelled">Cancelled</option>
-        <option value="No-show">No Show</option>
-      </select>
-    </div>
-
-    <div *ngIf="!isEditing && appointment" class="appointment-details">
-      <div class="detail-row">
-        <span class="label">Patient:</span>
-        <span class="value">{{ appointment.patientFirstName }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Patient:</span>
-        <span class="value">{{ appointment.patientLastName }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Provider:</span>
-        <span class="value">{{ appointment.providerFirstName }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Provider:</span>
-        <span class="value">{{ appointment.providerLastName }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Start Time:</span>
-        <span class="value">{{ appointment.startTime | date : "medium" }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">End Time:</span>
-        <span class="value">{{ appointment.endTime | date : "medium" }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Type:</span>
-        <span class="value">{{ appointment.type }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Status:</span>
-        <span class="value" [ngClass]="appointment.status.toLowerCase()">{{
-          appointment.status
-        }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Notes:</span>
-        <span class="value">{{ appointment.notes }}</span>
-      </div>
-    </div>
-
-    <form
-      *ngIf="isEditing"
-      [formGroup]="appointmentForm"
-      (ngSubmit)="saveAppointment()"
-      class="appointment-form"
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5">All Appointments</h2>
+    <p>Total Appointments: {{ appointments.length }}</p>
+    <app-status-filter
+      [selectedStatus]="selectedStatus"
+      (statusChange)="selectedStatus = $event"
     >
-      <!--
-    div class="form-group">
-        <label for="notes">Notes</label>
-        <textarea id="notes" formControlName="notes" rows="4"></textarea>
-      </div>
-    -->
-
-      <div class="form-group">
-        <label for="patientId">Patient ID</label>
-        <input type="number" id="patientId" formControlName="patientId" />
-        <div
-          *ngIf="appointmentForm.get('patientId')?.errors?.['required'] && appointmentForm.get('patientId')?.touched"
-          class="error"
-        >
-          Patient is required
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="providerId">Provider ID</label>
-        <input type="number" id="providerId" formControlName="providerId" />
-        <div
-          *ngIf="appointmentForm.get('providerId')?.errors?.['required'] && appointmentForm.get('providerId')?.touched"
-          class="error"
-        >
-          Provider is required
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="startTime">Start Time</label>
-        <input
-          type="datetime-local"
-          id="startTime"
-          formControlName="startTime"
-        />
-        <div
-          *ngIf="appointmentForm.get('startTime')?.errors?.['required'] && appointmentForm.get('startTime')?.touched"
-          class="error"
-        >
-          Start time is required
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="endTime">End Time</label>
-        <input type="datetime-local" id="endTime" formControlName="endTime" />
-        <div
-          *ngIf="appointmentForm.get('endTime')?.errors?.['required'] && appointmentForm.get('endTime')?.touched"
-          class="error"
-        >
-          End time is required
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="type">Appointment Type</label>
-        <select id="type" formControlName="type">
-          <option value="">Select type</option>
-          <option value="Consultation">Consultation</option>
-          <option value="Follow-up">Follow-up</option>
-          <option value="Checkup">Checkup</option>
-          <option value="Treatment">Treatment</option>
-          <option value="Emergency">Emergency</option>
-        </select>
-        <div
-          *ngIf="appointmentForm.get('type')?.errors?.['required'] && appointmentForm.get('type')?.touched"
-          class="error"
-        >
-          Type is required
-        </div>
-      </div>
-
-      <div class="form-group" *ngIf="!isNew">
-        <label for="status">Status</label>
-        <select id="status" formControlName="status">
-          <option value="Scheduled">Scheduled</option>
-          <option value="Confirmed">Confirmed</option>
-          <option value="Cancelled">Cancelled</option>
-          <option value="Completed">Completed</option>
-          <option value="No-show">No-show</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="notes">Notes</label>
-        <textarea id="notes" formControlName="notes" rows="4"></textarea>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" [disabled]="appointmentForm.invalid">
-          {{ isNew ? "Create" : "Save" }}
-        </button>
-        <button type="button" (click)="toggleEdit()">Cancel</button>
-      </div>
-    </form>
+    </app-status-filter>
+    <button class="btn btn-primary" (click)="showNewAppointmentForm = true">
+      + New Appointment
+    </button>
   </div>
-  <!-- Need don't delete-->
-  <div *ngIf="!loading && !error" class="table-responsive">
-    <table class="table table-striped">
-      <thead>
+
+  <div *ngIf="showNewAppointmentForm" class="modal fade show d-block">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Schedule New Appointment</h3>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="showNewAppointmentForm = false"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form
+            [formGroup]="appointmentForm"
+            (ngSubmit)="scheduleNewAppointment()"
+          >
+            <div class="mb-3">
+              <label class="form-label">Patient</label>
+              <select class="form-select" formControlName="patientId">
+                <option [ngValue]="null">Select Patient</option>
+                <option *ngFor="let patient of patients" [ngValue]="patient.id">
+                  {{ patient.firstName }} {{ patient.lastName }}
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Doctor</label>
+              <select class="form-select" formControlName="doctorId">
+                <option [ngValue]="null">Select Doctor</option>
+                <option
+                  *ngFor="let doctor of doctors"
+                  [ngValue]="doctor.userID"
+                >
+                  Dr. {{ doctor.firstName }} {{ doctor.lastName }}
+                  <span *ngIf="doctor.specialist"
+                    >({{ doctor.specialist }})</span
+                  >
+                </option>
+              </select>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label"> start Date</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  formControlName="appointmentDate"
+                />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Time</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  formControlName="appointmentTime"
+                />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Reason</label>
+              <select class="form-select" formControlName="appointmentType">
+                <option [ngValue]="null">Select Reason</option>
+                <option *ngFor="let type of appointmentTypes" [ngValue]="type">
+                  {{ type.label }}
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select class="form-select" formControlName="appointmentStatus">
+                <option [ngValue]="null">Select Status</option>
+                <option
+                  *ngFor="let status of appointmentStatuses"
+                  [ngValue]="status"
+                >
+                  {{ status.label }}
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <textarea
+                class="form-control"
+                formControlName="notes"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <button
+                type="button"
+                class="btn btn-secondary me-2"
+                (click)="showNewAppointmentForm = false"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="btn btn-success"
+                [disabled]="appointmentForm.invalid"
+              >
+                Schedule
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive p-2 border rounded">
+    <table
+      class="table table-bordered table-striped table-hover patients-table"
+    >
+      <thead class="table-light">
         <tr>
-          <th>ID</th>
-          <th>PatientName</th>
-          <th>ProviderName</th>
+          <th class="th-spacing">Today's</th>
+          <th class="th-spacing">Time</th>
+          <th>Patient</th>
+          <th>The Reason</th>
+          <th>Doctor</th>
           <th>Status</th>
-          <th>startTime</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let appointment of filterAppointments()">
-          <td>{{ appointment.id }}</td>
+        <tr
+          *ngFor="let appointment of onStatusChange(selectedStatus)"
+          [class]="appointment.status"
+        >
           <td>
-            {{ appointment.patientFirstName }} {{ appointment.patientLastName }}
+            <span class="dateSpace"
+              >📅 {{ appointment.startTime | date : "yyyy-MM-dd" }}</span
+            >
           </td>
           <td>
-            {{ appointment.providerFirstName }}
+            <span class="time"
+              >⌚{{ appointment.startTime | date : "HH:mm" }}</span
+            >
+          </td>
+          <td>
+            {{ appointment.patientFirstName }}
+            {{ appointment.patientLastName }}
+          </td>
+          <td>
+            {{ appointment.type }}
+          </td>
+          <td>
+            Dr. {{ appointment.providerFirstName }}
             {{ appointment.providerLastName }}
           </td>
-          <td>{{ appointment.status }}</td>
-          <td>{{ appointment.startTime | date }}</td>
+          <td>
+            <span class="badge bg-info">{{ appointment.status }}</span>
+          </td>
           <td>
             <button
-              class="btn btn-danger btn-sm me-2"
-              (click)="cancelAppointment(appointment)"
+              class="btn btn-sm btn-danger me-2"
+              (click)="updateStatus(appointment.id, 'Completed')"
             >
-              Cancel Appointment
+              Complete
             </button>
-
-            <!--<button
-              (click)="deleteappointment(appointment.id)"
-              class="btn btn-danger btn-sm"
+            <button
+              class="btn btn-sm btn-success me-2"
+              (click)="updateStatus(appointment.id, 'Cancelled')"
             >
-              Delete
-            </button>-->
+              Cancel
+            </button>
+            <button
+              class="btn btn-sm btn-danger me-2"
+              (click)="openPatientRecord(appointment)"
+            >
+              View Record
+            </button>
           </td>
-        </tr>
-
-        <tr *ngIf="appointments.length === 0">
-          <td colspan="6" class="text-center">No appointments available</td>
         </tr>
       </tbody>
     </table>
-  </div>
-  <div
-    *ngIf="filterAppointments().length === 0 && !loading && !error"
-    class="no-patients-message"
-  >
-    <p>No patients found with the selected status.</p>
-    <p *ngIf="appointments.length === 0">
-      There are no appointments for today.
-    </p>
   </div>
 </div>

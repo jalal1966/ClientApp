@@ -5,11 +5,14 @@ import { RouterModule } from '@angular/router';
 import { WaitingPatient } from '../../../models/waiting.model';
 import { Appointment } from '../../../models/appointment.model';
 import { AppointmentService } from '../../../services/appointment/appointment.service';
+import { AppointmentStatus } from '../../../models/enums.model';
+import { StatusFilterComponent } from '../shared/status-filter/status-filter.component';
+import { FilterService } from '../../../services/filterService/filter.service';
 
 @Component({
   selector: 'app-waiting-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, StatusFilterComponent],
   templateUrl: './waiting-list.component.html',
   styleUrls: ['./waiting-list.component.scss'],
 })
@@ -22,17 +25,32 @@ export class WaitingListComponent implements OnInit, OnDestroy {
   refreshInterval: any;
   selectedStatus: string = 'all';
 
+  appointmentStatuses = [
+    { value: AppointmentStatus.Scheduled, label: 'Scheduled' },
+    { value: AppointmentStatus.Confirmed, label: 'Confirmed' },
+    { value: AppointmentStatus.Waiting, label: 'Waiting' },
+    { value: AppointmentStatus.InProgress, label: 'InProgress' },
+    { value: AppointmentStatus.Completed, label: 'Completed' },
+    { value: AppointmentStatus.CheckedIn, label: 'Checked In' },
+    { value: AppointmentStatus.Cancelled, label: 'Cancelled' },
+    { value: AppointmentStatus.NoShow, label: 'NoShow' },
+  ];
+
   constructor(
+    private filterService: FilterService,
     private appointmentService: AppointmentService,
     private fb: FormBuilder
-  ) {}
+  ) {
+    this.filterService.setWaitingPatients(this.waitingPatient);
+  }
 
   ngOnInit(): void {
-    this.loadAppointments();
+    this.loadWaitingList();
 
     // Refresh every minute to update wait times
     this.refreshInterval = setInterval(() => {
       this.updateWaitTimes();
+      this.loadWaitingList();
     }, 60000);
   }
 
@@ -41,13 +59,65 @@ export class WaitingListComponent implements OnInit, OnDestroy {
       clearInterval(this.refreshInterval);
     }
   }
+  updateStatus(
+    patientOrId: WaitingPatient | number,
+    newStatus: 'InProgress' | 'Completed' | 'Cancelled' | 'NoShow'
+  ): void {
+    let appointmentId: number | undefined;
 
-  loadAppointments(): void {
-    //if (!this.providerId) return;
+    // Determine the appointment ID based on input type
+    if (typeof patientOrId === 'number') {
+      appointmentId = patientOrId;
+    } else if ('appointment' in patientOrId) {
+      appointmentId = patientOrId.appointment.id;
+      patientOrId.appointment!.status = newStatus; // Update status for UI
+    }
 
+    if (appointmentId !== undefined) {
+      const statusValue = this.findAppointmentStatus(newStatus);
+      console.log(
+        `Updating status to ${newStatus} for appointment ID: ${appointmentId}`
+      );
+      this.doUpdateStatus(appointmentId, statusValue.toString());
+    } else {
+      console.error('Invalid appointment data!');
+    }
+  }
+  findAppointmentStatus(status: string): AppointmentStatus | 'Not Found' {
+    return (
+      this.appointmentStatuses.find((item) => item.label === status)?.value ||
+      'Not Found'
+    );
+  }
+  // to delete
+  // do update
+  doUpdateStatus(value1: number | undefined, value2: string): void {
+    this.appointmentService.updateAppointmentStatus(value1!, value2).subscribe({
+      next: () => {
+        // Reload UI data
+        // this.loadAppointments();
+        this.loadWaitingList();
+        // this.loadDoctors();
+      },
+      error: (err: any) => {
+        console.error('Error updating status:', err);
+      },
+    });
+  }
+
+  onStatusChange(status: string) {
+    this.filterService.setSelectedStatus(status);
+    // Get filtered waiting patients
+    const waitingPatients = this.filterService.filterStatuses('waiting');
+    // Or get filtered appointments
+    // const appointments = this.filterService.filterStatuses('appointments');
+    return waitingPatients;
+  }
+  loadWaitingList(): void {
     this.loading = true;
     const today = new Date();
     const tomorrow = new Date();
+    this.selectedStatus = 'All';
     tomorrow.setDate(today.getDate() + 1);
 
     // Format dates as ISO strings for the API call
@@ -64,7 +134,7 @@ export class WaitingListComponent implements OnInit, OnDestroy {
             return (
               appDate.toDateString() === today.toDateString() &&
               app.status !== 'Cancelled' &&
-              app.status !== 'No-Show'
+              app.status !== 'NoShow'
             );
           });
 
@@ -82,6 +152,7 @@ export class WaitingListComponent implements OnInit, OnDestroy {
 
           console.log('Waiting patients created:', this.waitingPatient);
           this.updateWaitTimes();
+          this.filterService.setWaitingPatients(this.waitingPatient);
           this.loading = false;
         },
         error: (err) => {
@@ -103,8 +174,9 @@ export class WaitingListComponent implements OnInit, OnDestroy {
     const now = new Date();
     this.waitingPatient.forEach((patient) => {
       if (
-        patient.appointment.status === 'waiting' ||
-        patient.appointment.status === 'in-progress'
+        patient.appointment &&
+        (patient.appointment.status === 'Waiting' ||
+          patient.appointment.status === 'InProgress')
       ) {
         patient.waitTime = this.calculateWaitTime(patient.arrivalTime);
       }

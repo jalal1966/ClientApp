@@ -7,24 +7,376 @@ import {
   FormGroup,
   Validators,
   FormControl,
+  FormBuilder,
 } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import {
   Appointment,
+  AppointmentCreate,
   AppointmentUpdate,
 } from '../../../models/appointment.model';
 import { AppointmentService } from '../../../services/appointment/appointment.service';
+import { StatusFilterComponent } from '../shared/status-filter/status-filter.component';
+import { Patients } from '../../../models/patient.model';
+import { User } from '../../../models/user';
+import {
+  AppointmentStatus,
+  AppointmentType,
+} from '../../../models/enums.model';
+import { FilterService } from '../../../services/filterService/filter.service';
+import { WaitingPatient } from '../../../models/waiting.model';
+import { PatientService } from '../../../services/patient/patient.service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-appointment',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    StatusFilterComponent,
+  ],
   templateUrl: './appointment.component.html',
   styleUrls: ['./appointment.component.scss'],
 })
 export class AppointmentComponent implements OnInit {
-  [x: string]: any;
+  filterStatuses(arg0: string): any {
+    throw new Error('Method not implemented.');
+  }
+  // Form for new appointments
+  appointmentForm!: FormGroup;
   appointments: Appointment[] = [];
+  selectedStatus: string = 'all';
+  showNewAppointmentForm: boolean = false;
+  patients: Patients[] = [];
+  filteredPatients: Patients[] = [];
+  doctors: User[] = [];
+  loading = true;
+  currentUser: User | null = null;
+  refreshInterval: any;
+  patientForm!: FormGroup;
+  error = '';
+  // Then update your appointment form initialization to use these enums
+  appointmentTypes = [
+    { value: AppointmentType.CheckUp, label: 'CheckUp' },
+    { value: AppointmentType.FollowUp, label: 'FollowUp' },
+    { value: AppointmentType.Consultation, label: 'Consultation' },
+    { value: AppointmentType.Emergency, label: 'Emergency' },
+    { value: AppointmentType.Vaccination, label: 'Vaccination' },
+    { value: AppointmentType.Procedure, label: 'Procedure' },
+    { value: AppointmentType.Regular, label: 'Regular' },
+    { value: AppointmentType.Urgent, label: 'Urgent' },
+  ];
+
+  appointmentStatuses = [
+    { value: AppointmentStatus.Scheduled, label: 'Scheduled' },
+    { value: AppointmentStatus.Confirmed, label: 'Confirmed' },
+    { value: AppointmentStatus.Waiting, label: 'Waiting' },
+    { value: AppointmentStatus.InProgress, label: 'InProgress' },
+    { value: AppointmentStatus.Completed, label: 'Completed' },
+    { value: AppointmentStatus.CheckedIn, label: 'Checked In' },
+    { value: AppointmentStatus.Cancelled, label: 'Cancelled' },
+    { value: AppointmentStatus.NoShow, label: 'NoShow' },
+  ];
+  constructor(
+    private filterService: FilterService,
+    private appointmentService: AppointmentService,
+    private patientService: PatientService,
+    private docorsService: AuthService,
+    private authService: AuthService,
+    private fb: FormBuilder
+  ) {
+    // Initialize data
+    this.filterService.setWaitingPatients([]);
+    this.filterService.setAppointments(this.appointments);
+    this.filterService.setPatients(this.patients);
+  }
+  ngOnInit(): void {
+    this.Initializing();
+    this.loadAppointments();
+    this.loadPatients();
+    this.loadDoctors();
+    // Refresh every minute to update wait times
+    this.refreshInterval = setInterval(() => {
+      // this.updateWaitTimes();
+      this.loadAppointments();
+      this.Initializing();
+    }, 60000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  }
+  // Initialize the appointment form in ngOnInit or in a dedicated method
+  initializeAppointmentForm(): void {
+    this.appointmentForm = this.fb.group({
+      patientId: [null, Validators.required],
+      doctorId: [null, Validators.required],
+      appointmentDate: [
+        new Date().toISOString().split('T')[0],
+        Validators.required,
+      ],
+      appointmentTime: ['09:00', Validators.required],
+      appointmentType: [null, Validators.required],
+      appointmentStatus: ['Scheduled', Validators.required],
+      notes: [''],
+    });
+  }
+
+  Initializing(): void {
+    this.initializeForm(); // Ensure form is initialized before using it
+    this.initializeAppointmentForm();
+    // this.initializeForm();
+    // Get current user (nurse) from AuthService
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        if (user) {
+          console.log('Full user object:', JSON.stringify(user)); // This will show all properties
+          console.log('Current user loaded:', user);
+          this.currentUser = user;
+
+          // Update form with nurse information
+          this.patientForm.patchValue({
+            // nursID: user.userID,
+            nursName: `${user.firstName} ${user.lastName}`,
+          });
+
+          // Now fetch doctor info after we have user info
+          // this.loadDoctorInformation();
+        }
+      },
+      error: (err) => {
+        console.error('Error getting current user:', err);
+        this.error = 'Failed to load user information';
+      },
+    });
+  }
+  initializeForm(): void {
+    this.patientForm = this.fb.group({
+      nursName: ['', Validators.required],
+    });
+  }
+
+  scheduleAppointment(patientId: number | undefined): void {
+    console.log('Scheduling appointment for patient ID', patientId);
+    this.showNewAppointmentForm = true;
+    // In a real application, this would pre-select the patient in the form
+  }
+  // Then update your scheduleNewAppointment method
+  scheduleNewAppointment(): void {
+    if (this.appointmentForm.invalid) {
+      // Mark all fields as touched to trigger validation messages
+      Object.keys(this.appointmentForm.controls).forEach((key) => {
+        const control = this.appointmentForm.get(key);
+        control?.markAsTouched();
+      });
+      return;
+    }
+
+    const formValues = this.appointmentForm.value;
+
+    // Create ISO string date directly
+    const dateStr = formValues.appointmentDate; // "2025-03-22"
+    const timeStr = formValues.appointmentTime; // "09:00"
+    const startTimeISO = `${dateStr}T${timeStr}:00.000Z`;
+
+    // Calculate end time (30 min later)
+    const startDate = new Date(startTimeISO);
+    const endTimeISO = new Date(startDate.getTime() + 30 * 60000).toISOString();
+
+    // Get patient and doctor data
+    const patient = this.patients.find((p) => p.id === formValues.patientId);
+    const doctor = this.doctors.find((d) => d.userID === formValues.doctorId);
+
+    if (!patient || !doctor) {
+      this.error = 'Invalid patient or doctor selection';
+      return;
+    }
+
+    // Create appointment object with ISO string dates
+    const appointment: AppointmentCreate = {
+      patientId: formValues.patientId,
+      providerId: formValues.doctorId,
+      startTime: startTimeISO,
+      endTime: endTimeISO,
+      type: formValues.appointmentType.value.toString(),
+      status: formValues.appointmentStatus.value.toString(),
+      notes: formValues.notes || '',
+    };
+
+    console.log('appointment', appointment);
+    // Call your service to create appointment
+    this.appointmentService.createAppointment(appointment).subscribe({
+      next: (newAppointment) => {
+        console.log('Appointment created successfully:', newAppointment);
+        this.loadAppointments();
+        this.showNewAppointmentForm = false;
+        this.appointmentForm.reset({
+          appointmentDate: new Date().toISOString().split('T')[0],
+          appointmentTime: '09:00',
+          appointmentStatus: 'Scheduled',
+        });
+        // Clear any previous errors
+        this.error = '';
+      },
+      error: (err) => {
+        console.error('Error creating appointment:', err);
+
+        // Check for specific time slot unavailability error
+        if (err.error && err.error.includes('time slot is not available')) {
+          this.error =
+            'The requested time slot is not available. Please choose another time.';
+        } else {
+          // Generic error for other types of failures
+          this.error = 'Failed to schedule appointment. Please try again.';
+        }
+
+        // Optional: you might want to add a method to show an alert
+        this.showErrorAlert(this.error);
+      },
+    });
+  }
+  showErrorAlert(message: string): void {
+    // Example using Angular Material snackbar
+    // this.snackBar.open(message, 'Close', { duration: 5000 });
+
+    // Or using a custom alert method
+    alert(message);
+  }
+  onStatusChange(status: string) {
+    this.filterService.setSelectedStatus(status);
+    // Get filtered waiting patients
+    //const waitingPatients = this.filterService.filterStatuses('waiting');
+    // Or get filtered appointments
+    const appointments = this.filterService.filterStatuses('appointments');
+    return appointments;
+  }
+
+  onSearch(event: Event): void {
+    this.filteredPatients = this.filterService.filterPatients(event);
+  }
+
+  updateStatus(
+    patientOrId: WaitingPatient | number,
+    newStatus: 'InProgress' | 'Completed' | 'Cancelled' | 'NoShow'
+  ): void {
+    let appointmentId: number | undefined;
+
+    // Determine the appointment ID based on input type
+    if (typeof patientOrId === 'number') {
+      appointmentId = patientOrId;
+    } else if ('appointment' in patientOrId) {
+      appointmentId = patientOrId.appointment.id;
+      patientOrId.appointment!.status = newStatus; // Update status for UI
+    }
+
+    if (appointmentId !== undefined) {
+      const statusValue = this.findAppointmentStatus(newStatus);
+      console.log(
+        `Updating status to ${newStatus} for appointment ID: ${appointmentId}`
+      );
+      this.doUpdateStatus(appointmentId, statusValue.toString());
+    } else {
+      console.error('Invalid appointment data!');
+    }
+  }
+
+  doUpdateStatus(value1: number | undefined, value2: string): void {
+    this.appointmentService.updateAppointmentStatus(value1!, value2).subscribe({
+      next: () => {
+        // Reload UI data
+        this.loadAppointments();
+        //this.loadWaitingList();
+        //this.loadDoctors();
+      },
+      error: (err: any) => {
+        console.error('Error updating status:', err);
+      },
+    });
+  }
+
+  loadPatients(): void {
+    this.loading = true;
+    this.patientService.getPatients().subscribe({
+      next: (data) => {
+        this.patients = data;
+        console.log('this.patients', this.patients);
+        this.filteredPatients = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to load patients. Please try again.';
+        this.loading = false;
+      },
+    });
+  }
+
+  loadDoctors(): void {
+    // In a real application, this would be an API call
+    this.loading = true;
+    this.docorsService.getCurrentUserByJop(1).subscribe({
+      next: (data) => {
+        this.doctors = data || [];
+        //this.filteredPatients = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to load Doctors. Please try again.';
+        this.loading = false;
+      },
+    });
+    //this.doctors;
+  }
+
+  loadAppointments(): void {
+    this.selectedStatus = 'All';
+    this.appointmentService.getAppointments().subscribe({
+      next: (appointments) => {
+        this.appointments = appointments;
+        this.filterService.setAppointments(this.appointments); // Add this line
+        this.loading = false;
+        console.log('Appointments Loaded:', this.appointments);
+      },
+      error: (err) => {
+        this.error = 'Failed to load appointments';
+        this.loading = false;
+        console.error(err);
+      },
+    });
+  }
+
+  openPatientRecord(appointment: Appointment): void {
+    console.log('Opening patient record for');
+    // In a real application, this would navigate to the patient's record
+  }
+
+  findAppointmentStatus(status: string): AppointmentStatus | 'Not Found' {
+    return (
+      this.appointmentStatuses.find((item) => item.label === status)?.value ||
+      'Not Found'
+    );
+  }
+  cancelAppointment(appointmentId: number | undefined): void {
+    console.log('Scheduling appointment for appointment ID', appointmentId);
+    const statusValue = '6';
+    this.doUpdateStatus(appointmentId, statusValue.toString());
+  }
+
+  viewPatientDetails(id: number | undefined): void {
+    console.log('Viewing details for patient ID', id);
+    // In a real application, this would navigate to patient details
+  }
+
+  editPatientDetails(id: number | undefined): void {
+    console.log('Editing patient ID', id);
+    // In a real application, this would open a form to edit patient details
+  }
+
+  /*appointments: Appointment[] = [];
   appointmentForm!: FormGroup;
   appointment: Appointment | null = null;
   loading = true;
@@ -355,5 +707,5 @@ export class AppointmentComponent implements OnInit {
           );
     console.log('Filtered appointments:', filtered);
     return filtered;
-  }
+  }*/
 }

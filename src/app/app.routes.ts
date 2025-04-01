@@ -23,6 +23,7 @@ import { PatientListComponent } from './components/patientsSection/patient-list/
 import { DoctorMapScheduleComponent } from './components/commonSection/doctor-map-schedule/doctor-map-schedule.component';
 import { UsersListComponent } from './components/adminSection/usersList/users-list/users-list.component';
 import { MapComponent } from './components/commonSection/map/map.component';
+import { PatientFormComponent } from './components/patientsSection/patient-form/patient-form.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -81,7 +82,7 @@ export const routes: Routes = [
   },
   {
     path: 'patient-form',
-    component: PatientListComponent,
+    component: PatientFormComponent,
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' }, // Wildcard route for a 404 page
