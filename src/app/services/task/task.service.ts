@@ -4,12 +4,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PatientTask } from '../../models/patient-task.model';
 import { TaskStatus } from '../../models/enums.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TaskService {
-  private apiUrl = 'api/patient-tasks';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

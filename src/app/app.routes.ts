@@ -24,6 +24,12 @@ import { DoctorMapScheduleComponent } from './components/commonSection/doctor-ma
 import { UsersListComponent } from './components/adminSection/usersList/users-list/users-list.component';
 import { MapComponent } from './components/commonSection/map/map.component';
 import { PatientFormComponent } from './components/patientsSection/patient-form/patient-form.component';
+import { MedicalRecordsComponent } from './components/patientsSection/medical-records/medical-records.component';
+import { PatientAllergiesComponent } from './components/patientsSection/patient-allergies/patient-allergies.component';
+import { PatientInfoComponent } from './components/patientsSection/patient-info/patient-info.component';
+import { PatientLabResultsComponent } from './components/patientsSection/patient-lab-results/patient-lab-results.component';
+import { PatientMedicationsComponent } from './components/patientsSection/patient-medications/patient-medications.component';
+import { PatientRecordComponent } from './components/patientsSection/patient-record/patient-record.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -37,6 +43,13 @@ export const routes: Routes = [
   { path: 'doctor-map', component: DoctorMapScheduleComponent },
   { path: 'usersList', component: UsersListComponent },
   { path: 'doctor-schedule', component: MapComponent },
+  { path: ':patientId', component: MedicalRecordsComponent },
+  { path: 'mediical-recods', component: MedicalRecordsComponent },
+  { path: 'patient-allergies', component: PatientAllergiesComponent },
+  { path: 'patient-info', component: PatientInfoComponent },
+  { path: 'patient-lab-results', component: PatientLabResultsComponent },
+  { path: 'patient-medications', component: PatientMedicationsComponent },
+  { path: 'atient-record', component: PatientRecordComponent },
   {
     path: 'products',
     component: ProductListComponent,

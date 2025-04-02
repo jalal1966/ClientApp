@@ -4,7 +4,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { catchError } from 'rxjs/operators';
-import { Patients } from '../../models/patient.model';
+import { PatientDetail, Patients } from '../../models/patient.model';
 import { MedicalRecord } from '../../models/medicalRecord.model';
 import { User } from '../../models/user';
 import { differenceInYears } from 'date-fns/differenceInYears';
@@ -100,5 +100,9 @@ export class PatientService {
 
   getAge(dob: string | Date): number {
     return differenceInYears(new Date(), new Date(dob));
+  }
+
+  getPatientDetails(id: number): Observable<PatientDetail> {
+    return this.http.get<PatientDetail>(`${this.apiUrl}/${id}`);
   }
 }

@@ -1,0 +1,228 @@
+<div class="container">
+  <h2>Patient Medications</h2>
+
+  <div class="mb-4">
+    <button class="btn btn-outline-primary" (click)="toggleActiveFilter()">
+      {{ showActive ? "Show All Medications" : "Show Active Only" }}
+    </button>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>{{ editMode ? "Edit Medication" : "Add New Medication" }}</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="medicationForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="name" class="form-label">Medication Name*</label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              class="form-control"
+              required
+            />
+            <div
+              *ngIf="
+                medicationForm.get('name')?.invalid &&
+                medicationForm.get('name')?.touched
+              "
+              class="text-danger"
+            >
+              Medication name is required
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="dosage" class="form-label">Dosage*</label>
+            <input
+              type="text"
+              id="dosage"
+              formControlName="dosage"
+              class="form-control"
+              required
+            />
+            <div
+              *ngIf="
+                medicationForm.get('dosage')?.invalid &&
+                medicationForm.get('dosage')?.touched
+              "
+              class="text-danger"
+            >
+              Dosage is required
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="frequency" class="form-label">Frequency*</label>
+            <input
+              type="text"
+              id="frequency"
+              formControlName="frequency"
+              class="form-control"
+              required
+            />
+            <div
+              *ngIf="
+                medicationForm.get('frequency')?.invalid &&
+                medicationForm.get('frequency')?.touched
+              "
+              class="text-danger"
+            >
+              Frequency is required
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="prescribingProvider" class="form-label"
+              >Prescribing Provider*</label
+            >
+            <input
+              type="text"
+              id="prescribingProvider"
+              formControlName="prescribingProvider"
+              class="form-control"
+              required
+            />
+            <div
+              *ngIf="
+                medicationForm.get('prescribingProvider')?.invalid &&
+                medicationForm.get('prescribingProvider')?.touched
+              "
+              class="text-danger"
+            >
+              Prescribing provider is required
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="startDate" class="form-label">Start Date*</label>
+            <input
+              type="date"
+              id="startDate"
+              formControlName="startDate"
+              class="form-control"
+              required
+            />
+            <div
+              *ngIf="
+                medicationForm.get('startDate')?.invalid &&
+                medicationForm.get('startDate')?.touched
+              "
+              class="text-danger"
+            >
+              Start date is required
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="endDate" class="form-label">End Date</label>
+            <input
+              type="date"
+              id="endDate"
+              formControlName="endDate"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="purpose" class="form-label">Purpose</label>
+          <textarea
+            id="purpose"
+            formControlName="purpose"
+            class="form-control"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="d-flex mt-3">
+          <button
+            type="submit"
+            class="btn btn-primary me-2"
+            [disabled]="!medicationForm.valid"
+          >
+            {{ editMode ? "Update" : "Add" }} Medication
+          </button>
+          <button
+            type="button"
+            *ngIf="editMode"
+            class="btn btn-secondary"
+            (click)="cancelEdit()"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>{{ showActive ? "Active Medications" : "All Medications" }}</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="medications.length === 0" class="alert alert-info">
+        No medications found.
+      </div>
+
+      <div class="table-responsive">
+        <table *ngIf="medications.length > 0" class="table table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Dosage</th>
+              <th>Frequency</th>
+              <th>Provider</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let medication of medications">
+              <td>{{ medication.name }}</td>
+              <td>{{ medication.dosage }}</td>
+              <td>{{ medication.frequency }}</td>
+              <td>{{ medication.prescribingProvider }}</td>
+              <td>{{ formatDate(medication.startDate) }}</td>
+              <td>{{ formatDate(medication.endDate) }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="
+                    isMedicationActive(medication)
+                      ? 'bg-success'
+                      : 'bg-secondary'
+                  "
+                >
+                  {{ isMedicationActive(medication) ? "Active" : "Inactive" }}
+                </span>
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-outline-primary me-1"
+                  (click)="editMedication(medication)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="deleteMedication(medication.id)"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

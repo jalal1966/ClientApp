@@ -1,5 +1,3 @@
-import { Patients } from './patient.model';
-
 export interface Appointment {
   patients: any;
   id: number;
@@ -16,6 +14,7 @@ export interface Appointment {
   status: string;
   notes: string;
   lastVisitDate: string | Date;
+  nextAppointment: string | Date;
 }
 
 // First, add this interface to your models if it doesn't exist already

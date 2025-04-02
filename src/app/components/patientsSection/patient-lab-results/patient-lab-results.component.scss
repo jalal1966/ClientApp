@@ -1,0 +1,121 @@
+// Global Styles
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2,
+h3 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+// Table Styles
+.table {
+  th,
+  td {
+    text-align: center;
+    vertical-align: middle;
+  }
+  thead {
+    background-color: #007bff;
+    color: #fff;
+  }
+  tbody {
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+  }
+}
+
+// Form Styles
+.card {
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+  background-color: #007bff;
+  color: #fff;
+  padding: 15px;
+  border-radius: 10px 10px 0 0;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.form-label {
+  font-weight: 500;
+}
+
+.form-control {
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  &:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+}
+
+// Button Styles
+.btn {
+  font-weight: 500;
+  border-radius: 5px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  &:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+  }
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+  &:hover {
+    background-color: #117a8b;
+    border-color: #0f6674;
+  }
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  &:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+  }
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  &:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .d-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn {
+    margin-bottom: 10px;
+  }
+}

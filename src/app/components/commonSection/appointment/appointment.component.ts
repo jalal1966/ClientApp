@@ -240,6 +240,7 @@ export class AppointmentComponent implements OnInit {
       },
     });
   }
+
   showErrorAlert(message: string): void {
     // Example using Angular Material snackbar
     // this.snackBar.open(message, 'Close', { duration: 5000 });
@@ -247,6 +248,7 @@ export class AppointmentComponent implements OnInit {
     // Or using a custom alert method
     alert(message);
   }
+
   onStatusChange(status: string) {
     this.filterService.setSelectedStatus(status);
     // Get filtered waiting patients
@@ -297,6 +299,11 @@ export class AppointmentComponent implements OnInit {
         console.error('Error updating status:', err);
       },
     });
+  }
+
+  // ToDo Update date Appointment and Time
+  updateAppointment(value: any): void {
+    // ToDo Update date Appointment and Time
   }
 
   loadPatients(): void {

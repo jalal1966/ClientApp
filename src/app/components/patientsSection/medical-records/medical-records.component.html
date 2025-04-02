@@ -1,90 +1,226 @@
-<div class="container mx-auto p-4">
-  <div class="flex justify-between items-center mb-6">
-    <div>
-      <h1 class="text-2xl font-bold">Medical Records</h1>
-      <h2 *ngIf="patient" class="text-xl">
-        {{ patient.firstName }} {{ patient.lastName }}
-      </h2>
-    </div>
-    <button
-      [routerLink]="['/patients', patientId, 'records', 'new']"
-      class="bg-blue-500 text-white px-4 py-2 rounded"
-    >
-      Add New Record
-    </button>
-  </div>
+<div class="container mt-4">
+  <h2>Medical Record</h2>
 
-  <div *ngIf="loading" class="text-center py-4">Loading records...</div>
+  <div *ngIf="loading" class="alert alert-info">Loading medical record...</div>
 
-  <div
-    *ngIf="error"
-    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
-  >
+  <div *ngIf="error" class="alert alert-danger">
     {{ error }}
   </div>
 
-  <div *ngIf="!loading && records.length === 0" class="text-center py-4">
-    No medical records found for this patient.
-  </div>
-
-  <div class="space-y-4">
-    <div *ngFor="let record of records" class="border rounded p-4">
-      <div class="flex justify-between items-center mb-2">
-        <h3 class="text-lg font-semibold">{{ record.recordDate | date }}</h3>
-        <div>
-          <button
-            [routerLink]="[
-              '/patients',
-              patientId,
-              'records',
-              record.id,
-              'edit'
-            ]"
-            class="text-blue-500 mr-2"
-          >
-            Edit
-          </button>
-          <button
-            class="text-red-500"
-            (click)="record.id && deleteRecord(record.id)"
-          >
-            Delete
-          </button>
-        </div>
+  <form
+    [formGroup]="medicalRecordForm"
+    (ngSubmit)="onSubmit()"
+    *ngIf="!loading"
+  >
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="mb-0">Physical Information</h3>
       </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="height">Height (cm)</label>
+            <input
+              type="number"
+              class="form-control"
+              id="height"
+              formControlName="height"
+              (input)="updateBMI()"
+            />
+            <div
+              *ngIf="
+                formControls['height'].invalid && formControls['height'].touched
+              "
+              class="text-danger"
+            >
+              Height is required
+            </div>
+          </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <p class="font-medium">Diagnosis:</p>
-          <p>{{ record.diagnosis }}</p>
+          <div class="col-md-4 mb-3">
+            <label for="weight">Weight (kg)</label>
+            <input
+              type="number"
+              class="form-control"
+              id="weight"
+              formControlName="weight"
+              (input)="updateBMI()"
+            />
+            <div
+              *ngIf="
+                formControls['height'].invalid && formControls['height'].touched
+              "
+              class="text-danger"
+            >
+              Weight is required
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label for="bmi">BMI</label>
+            <input
+              type="number"
+              class="form-control"
+              id="bmi"
+              formControlName="bmi"
+              readonly
+            />
+            <small class="form-text text-muted">Automatically calculated</small>
+          </div>
         </div>
 
-        <div>
-          <p class="font-medium">Treatment:</p>
-          <p>{{ record.treatment }}</p>
+        <div class="mb-3">
+          <label for="bloodType">Blood Type</label>
+          <select
+            class="form-control"
+            id="bloodType"
+            formControlName="bloodType"
+          >
+            <option value="">Select Blood Type</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
         </div>
-
-        <div>
-          <p class="font-medium">Medications:</p>
-          <p>{{ record.medications }}</p>
-        </div>
-
-        <div *ngIf="record.isFollowUpRequired">
-          <p class="font-medium">Follow-up Date:</p>
-          <p>{{ record.followUpDate | date }}</p>
-        </div>
-      </div>
-
-      <div *ngIf="record.notes" class="mt-2">
-        <p class="font-medium">Notes:</p>
-        <p>{{ record.notes }}</p>
       </div>
     </div>
-  </div>
 
-  <div class="mt-6">
-    <button [routerLink]="['/patients', patientId]" class="text-blue-500">
-      Back to Patient Details
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="mb-0">Medical History</h3>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="chronicConditions">Chronic Conditions</label>
+          <textarea
+            class="form-control"
+            id="chronicConditions"
+            rows="3"
+            formControlName="chronicConditions"
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="surgicalHistory">Surgical History</label>
+          <textarea
+            class="form-control"
+            id="surgicalHistory"
+            rows="3"
+            formControlName="surgicalHistory"
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="familyMedicalHistory">Family Medical History</label>
+          <textarea
+            class="form-control"
+            id="familyMedicalHistory"
+            rows="3"
+            formControlName="familyMedicalHistory"
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="socialHistory">Social History</label>
+          <textarea
+            class="form-control"
+            id="socialHistory"
+            rows="3"
+            formControlName="socialHistory"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="mb-0">Current Visit</h3>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="diagnosis">Diagnosis</label>
+          <textarea
+            class="form-control"
+            id="diagnosis"
+            rows="2"
+            formControlName="diagnosis"
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="treatment">Treatment</label>
+          <textarea
+            class="form-control"
+            id="treatment"
+            rows="2"
+            formControlName="treatment"
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="medications">Medications</label>
+          <textarea
+            class="form-control"
+            id="medications"
+            rows="2"
+            formControlName="medications"
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="notes">Notes</label>
+          <textarea
+            class="form-control"
+            id="notes"
+            rows="3"
+            formControlName="notes"
+          ></textarea>
+        </div>
+
+        <div class="form-check mb-3">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="isFollowUpRequired"
+            formControlName="isFollowUpRequired"
+          />
+          <label class="form-check-label" for="isFollowUpRequired">
+            Follow-up Required
+          </label>
+        </div>
+
+        <div
+          class="mb-3"
+          *ngIf="medicalRecordForm.get('isFollowUpRequired')?.value"
+        >
+          <label for="followUpDate">Follow-up Date</label>
+          <input
+            type="date"
+            class="form-control"
+            id="followUpDate"
+            formControlName="followUpDate"
+          />
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="medicalRecordForm.invalid || saving"
+    >
+      {{ recordExists ? "Update" : "Create" }} Medical Record
     </button>
-  </div>
+
+    <div *ngIf="saving" class="mt-2">Saving...</div>
+
+    <div *ngIf="saveSuccess" class="alert alert-success mt-3">
+      Medical record saved successfully!
+    </div>
+  </form>
 </div>

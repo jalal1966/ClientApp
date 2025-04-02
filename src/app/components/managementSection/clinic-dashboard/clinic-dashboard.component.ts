@@ -1,4 +1,4 @@
-import { Component, OnInit, SimpleChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import {
@@ -8,7 +8,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { AgePipe } from '../../../pipes/age/age.pipe';
 import { GenderPipe } from '../../../pipes/gender/gender.pipe';
 import { AppointmentService } from '../../../services/appointment/appointment.service';
@@ -16,10 +16,6 @@ import { Patients } from '../../../models/patient.model';
 import { User } from '../../../models/user';
 import { Appointment } from '../../../models/appointment.model';
 import { WaitingPatient } from '../../../models/waiting.model';
-import {
-  AppointmentStatus,
-  AppointmentType,
-} from '../../../models/enums.model';
 import { PatientService } from '../../../services/patient/patient.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { MapComponent } from '../../commonSection/map/map.component';
@@ -239,15 +235,19 @@ export class ClinicDashboardComponent implements OnInit {
     // In a real application, this would navigate to the patient's record
   }
 
+  viewPatientDetails(id: number | undefined): void {
+    console.log('Viewing details for patient ID', id);
+    // In a real application, this would navigate to patient details
+  }
+  editPatientDetails(id: number | undefined): void {
+    console.log('Editing patient ID', id);
+    // In a real application, this would open a form to edit patient details
+  }
+
   cancelAppointment(appointmentId: number | undefined): void {
     console.log('Scheduling appointment for appointment ID', appointmentId);
     const statusValue = '6';
     this.doUpdateStatus(appointmentId, statusValue.toString());
-  }
-
-  viewPatientDetails(id: number | undefined): void {
-    console.log('Viewing details for patient ID', id);
-    // In a real application, this would navigate to patient details
   }
 
   // do update
@@ -261,10 +261,6 @@ export class ClinicDashboardComponent implements OnInit {
         console.error('Error updating status:', err);
       },
     });
-  }
-  editPatientDetails(id: number | undefined): void {
-    console.log('Editing patient ID', id);
-    // In a real application, this would open a form to edit patient details
   }
 
   scheduleAppointment(patientId: number | undefined): void {

@@ -1,0 +1,113 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      color: #555;
+    }
+  }
+
+  .add-record-button {
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    &:hover {
+      background-color: #2563eb;
+    }
+  }
+
+  .loading-message,
+  .no-records-message {
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .error-message {
+    background-color: #f8d7da;
+    border: 1px solid #f5c2c7;
+    color: #842029;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .record-card {
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+
+    .record-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .record-actions {
+      button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.875rem;
+        margin-right: 0.5rem;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+      .edit-button {
+        color: #3b82f6;
+      }
+      .delete-button {
+        color: #ef4444;
+      }
+    }
+
+    .record-details {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+
+      @media (min-width: 768px) {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+      }
+
+      .label {
+        font-weight: 600;
+      }
+    }
+  }
+
+  .back-button {
+    display: inline-block;
+    color: #3b82f6;
+    margin-top: 1rem;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

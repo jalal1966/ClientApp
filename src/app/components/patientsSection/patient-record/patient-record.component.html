@@ -1,0 +1,195 @@
+<!-- patient-record.component.html -->
+<div class="container-fluid mt-4">
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && patient">
+    <!-- Patient Record Header -->
+    <div class="row mb-4">
+      <div class="col-md-8">
+        <h1>
+          {{ patient.firstName }} {{ patient.lastName }}
+          <small class="text-muted">ID: {{ patient.id }}</small>
+        </h1>
+        <h5 class="text-muted">
+          DOB: {{ patient.dateOfBirth | date : "MM/dd/yyyy" }} ({{
+            patientAge
+          }}
+          years) | Gender: {{ patient.genderName }}
+        </h5>
+      </div>
+      <div class="col-md-4 text-end">
+        <button class="btn btn-outline-primary me-2">Edit</button>
+        <button class="btn btn-primary">Print Record</button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4">
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'info'"
+          (click)="setActiveTab('info')"
+          href="javascript:void(0)"
+        >
+          Basic Information
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'allergies'"
+          (click)="setActiveTab('allergies')"
+          href="javascript:void(0)"
+        >
+          Allergies & Alerts
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'medications'"
+          (click)="setActiveTab('medications')"
+          href="javascript:void(0)"
+        >
+          Medications
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'visits'"
+          (click)="setActiveTab('visits')"
+          href="javascript:void(0)"
+        >
+          Visits & Encounters
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'labs'"
+          (click)="setActiveTab('labs')"
+          href="javascript:void(0)"
+        >
+          Lab Results
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'history'"
+          (click)="setActiveTab('history')"
+          href="javascript:void(0)"
+        >
+          Medical History
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'documents'"
+          (click)="setActiveTab('documents')"
+          href="javascript:void(0)"
+        >
+          Documents
+        </a>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div [ngSwitch]="activeTab">
+      <!-- Basic Information -->
+      <div *ngSwitchCase="'info'">
+        <app-patient-info [patient]="patient"></app-patient-info>
+      </div>
+
+      <!-- Allergies -->
+      <div *ngSwitchCase="'allergies'">
+        <app-patient-allergies
+          [allergies]="patient.allergies || []"
+          [patientId]="patientId"
+        ></app-patient-allergies>
+      </div>
+
+      <!-- Medications -->
+      <div *ngSwitchCase="'medications'">
+        <app-patient-allergies
+          [allergies]="patient.allergies || []"
+          [patientId]="patientId"
+        ></app-patient-allergies>
+      </div>
+
+      <!-- Visits -->
+      <div *ngSwitchCase="'visits'">
+        <app-patient-visits
+          [visits]="patient.recentVisits || []"
+          [patientId]="patientId"
+        ></app-patient-visits>
+      </div>
+
+      <!-- Lab Results -->
+      <div *ngSwitchCase="'labs'">
+        <app-patient-lab-results
+          [labResults]="patient.recentLabResults || []"
+          [patientId]="patientId"
+        ></app-patient-lab-results>
+      </div>
+
+      <!-- Medical History -->
+      <div *ngSwitchCase="'history'">
+        <div class="card">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">Medical History</h5>
+            <button class="btn btn-sm btn-outline-primary">Edit</button>
+          </div>
+          <div class="card-body">
+            <h6>Chronic Conditions</h6>
+            <p>
+              {{
+                patient.chronicConditions || "No chronic conditions recorded"
+              }}
+            </p>
+
+            <h6>Surgical History</h6>
+            <p>
+              {{ patient.surgicalHistory || "No surgical history recorded" }}
+            </p>
+
+            <h6>Family Medical History</h6>
+            <p>
+              {{
+                patient.familyMedicalHistory ||
+                  "No family medical history recorded"
+              }}
+            </p>
+
+            <h6>Social History</h6>
+            <p>{{ patient.socialHistory || "No social history recorded" }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div *ngSwitchCase="'documents'">
+        <div class="card">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">Patient Documents</h5>
+            <button class="btn btn-sm btn-primary">Upload New Document</button>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">No documents available.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -133,6 +133,7 @@
           <th class="th-spacing">Time</th>
           <th>Patient</th>
           <th>The Reason</th>
+          <th>Last Visit</th>
           <th>Doctor</th>
           <th>Status</th>
           <th>Actions</th>
@@ -161,6 +162,9 @@
             {{ appointment.type }}
           </td>
           <td>
+            {{ appointment.lastVisitDate | date : "yyyy/MM/dd" }}
+          </td>
+          <td>
             Dr. {{ appointment.providerFirstName }}
             {{ appointment.providerLastName }}
           </td>
@@ -169,22 +173,28 @@
           </td>
           <td>
             <button
-              class="btn btn-sm btn-danger me-2"
+              class="btn btn-sm btn-danger me-1"
               (click)="updateStatus(appointment.id, 'Completed')"
             >
               Complete
             </button>
             <button
-              class="btn btn-sm btn-success me-2"
+              class="btn btn-sm btn-success me-1"
               (click)="updateStatus(appointment.id, 'Cancelled')"
             >
               Cancel
             </button>
             <button
-              class="btn btn-sm btn-danger me-2"
+              class="btn btn-sm btn-danger me-1"
               (click)="openPatientRecord(appointment)"
             >
               View Record
+            </button>
+            <button
+              class="btn btn-sm btn-info me-1"
+              (click)="updateAppointment(appointment)"
+            >
+              Updatat Appointment
             </button>
           </td>
         </tr>

@@ -1,0 +1,129 @@
+<div class="allergies-container">
+  <h2>Patient Allergies</h2>
+
+  <!-- Allergies List -->
+  <div class="allergies-list">
+    <table *ngIf="allergies.length > 0; else noAllergies">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Name</th>
+          <th>Reaction</th>
+          <th>Severity</th>
+          <th>Date Identified</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let allergy of allergies">
+          <td>{{ allergy.allergyType }}</td>
+          <td>{{ allergy.name }}</td>
+          <td>{{ allergy.reaction }}</td>
+          <td>{{ allergy.severity }}</td>
+          <td>{{ allergy.dateIdentified | date : "MM/dd/yyyy" }}</td>
+          <td>
+            <button (click)="editAllergy(allergy)">Edit</button>
+            <button (click)="deleteAllergy(allergy.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #noAllergies>
+      <p>No allergies recorded for this patient.</p>
+    </ng-template>
+  </div>
+
+  <!-- Add/Edit Form -->
+  <div class="allergy-form">
+    <h3>{{ isEditing ? "Edit Allergy" : "Add New Allergy" }}</h3>
+    <form [formGroup]="allergyForm" (ngSubmit)="saveAllergy()">
+      <div class="form-group">
+        <label for="allergyType">Allergy Type:</label>
+        <select id="allergyType" formControlName="allergyType">
+          <option value="Food">Food</option>
+          <option value="Medication">Medication</option>
+          <option value="Environmental">Environmental</option>
+          <option value="Insect">Insect</option>
+          <option value="Other">Other</option>
+        </select>
+        <div
+          *ngIf="
+            allergyForm.get('allergyType')?.invalid &&
+            allergyForm.get('allergyType')?.touched
+          "
+        >
+          <span class="error">Allergy type is required</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" formControlName="name" />
+        <div
+          *ngIf="
+            allergyForm.get('name')?.invalid && allergyForm.get('name')?.touched
+          "
+        >
+          <span class="error">Allergy name is required</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reaction">Reaction:</label>
+        <input type="text" id="reaction" formControlName="reaction" />
+        <div
+          *ngIf="
+            allergyForm.get('reaction')?.invalid &&
+            allergyForm.get('reaction')?.touched
+          "
+        >
+          <span class="error">Reaction is required</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="severity">Severity:</label>
+        <select id="severity" formControlName="severity">
+          <option value="Mild">Mild</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Severe">Severe</option>
+          <option value="Life-threatening">Life-threatening</option>
+        </select>
+        <div
+          *ngIf="
+            allergyForm.get('severity')?.invalid &&
+            allergyForm.get('severity')?.touched
+          "
+        >
+          <span class="error">Severity is required</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="dateIdentified">Date Identified:</label>
+        <input
+          type="date"
+          id="dateIdentified"
+          formControlName="dateIdentified"
+        />
+        <div
+          *ngIf="
+            allergyForm.get('dateIdentified')?.invalid &&
+            allergyForm.get('dateIdentified')?.touched
+          "
+        >
+          <span class="error">Date identified is required</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="allergyForm.invalid">
+          {{ isEditing ? "Update" : "Add" }}
+        </button>
+        <button type="button" *ngIf="isEditing" (click)="cancelEdit()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
