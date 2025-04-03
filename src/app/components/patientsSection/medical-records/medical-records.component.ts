@@ -1,20 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
-import { PatientDetail, Patients } from '../../../models/patient.model';
+import { Patients } from '../../../models/patient.model';
 import { MedicalRecord } from '../../../models/medicalRecord.model';
-import { PatientService } from '../../../services/patient/patient.service';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
 
 @Component({
   selector: 'app-medical-records',
+  standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './medical-records.component.html',
   styleUrl: './medical-records.component.scss',
@@ -86,6 +85,15 @@ export class MedicalRecordsComponent implements OnInit {
         }
         followUpDateControl?.updateValueAndValidity();
       });
+
+    // Add listeners for height and weight to automatically update BMI
+    this.medicalRecordForm.get('height')?.valueChanges.subscribe(() => {
+      this.updateBMI();
+    });
+
+    this.medicalRecordForm.get('weight')?.valueChanges.subscribe(() => {
+      this.updateBMI();
+    });
   }
 
   loadMedicalRecord(): void {
@@ -97,19 +105,18 @@ export class MedicalRecordsComponent implements OnInit {
         this.recordExists = true;
 
         // Map the backend model to the form model
-        // Note: Be careful with casing differences between backend and frontend
         this.medicalRecordForm.patchValue({
-          // Physical Information (note the capital letters from backend)
-          height: data.Height,
-          weight: data.Weight,
-          bmi: data.bMI,
-          bloodType: data.BloodType,
+          // Physical Information
+          height: data.height,
+          weight: data.weight,
+          bmi: data.bMI, // Note: case difference between backend and form
+          bloodType: data.bloodType,
 
           // Medical History
-          chronicConditions: data.ChronicConditions,
-          surgicalHistory: data.SurgicalHistory,
-          familyMedicalHistory: data.patientDetail?.familyMedicalHistory || '',
-          socialHistory: data.patientDetail?.socialHistory || '',
+          chronicConditions: data.chronicConditions,
+          surgicalHistory: data.surgicalHistory,
+          familyMedicalHistory: data.familyMedicalHistory,
+          socialHistory: data.socialHistory,
 
           // Current Visit
           recordDate: data.recordDate,
@@ -125,11 +132,12 @@ export class MedicalRecordsComponent implements OnInit {
       },
       error: (err) => {
         // Check if it's a 404 (record doesn't exist yet)
-        if (err.message.includes('Error Code: 404')) {
+        if (err.status === 404 || err.message?.includes('Error Code: 404')) {
           this.recordExists = false;
           this.loading = false;
         } else {
-          this.error = err.message;
+          this.error =
+            err.message || 'An error occurred while loading medical record';
           this.loading = false;
         }
       },
@@ -137,20 +145,29 @@ export class MedicalRecordsComponent implements OnInit {
   }
 
   updateBMI(): void {
-    const height = this.medicalRecordForm.value.height;
-    const weight = this.medicalRecordForm.value.weight;
+    const height = this.medicalRecordForm.get('height')?.value;
+    const weight = this.medicalRecordForm.get('weight')?.value;
 
-    const bmi = this.medicalRecordsService.calculateBMI(height, weight);
-    this.medicalRecordForm.patchValue({ bmi }, { emitEvent: false });
+    if (height && weight) {
+      const bmi = this.calculateBMI(height, weight);
+      this.medicalRecordForm.patchValue({ bmi }, { emitEvent: false });
+    }
+  }
+
+  // Move calculation to component to avoid unnecessary service dependency
+  calculateBMI(height: number, weight: number): number {
+    // BMI formula: weight (kg) / (height (m))^2
+    // Assuming height is in cm and weight in kg
+    const heightInMeters = height / 100;
+    return Math.round((weight / (heightInMeters * heightInMeters)) * 10) / 10;
   }
 
   onSubmit(): void {
     if (this.medicalRecordForm.invalid) {
       // Mark all fields as touched to trigger validation messages
       Object.keys(this.formControls).forEach((key) => {
-        const control =
-          this.formControls[key as keyof typeof this.formControls];
-        control.markAsTouched();
+        const control = this.medicalRecordForm.get(key);
+        control?.markAsTouched();
       });
       return;
     }
@@ -162,22 +179,20 @@ export class MedicalRecordsComponent implements OnInit {
     const formValues = this.medicalRecordForm.value;
 
     const record: Partial<MedicalRecord> = {
-      // Make sure we're using the right property names for the backend
       patientId: this.patientId,
-      Height: formValues.height,
-      Weight: formValues.weight,
-      bMI: formValues.bmi,
-      BloodType: formValues.bloodType,
-      ChronicConditions: formValues.chronicConditions,
-      SurgicalHistory: formValues.surgicalHistory,
+      // Physical Information
+      height: formValues.height,
+      weight: formValues.weight,
+      bMI: formValues.bmi, // Note: case difference between form and backend
+      bloodType: formValues.bloodType,
 
-      // Keep existing patientDetail and just update specific fields
-      patientDetail: {
-        familyMedicalHistory: formValues.familyMedicalHistory,
-        socialHistory: formValues.socialHistory,
-      } as PatientDetail,
+      // Medical History
+      chronicConditions: formValues.chronicConditions,
+      surgicalHistory: formValues.surgicalHistory,
+      familyMedicalHistory: formValues.familyMedicalHistory,
+      socialHistory: formValues.socialHistory,
 
-      // Current visit info
+      // Current Visit
       recordDate: formValues.recordDate,
       diagnosis: formValues.diagnosis,
       treatment: formValues.treatment,
@@ -203,7 +218,8 @@ export class MedicalRecordsComponent implements OnInit {
             setTimeout(() => (this.saveSuccess = false), 3000);
           },
           error: (err) => {
-            this.error = err.message;
+            this.error =
+              err.message || 'An error occurred while updating medical record';
             this.saving = false;
           },
         });
@@ -219,7 +235,8 @@ export class MedicalRecordsComponent implements OnInit {
             setTimeout(() => (this.saveSuccess = false), 3000);
           },
           error: (err) => {
-            this.error = err.message;
+            this.error =
+              err.message || 'An error occurred while creating medical record';
             this.saving = false;
           },
         });

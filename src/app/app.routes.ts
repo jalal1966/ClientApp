@@ -51,6 +51,10 @@ export const routes: Routes = [
   { path: 'patient-medications', component: PatientMedicationsComponent },
   { path: 'atient-record', component: PatientRecordComponent },
   {
+    path: 'patients/:id/allergies',
+    component: PatientAllergiesComponent
+  }
+  {
     path: 'products',
     component: ProductListComponent,
     canActivate: [AuthGuard],

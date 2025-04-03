@@ -18,7 +18,7 @@
           DOB: {{ patient.dateOfBirth | date : "MM/dd/yyyy" }} ({{
             patientAge
           }}
-          years) | Gender: {{ patient.genderName }}
+          years) | Gender: {{ patient.genderID }}
         </h5>
       </div>
       <div class="col-md-4 text-end">
@@ -153,13 +153,17 @@
             <h6>Chronic Conditions</h6>
             <p>
               {{
-                patient.chronicConditions || "No chronic conditions recorded"
+                patient.medicalRecord?.chronicConditions ||
+                  "No chronic conditions recorded"
               }}
             </p>
 
             <h6>Surgical History</h6>
             <p>
-              {{ patient.surgicalHistory || "No surgical history recorded" }}
+              {{
+                patient.medicalRecord?.surgicalHistory ||
+                  "No surgical history recorded"
+              }}
             </p>
 
             <h6>Family Medical History</h6>

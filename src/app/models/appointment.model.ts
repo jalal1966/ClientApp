@@ -51,7 +51,7 @@ export interface DaySchedule {
 }
 
 export interface ScheduleSlot {
-  time: string;
+  time: string | Date;
   appointments: { [providerId: string]: Appointment | null };
   isLunchTime?: boolean; // New property to mark lunch time
 }

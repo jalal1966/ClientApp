@@ -2,6 +2,7 @@ import { AppComponent } from '../app.component';
 import {
   Allergy,
   LabResult,
+  MedicalRecord,
   Medication,
   VisitSummary,
 } from './medicalRecord.model';
@@ -29,7 +30,6 @@ export interface Patients {
 }
 
 export interface PatientDetails {
-  id?: number;
   PatientId: number;
   firstName: string;
   lastName: string;
@@ -41,19 +41,37 @@ export interface PatientDetails {
   profileImageUrl?: string;
 }
 
-export interface PatientDetail extends Patients {
-  socialHistory: string;
+export interface PatientDetail {
+  // Basic patient info (from Patients)
+  id?: number;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date;
+  genderID: number;
+  contactNumber: string;
+  email: string;
+  address: string;
+  emergencyContactName: string;
+  emergencyContactNumber: string;
+  insuranceProvider: string;
+  insuranceNumber: string;
+  nursID: number;
+  nursName: string;
+  patientDoctorID: number;
+  patientDoctorName: string;
+  registrationDate: Date;
+  lastVisitDate: Date;
+
+  // Medical history specific to the patient
   familyMedicalHistory: string;
-  surgicalHistory: string;
-  chronicConditions: string;
-  genderName: string;
-  height?: number;
-  weight?: number;
-  bmi?: number;
+  socialHistory: string;
+
+  // Related medical information
+  medicalRecord?: MedicalRecord;
   bloodType?: string;
   allergies?: Allergy[];
-  currentMedications: Medication[];
-  recentVisits: VisitSummary[];
+  currentMedications?: Medication[];
+  recentVisits?: VisitSummary[];
   recentLabResults?: LabResult[];
   appointment?: AppComponent;
 }

@@ -1,27 +1,39 @@
-import { PatientDetail, Patients } from './patient.model';
+import { Patients } from './patient.model';
 import { User } from './user';
 
+// Interfaces for the medical records system
 export interface MedicalRecord {
+  // Record identifiers
   id?: number;
+  patientId: number;
+  userID: number;
+
+  // Basic record info
   recordDate: Date;
   diagnosis: string;
   treatment: string;
   medications: string;
   notes: string;
+
+  // Follow-up information
   isFollowUpRequired: boolean;
   followUpDate?: Date;
-  patientId: number;
-  patient: Patients;
-  userID: number;
-  user: User;
 
-  Height: number;
-  Weight: number;
+  // Physical information
+  height: number;
+  weight: number;
   bMI: number;
-  BloodType: string;
-  ChronicConditions: string;
-  SurgicalHistory: string;
-  patientDetail: PatientDetail;
+  bloodType: string;
+
+  // Medical history
+  chronicConditions: string;
+  surgicalHistory: string;
+  socialHistory: string;
+  familyMedicalHistory: string;
+
+  // Related entities - typically used for join operations
+  patient?: Patients;
+  user?: User;
 }
 
 export interface Allergy {
