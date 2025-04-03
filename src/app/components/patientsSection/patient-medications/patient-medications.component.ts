@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Medication } from '../../../models/medicalRecord.model';
@@ -10,7 +10,7 @@ import { PatientComponentBase } from '../../../shared/base/patient-component-bas
 @Component({
   selector: 'app-patient-medications',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './patient-medications.component.html',
   styleUrls: ['./patient-medications.component.css'],
 })

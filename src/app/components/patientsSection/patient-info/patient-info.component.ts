@@ -1,10 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
-  FormBuilder,
-  FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
   Validators,
 } from '@angular/forms';
 import { catchError, finalize } from 'rxjs/operators';
@@ -17,15 +17,19 @@ import {
 import { PatientInfoService } from '../../../services/patientinfo/patient-info.service';
 import { CommonModule } from '@angular/common';
 import { PatientDetail } from '../../../models/patient.model';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 
 @Component({
   selector: 'app-patient-info',
-  imports: [ReactiveFormsModule, FormsModule, CommonModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './patient-info.component.html',
-  styleUrls: ['./patient-info.component.scss'],
+  styleUrl: './patient-info.component.scss',
 })
-export class PatientInfoComponent implements OnInit {
-  patientId: number;
+export class PatientInfoComponent
+  extends PatientComponentBase
+  implements OnInit
+{
   patientInfo: PatientInfo | null = null;
   patientForm: FormGroup;
   contactForm: FormGroup;
@@ -40,7 +44,7 @@ export class PatientInfoComponent implements OnInit {
     private patientInfoService: PatientInfoService,
     private fb: FormBuilder
   ) {
-    this.patientId = 0;
+    super();
 
     // Initialize forms
     this.patientForm = this.fb.group({

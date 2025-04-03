@@ -5,11 +5,11 @@ import { PatientService } from '../../../services/patient/patient.service';
 import { ActivatedRoute } from '@angular/router';
 import { PatientInfoComponent } from '../patient-info/patient-info.component';
 import { PatientAllergiesComponent } from '../patient-allergies/patient-allergies.component';
-import { PatientMedicationsComponent } from '../patient-medications/patient-medications.component';
-import { PatientVisitsComponent } from '../patient-visits/patient-visits.component';
 import { PatientLabResultsComponent } from '../patient-lab-results/patient-lab-results.component';
 import { PatientDetail } from '../../../models/patient.model';
 import { Allergy } from '../../../models/medicalRecord.model';
+import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 
 @Component({
   selector: 'app-patient-record',
@@ -18,25 +18,29 @@ import { Allergy } from '../../../models/medicalRecord.model';
     CommonModule,
     FormsModule,
     PatientInfoComponent,
-    PatientVisitsComponent,
     PatientLabResultsComponent,
     PatientAllergiesComponent,
+    PatientVisitComponent,
   ],
   templateUrl: './patient-record.component.html',
   styleUrl: './patient-record.component.scss',
 })
-export class PatientRecordComponent implements OnInit {
+export class PatientRecordComponent
+  extends PatientComponentBase
+  implements OnInit
+{
   patient: PatientDetail | null = null;
   loading = true;
   today: Date = new Date();
   activeTab: string = 'info';
-  patientId!: number; // <-- Ensure this is present
   allergies: Allergy[] = []; // <-- Ensure this is present
 
   constructor(
     private route: ActivatedRoute,
     private patientService: PatientService
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {

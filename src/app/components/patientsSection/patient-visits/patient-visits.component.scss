@@ -1,0 +1,86 @@
+.container {
+  max-width: 1200px;
+  margin: auto;
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .btn-primary {
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+  }
+}
+
+.spinner-border {
+  display: block;
+  margin: auto;
+}
+
+.list-group {
+  .list-group-item {
+    transition: all 0.3s ease-in-out;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &.active {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+
+    &:hover {
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    .btn-danger {
+      display: none;
+    }
+
+    &:hover .btn-danger {
+      display: inline-block;
+    }
+  }
+}
+
+.card {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  .card-header {
+    background-color: #f8f9fa;
+    font-weight: 600;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+.form-control,
+.form-select {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: all 0.3s;
+
+  &:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+  }
+}
+
+textarea {
+  resize: none;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border: none;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: darken(#6c757d, 10%);
+  }
+}

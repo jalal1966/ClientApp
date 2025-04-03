@@ -30,6 +30,7 @@ import { PatientInfoComponent } from './components/patientsSection/patient-info/
 import { PatientLabResultsComponent } from './components/patientsSection/patient-lab-results/patient-lab-results.component';
 import { PatientMedicationsComponent } from './components/patientsSection/patient-medications/patient-medications.component';
 import { PatientRecordComponent } from './components/patientsSection/patient-record/patient-record.component';
+import { PatientVisitComponent } from './components/patientsSection/patient-visits/patient-visits.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -43,17 +44,15 @@ export const routes: Routes = [
   { path: 'doctor-map', component: DoctorMapScheduleComponent },
   { path: 'usersList', component: UsersListComponent },
   { path: 'doctor-schedule', component: MapComponent },
-  { path: ':patientId', component: MedicalRecordsComponent },
-  { path: 'mediical-recods', component: MedicalRecordsComponent },
-  { path: 'patient-allergies', component: PatientAllergiesComponent },
-  { path: 'patient-info', component: PatientInfoComponent },
-  { path: 'patient-lab-results', component: PatientLabResultsComponent },
-  { path: 'patient-medications', component: PatientMedicationsComponent },
-  { path: 'atient-record', component: PatientRecordComponent },
-  {
-    path: 'patients/:id/allergies',
-    component: PatientAllergiesComponent
-  }
+
+  { path: 'patients', component: PatientListComponent }, // List of patients
+  { path: 'patients/:id', component: PatientInfoComponent }, // Patient details page
+  { path: 'patients/:id/medical-records', component: MedicalRecordsComponent },
+  { path: 'patients/:id/allergies', component: PatientAllergiesComponent },
+  { path: 'patients/:id/medications', component: PatientMedicationsComponent },
+  { path: 'patients/:id/lab-results', component: PatientLabResultsComponent },
+  { path: 'patients/:id/visits', component: PatientVisitComponent },
+
   {
     path: 'products',
     component: ProductListComponent,

@@ -126,10 +126,10 @@
 
       <!-- Visits -->
       <div *ngSwitchCase="'visits'">
-        <app-patient-visits
+        <app-patient-visit
           [visits]="patient.recentVisits || []"
           [patientId]="patientId"
-        ></app-patient-visits>
+        ></app-patient-visit>
       </div>
 
       <!-- Lab Results -->

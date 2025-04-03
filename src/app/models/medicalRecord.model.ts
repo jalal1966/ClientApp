@@ -57,14 +57,6 @@ export interface Medication {
   purpose: string;
 }
 
-export interface VisitSummary {
-  id: number;
-  visitDate: Date;
-  providerName: string;
-  visitType: string;
-  reason: string;
-}
-
 export interface LabResult {
   id?: number;
   testDate?: Date;

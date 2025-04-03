@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
-import { Patients } from '../../../models/patient.model';
 import { MedicalRecord } from '../../../models/medicalRecord.model';
 import {
   FormBuilder,
@@ -10,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 
 @Component({
   selector: 'app-medical-records',
@@ -18,8 +18,10 @@ import { MedicalRecordsService } from '../../../services/medical-records/medical
   templateUrl: './medical-records.component.html',
   styleUrl: './medical-records.component.scss',
 })
-export class MedicalRecordsComponent implements OnInit {
-  patientId: number = 0;
+export class MedicalRecordsComponent
+  extends PatientComponentBase
+  implements OnInit
+{
   medicalRecordForm: FormGroup;
   loading = true;
   saving = false;
@@ -32,6 +34,7 @@ export class MedicalRecordsComponent implements OnInit {
     private route: ActivatedRoute,
     private medicalRecordsService: MedicalRecordsService
   ) {
+    super();
     // Initialize the form with the fields from the updated MedicalRecord interface
     this.medicalRecordForm = this.fb.group({
       // Physical Information

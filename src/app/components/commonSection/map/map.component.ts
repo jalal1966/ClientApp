@@ -122,6 +122,7 @@ export class MapComponent implements OnInit {
   }
 
   // Helper to check if time is within lunch hours for a provider
+  //isLunchTimeForProvider(time: string | Date, provider: Provider): boolean {
   private isLunchTimeForProvider(timeStr: string, provider: Provider): boolean {
     // If provider doesn't have lunch time defined, use default
     const lunchStart = provider.lunchStart || this.defaultLunchStart;
@@ -205,7 +206,12 @@ export class MapComponent implements OnInit {
     // Mark lunch time slots for each provider
     this.scheduleSlots.forEach((slot) => {
       this.providers.forEach((provider) => {
-        if (this.isLunchTimeForProvider(slot.time, provider)) {
+        if (
+          this.isLunchTimeForProvider(
+            this.formatTimeToString(slot.time),
+            provider
+          )
+        ) {
           // If it's lunch time for this provider, mark the slot
           if (slot.appointments[provider.id] === null) {
             // Only mark as lunch if there's no appointment scheduled (appointments take priority)
@@ -274,7 +280,7 @@ export class MapComponent implements OnInit {
   // Option 1: Include all required properties
   isLunchTimeCell(slot: ScheduleSlot, providerId: number): boolean {
     return this.isLunchTimeForProvider(
-      slot.time,
+      this.formatTimeToString(slot.time),
       this.providers.find((p) => p.id === providerId) || {
         id: providerId,
         name: 'Unknown',
@@ -288,5 +294,14 @@ export class MapComponent implements OnInit {
   viewAppointment(appointment: Appointment | null): void {
     if (!appointment) return;
     this.router.navigate(['/appointments', appointment.id]);
+  }
+
+  formatTimeToString(time: string | Date): string {
+    return typeof time === 'string'
+      ? time
+      : `${time.getHours().toString().padStart(2, '0')}:${time
+          .getMinutes()
+          .toString()
+          .padStart(2, '0')}`;
   }
 }

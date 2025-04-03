@@ -10,26 +10,30 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Allergy } from '../../../models/medicalRecord.model';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 
 @Component({
   selector: 'app-patient-allergies',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  template: ``,
-  styles: [],
+  templateUrl: './patient-allergies.component.html',
+  styleUrl: './patient-allergies.component.scss',
 })
-export class PatientAllergiesComponent implements OnInit {
+export class PatientAllergiesComponent
+  extends PatientComponentBase
+  implements OnInit
+{
   allergyForm: FormGroup;
   isEditing = false;
   currentAllergyId?: number;
   @Input() allergies: Allergy[] = [];
-  @Input() patientId!: number; // Make sure this is defined as an @Input
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
     private fb: FormBuilder
   ) {
+    super();
     this.patientId = 0;
     this.allergyForm = this.fb.group({
       allergyType: ['', Validators.required],

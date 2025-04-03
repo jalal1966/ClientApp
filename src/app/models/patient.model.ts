@@ -4,8 +4,8 @@ import {
   LabResult,
   MedicalRecord,
   Medication,
-  VisitSummary,
 } from './medicalRecord.model';
+import { Visit } from './visits.model';
 
 export interface Patients {
   id?: number;
@@ -30,6 +30,7 @@ export interface Patients {
 }
 
 export interface PatientDetails {
+  id?: number;
   PatientId: number;
   firstName: string;
   lastName: string;
@@ -71,7 +72,7 @@ export interface PatientDetail {
   bloodType?: string;
   allergies?: Allergy[];
   currentMedications?: Medication[];
-  recentVisits?: VisitSummary[];
+  recentVisits?: Visit[];
   recentLabResults?: LabResult[];
   appointment?: AppComponent;
 }

@@ -13,20 +13,23 @@ export class PatientInfoService {
   constructor(private http: HttpClient) {}
 
   getPatientInfo(id: number): Observable<PatientInfo> {
-    return this.http.get<PatientInfo>(`${this.apiUrl}/${id}/info`);
+    return this.http.get<PatientInfo>(`${this.apiUrl}/api/patients/${id}/info`);
   }
 
   updatePatientInfo(id: number, patientInfo: PatientInfo): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/info`, patientInfo);
+    return this.http.put(`${this.apiUrl}/api/patients/${id}/info`, patientInfo);
   }
 
   updateContactInfo(id: number, contactInfo: any): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}/info/contact`, contactInfo);
+    return this.http.patch(
+      `${this.apiUrl}/api/patients/${id}/info/contact`,
+      contactInfo
+    );
   }
 
   updateInsuranceInfo(id: number, insuranceInfo: any): Observable<any> {
     return this.http.patch(
-      `${this.apiUrl}/${id}/info/insurance`,
+      `${this.apiUrl}/api/patients/${id}/info/insurance`,
       insuranceInfo
     );
   }

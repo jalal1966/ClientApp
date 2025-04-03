@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -14,9 +14,9 @@ import { PatientComponentBase } from '../../../shared/base/patient-component-bas
 @Component({
   selector: 'app-patient-lab-results',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  template: ``,
-  styles: [],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  templateUrl: './patient-lab-results.component.html',
+  styleUrl: './patient-lab-results.component.scss',
 })
 export class PatientLabResultsComponent
   extends PatientComponentBase
@@ -36,14 +36,98 @@ export class PatientLabResultsComponent
   }
 
   ngOnInit(): void {
-    console.log(
-      `${this.getPatientIdString()} - Lab results count: ${
-        this.labResults?.length || 0
-      }`
-    );
-    this.patientId = +this.route.snapshot.params['id'];
-    this.initForm();
-    this.loadLabResults();
+    // Use consistent approach for getting patient ID - prefer the parent route approach
+    this.route.parent?.params.subscribe((params) => {
+      if (params['id']) {
+        this.patientId = +params['id'];
+      } else {
+        // Fallback to direct route params if no parent
+        this.patientId = +this.route.snapshot.params['id'];
+      }
+
+      console.log(
+        `${this.getPatientIdString()} - Initializing lab results component`
+      );
+      this.initForm();
+      this.loadLabResults();
+    });
+  }
+
+  // Add error handling and loading state
+  loading = false;
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+
+  loadLabResults(): void {
+    this.loading = true;
+    this.errorMessage = null;
+    this.labResultsService.getLabResults(this.patientId).subscribe({
+      next: (results) => {
+        this.labResults = results;
+      },
+      error: (error) => {
+        console.error('Failed to load lab results', error);
+      },
+    });
+  }
+
+  submitForm(): void {
+    if (this.labResultForm.invalid) {
+      // Mark all fields as touched to show validation errors
+      Object.keys(this.labResultForm.controls).forEach((key) => {
+        this.labResultForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    const formData = this.labResultForm.value;
+    const labResult: LabResult = {
+      ...formData,
+      patientId: this.patientId,
+    };
+
+    if (this.isEditing && this.currentEditId) {
+      labResult.id = this.currentEditId;
+      this.labResultsService
+        .updateLabResult(this.patientId, this.currentEditId, labResult)
+        .subscribe({
+          next: () => {
+            this.loadLabResults();
+            this.cancelEdit();
+            this.successMessage = 'Lab result updated successfully';
+            setTimeout(() => (this.successMessage = null), 3000);
+          },
+          error: (error) => {
+            this.errorMessage =
+              'Failed to update lab result: ' +
+              (error.message || 'Unknown error');
+            this.loading = false;
+            console.error('Failed to update lab result', error);
+          },
+        });
+    } else {
+      this.labResultsService
+        .createLabResult(this.patientId, labResult)
+        .subscribe({
+          next: () => {
+            this.loadLabResults();
+            this.labResultForm.reset();
+            this.successMessage = 'New lab result added successfully';
+            setTimeout(() => (this.successMessage = null), 3000);
+          },
+          error: (error) => {
+            this.errorMessage =
+              'Failed to create lab result: ' +
+              (error.message || 'Unknown error');
+            this.loading = false;
+            console.error('Failed to create lab result', error);
+          },
+        });
+    }
   }
 
   initForm(labResult?: LabResult): void {
@@ -60,56 +144,6 @@ export class PatientLabResultsComponent
       orderingProvider: [labResult?.orderingProvider || ''],
       notes: [labResult?.notes || ''],
     });
-  }
-
-  loadLabResults(): void {
-    this.labResultsService.getLabResults(this.patientId).subscribe({
-      next: (results) => {
-        this.labResults = results;
-      },
-      error: (error) => {
-        console.error('Failed to load lab results', error);
-      },
-    });
-  }
-
-  submitForm(): void {
-    if (this.labResultForm.invalid) {
-      return;
-    }
-
-    const formData = this.labResultForm.value;
-    const labResult: LabResult = {
-      ...formData,
-      patientId: this.patientId,
-    };
-
-    if (this.isEditing && this.currentEditId) {
-      labResult.id = this.currentEditId;
-      this.labResultsService
-        .updateLabResult(this.patientId, this.currentEditId, labResult)
-        .subscribe({
-          next: () => {
-            this.loadLabResults();
-            this.cancelEdit();
-          },
-          error: (error) => {
-            console.error('Failed to update lab result', error);
-          },
-        });
-    } else {
-      this.labResultsService
-        .createLabResult(this.patientId, labResult)
-        .subscribe({
-          next: () => {
-            this.loadLabResults();
-            this.labResultForm.reset();
-          },
-          error: (error) => {
-            console.error('Failed to create lab result', error);
-          },
-        });
-    }
   }
 
   editLabResult(labResult: LabResult): void {

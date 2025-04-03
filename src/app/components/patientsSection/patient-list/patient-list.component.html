@@ -1,4 +1,15 @@
 <div class="container mx-auto p-4">
+  <h2>Patient Details</h2>
+  <nav>
+    <ul>
+      <li><a routerLink="info">Patient Info</a></li>
+      <li><a routerLink="medical-records">Medical Records</a></li>
+      <li><a routerLink="allergies">Allergies</a></li>
+      <li><a routerLink="medications">Medications</a></li>
+      <li><a routerLink="lab-results">Lab Results</a></li>
+      <li><a routerLink="visits">Visits</a></li>
+    </ul>
+  </nav>
   <h1 class="text-2xl font-bold justify-content-between">
     Patient List {{ currentUser?.firstName }} {{ currentUser?.lastName }}
   </h1>
@@ -109,4 +120,5 @@
       </table>
     </div>
   </div>
+  <router-outlet></router-outlet>
 </div>

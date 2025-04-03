@@ -1,5 +1,18 @@
 <div class="container">
   <h2>Patient Lab Results</h2>
+  <!-- Error and Success Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success mb-3">
+    {{ successMessage }}
+  </div>
+  <!-- Loading Indicator -->
+  <div *ngIf="loading" class="d-flex justify-content-center mb-3">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
 
   <!-- Lab Results List -->
   <div class="mb-3">

@@ -157,9 +157,19 @@ export class ClinicDashboardComponent implements OnInit {
     });
   }
 
-  openMap(): void {
-    this.router.navigate(['/doctor-map']);
-    //this.router.navigate(['/doctor-schedule']);
+  /* openMap(patientId: number): void {
+    if (patientId) {
+      this.router.navigate(['/patient-info', patientId]);
+    } else {
+      this.router.navigate(['/patient-info']);
+    }
+  } */
+  openMap(patientId: number = 3): void {
+    this.router.navigate(['/patients', patientId, 'allergies']);
+  }
+
+  openLabResults(patientId: number = 3): void {
+    this.router.navigate(['/patients', patientId, 'lab-results']);
   }
 
   loadAppointmentsDoctor(value: number | null): void {
