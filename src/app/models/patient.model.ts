@@ -70,6 +70,8 @@ export interface PatientDetail {
   // Related medical information
   medicalRecord?: MedicalRecord;
   bloodType?: string;
+  bmi: number;
+  weight: number;
   allergies?: Allergy[];
   currentMedications?: Medication[];
   recentVisits?: Visit[];

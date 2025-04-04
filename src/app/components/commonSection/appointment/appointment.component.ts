@@ -58,6 +58,7 @@ export class AppointmentComponent implements OnInit {
   refreshInterval: any;
   patientForm!: FormGroup;
   error = '';
+
   // Then update your appointment form initialization to use these enums
   appointmentTypes = [
     { value: AppointmentType.CheckUp, label: 'CheckUp' },
@@ -80,13 +81,16 @@ export class AppointmentComponent implements OnInit {
     { value: AppointmentStatus.Cancelled, label: 'Cancelled' },
     { value: AppointmentStatus.NoShow, label: 'NoShow' },
   ];
+
+  private originalScheduleNewAppointment: (() => void) | undefined; // Add this property to store the original implementation
   constructor(
     private filterService: FilterService,
     private appointmentService: AppointmentService,
     private patientService: PatientService,
     private docorsService: AuthService,
     private authService: AuthService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
     // Initialize data
     this.filterService.setWaitingPatients([]);
@@ -98,6 +102,12 @@ export class AppointmentComponent implements OnInit {
     this.loadAppointments();
     this.loadPatients();
     this.loadDoctors();
+
+    // Store the original implementation
+    if (this.originalScheduleNewAppointment) {
+      this.scheduleNewAppointment = this.originalScheduleNewAppointment;
+    }
+
     // Refresh every minute to update wait times
     this.refreshInterval = setInterval(() => {
       // this.updateWaitTimes();
@@ -302,8 +312,106 @@ export class AppointmentComponent implements OnInit {
   }
 
   // ToDo Update date Appointment and Time
-  updateAppointment(value: any): void {
-    // ToDo Update date Appointment and Time
+  updateAppointment(appointment: Appointment): void {
+    // Show the form for editing
+    this.showNewAppointmentForm = true;
+
+    // Find the patient and doctor in the collections
+    const patient = this.patients.find((p) => p.id === appointment.patientId);
+    const doctor = this.doctors.find(
+      (d) => d.userID === appointment.providerId
+    );
+
+    // Find the appointment type and status in the collections
+    const appointmentType = this.appointmentTypes.find(
+      (t) => t.value.toString() === appointment.type
+    );
+    const appointmentStatus = this.appointmentStatuses.find(
+      (s) => s.value.toString() === appointment.status
+    );
+
+    // Extract date and time from startTime
+    const startDate = new Date(appointment.startTime);
+    const formattedDate = startDate.toISOString().split('T')[0];
+    const formattedTime = startDate.toTimeString().slice(0, 5);
+
+    // Populate the form with existing appointment data
+    this.appointmentForm.patchValue({
+      patientId: appointment.patientId,
+      doctorId: appointment.providerId,
+      appointmentDate: formattedDate,
+      appointmentTime: formattedTime,
+      appointmentType: appointmentType || null,
+      appointmentStatus: appointmentStatus || null,
+      notes: appointment.notes || '',
+    });
+
+    // Store the appointment ID for update operation
+    const appointmentId = appointment.id;
+
+    // Create a new method for handling updates
+    this.scheduleNewAppointment = () => {
+      this.updateExistingAppointment(appointmentId);
+    };
+  }
+
+  // Add this new method to handle appointment updates
+  updateExistingAppointment(appointmentId: number): void {
+    if (this.appointmentForm.invalid) {
+      // Mark all fields as touched to trigger validation messages
+      Object.keys(this.appointmentForm.controls).forEach((key) => {
+        const control = this.appointmentForm.get(key);
+        control?.markAsTouched();
+      });
+      return;
+    }
+
+    const formValues = this.appointmentForm.value;
+
+    // Create ISO string date directly
+    const dateStr = formValues.appointmentDate;
+    const timeStr = formValues.appointmentTime;
+    const startTimeISO = `${dateStr}T${timeStr}:00.000Z`;
+
+    // Calculate end time (30 min later)
+    const startDate = new Date(startTimeISO);
+    const endTimeISO = new Date(startDate.getTime() + 30 * 60000).toISOString();
+
+    // Create appointment object with ISO string dates
+    const updatedAppointment: AppointmentUpdate = {
+      patientId: formValues.patientId,
+      providerId: formValues.doctorId,
+      startTime: startTimeISO,
+      endTime: endTimeISO,
+      type: formValues.appointmentType.value.toString(),
+      status: formValues.appointmentStatus.value.toString(),
+      notes: formValues.notes || '',
+    };
+
+    // Call service to update appointment
+    this.appointmentService
+      .updateAppointment(appointmentId, updatedAppointment)
+      .subscribe({
+        next: () => {
+          console.log('Appointment updated successfully');
+          this.loadAppointments();
+          this.showNewAppointmentForm = false;
+          // Reset the scheduleNewAppointment method to its original implementation
+          if (this.originalScheduleNewAppointment) {
+            this.scheduleNewAppointment = this.originalScheduleNewAppointment;
+          }
+        },
+        error: (err) => {
+          console.error('Error updating appointment:', err);
+          if (err.error && err.error.includes('time slot is not available')) {
+            this.error =
+              'The requested time slot is not available. Please choose another time.';
+          } else {
+            this.error = 'Failed to update appointment. Please try again.';
+          }
+          this.showErrorAlert(this.error);
+        },
+      });
   }
 
   loadPatients(): void {
@@ -358,6 +466,14 @@ export class AppointmentComponent implements OnInit {
 
   openPatientRecord(appointment: Appointment): void {
     console.log('Opening patient record for');
+
+    if (appointment?.patientId) {
+      this.router.navigate([
+        '/patients',
+        appointment.patientId,
+        'medical-records',
+      ]);
+    }
     // In a real application, this would navigate to the patient's record
   }
 

@@ -1,5 +1,5 @@
 <div class="container mt-4">
-  <h2>Medical Record</h2>
+  <h2>Medical Record for {{ patient?.firstName }} {{ patient?.lastName }}</h2>
 
   <div *ngIf="loading" class="alert alert-info">Loading medical record...</div>
 
@@ -12,7 +12,8 @@
     (ngSubmit)="onSubmit()"
     *ngIf="!loading"
   >
-    <div class="card mb-4 me-2">
+    <!-- Card 1: Full-width -->
+    <div class="card mb-4">
       <div class="card-header">
         <h3 class="mb-0">Physical Information</h3>
       </div>
@@ -48,7 +49,7 @@
             />
             <div
               *ngIf="
-                formControls['height'].invalid && formControls['height'].touched
+                formControls['weight'].invalid && formControls['weight'].touched
               "
               class="text-danger"
             >
@@ -90,125 +91,135 @@
       </div>
     </div>
 
-    <div class="card mb-4">
-      <div class="card-header">
-        <h3 class="mb-0">Medical History</h3>
+    <!-- Row: Card 2 and Card 3 side-by-side -->
+    <div class="row">
+      <!-- Card 2: Medical History -->
+      <div class="col-md-6">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="mb-0">Medical History</h3>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="chronicConditions">Chronic Conditions</label>
+              <textarea
+                class="form-control"
+                id="chronicConditions"
+                rows="3"
+                formControlName="chronicConditions"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="surgicalHistory">Surgical History</label>
+              <textarea
+                class="form-control"
+                id="surgicalHistory"
+                rows="3"
+                formControlName="surgicalHistory"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="familyMedicalHistory">Family Medical History</label>
+              <textarea
+                class="form-control"
+                id="familyMedicalHistory"
+                rows="3"
+                formControlName="familyMedicalHistory"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="socialHistory">Social History</label>
+              <textarea
+                class="form-control"
+                id="socialHistory"
+                rows="3"
+                formControlName="socialHistory"
+              ></textarea>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="mb-3">
-          <label for="chronicConditions">Chronic Conditions</label>
-          <textarea
-            class="form-control"
-            id="chronicConditions"
-            rows="3"
-            formControlName="chronicConditions"
-          ></textarea>
-        </div>
 
-        <div class="mb-3">
-          <label for="surgicalHistory">Surgical History</label>
-          <textarea
-            class="form-control"
-            id="surgicalHistory"
-            rows="3"
-            formControlName="surgicalHistory"
-          ></textarea>
-        </div>
+      <!-- Card 3: Current Visit -->
+      <div class="col-md-6">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="mb-0">Current Visit</h3>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="diagnosis">Diagnosis</label>
+              <textarea
+                class="form-control"
+                id="diagnosis"
+                rows="2"
+                formControlName="diagnosis"
+              ></textarea>
+            </div>
 
-        <div class="mb-3">
-          <label for="familyMedicalHistory">Family Medical History</label>
-          <textarea
-            class="form-control"
-            id="familyMedicalHistory"
-            rows="3"
-            formControlName="familyMedicalHistory"
-          ></textarea>
-        </div>
+            <div class="mb-3">
+              <label for="treatment">Treatment</label>
+              <textarea
+                class="form-control"
+                id="treatment"
+                rows="2"
+                formControlName="treatment"
+              ></textarea>
+            </div>
 
-        <div class="mb-3">
-          <label for="socialHistory">Social History</label>
-          <textarea
-            class="form-control"
-            id="socialHistory"
-            rows="3"
-            formControlName="socialHistory"
-          ></textarea>
+            <div class="mb-3">
+              <label for="medications">Medications</label>
+              <textarea
+                class="form-control"
+                id="medications"
+                rows="2"
+                formControlName="medications"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="notes">Notes</label>
+              <textarea
+                class="form-control"
+                id="notes"
+                rows="3"
+                formControlName="notes"
+              ></textarea>
+            </div>
+
+            <div class="form-check mb-3">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="isFollowUpRequired"
+                formControlName="isFollowUpRequired"
+              />
+              <label class="form-check-label" for="isFollowUpRequired"
+                >Follow-up Required</label
+              >
+            </div>
+
+            <div
+              class="mb-3"
+              *ngIf="medicalRecordForm.get('isFollowUpRequired')?.value"
+            >
+              <label for="followUpDate">Follow-up Date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="followUpDate"
+                formControlName="followUpDate"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="card mb-4">
-      <div class="card-header">
-        <h3 class="mb-0">Current Visit</h3>
-      </div>
-      <div class="card-body">
-        <div class="mb-3">
-          <label for="diagnosis">Diagnosis</label>
-          <textarea
-            class="form-control"
-            id="diagnosis"
-            rows="2"
-            formControlName="diagnosis"
-          ></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="treatment">Treatment</label>
-          <textarea
-            class="form-control"
-            id="treatment"
-            rows="2"
-            formControlName="treatment"
-          ></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="medications">Medications</label>
-          <textarea
-            class="form-control"
-            id="medications"
-            rows="2"
-            formControlName="medications"
-          ></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="notes">Notes</label>
-          <textarea
-            class="form-control"
-            id="notes"
-            rows="3"
-            formControlName="notes"
-          ></textarea>
-        </div>
-
-        <div class="form-check mb-3">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="isFollowUpRequired"
-            formControlName="isFollowUpRequired"
-          />
-          <label class="form-check-label" for="isFollowUpRequired">
-            Follow-up Required
-          </label>
-        </div>
-
-        <div
-          class="mb-3"
-          *ngIf="medicalRecordForm.get('isFollowUpRequired')?.value"
-        >
-          <label for="followUpDate">Follow-up Date</label>
-          <input
-            type="date"
-            class="form-control"
-            id="followUpDate"
-            formControlName="followUpDate"
-          />
-        </div>
-      </div>
-    </div>
-
+    <!-- Submit Button and Feedback -->
     <button
       type="submit"
       class="btn btn-primary"

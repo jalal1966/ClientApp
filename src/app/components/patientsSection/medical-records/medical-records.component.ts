@@ -10,6 +10,8 @@ import {
 } from '@angular/forms';
 import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { Patients } from '../../../models/patient.model';
+import { PatientService } from '../../../services/patient/patient.service';
 
 @Component({
   selector: 'app-medical-records',
@@ -28,18 +30,20 @@ export class MedicalRecordsComponent
   saveSuccess = false;
   error: string | null = null;
   recordExists = false;
+  patient: Patients | undefined;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
-    private medicalRecordsService: MedicalRecordsService
+    private medicalRecordsService: MedicalRecordsService,
+    private patientService: PatientService
   ) {
     super();
     // Initialize the form with the fields from the updated MedicalRecord interface
     this.medicalRecordForm = this.fb.group({
       // Physical Information
       height: ['', [Validators.required]],
-      weight: ['', [Validators.required]],
+      weight: ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
       bmi: [''],
       bloodType: [''],
 
@@ -66,7 +70,7 @@ export class MedicalRecordsComponent
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
-      const id = params.get('patientId');
+      const id = params.get('id');
       if (id) {
         this.patientId = +id;
         this.loadMedicalRecord();
@@ -90,12 +94,29 @@ export class MedicalRecordsComponent
       });
 
     // Add listeners for height and weight to automatically update BMI
+    this.medicalRecordForm.get('weight')?.valueChanges.subscribe(() => {
+      this.updateBMI();
+    });
+
     this.medicalRecordForm.get('height')?.valueChanges.subscribe(() => {
       this.updateBMI();
     });
 
-    this.medicalRecordForm.get('weight')?.valueChanges.subscribe(() => {
-      this.updateBMI();
+    this.loadPatient(this.patientId);
+  }
+
+  loadPatient(value: number): void {
+    this.loading = true;
+    this.patientService.getPatient(value).subscribe({
+      next: (data) => {
+        this.patient = data;
+        console.log('this.patients', this.patient);
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to load patients. Please try again.';
+        this.loading = false;
+      },
     });
   }
 
@@ -106,13 +127,15 @@ export class MedicalRecordsComponent
     this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
       next: (data) => {
         this.recordExists = true;
+        console.log('Raw data from API:', data);
 
         // Map the backend model to the form model
         this.medicalRecordForm.patchValue({
           // Physical Information
+          //bmi: data.bmi, // Note: case difference between backend and form
           height: data.height,
           weight: data.weight,
-          bmi: data.bMI, // Note: case difference between backend and form
+          bmi: data.bmi,
           bloodType: data.bloodType,
 
           // Medical History
@@ -131,6 +154,7 @@ export class MedicalRecordsComponent
           followUpDate: data.followUpDate,
         });
 
+        console.log('Form values after patch:', this.medicalRecordForm.value);
         this.loading = false;
       },
       error: (err) => {
@@ -148,12 +172,31 @@ export class MedicalRecordsComponent
   }
 
   updateBMI(): void {
-    const height = this.medicalRecordForm.get('height')?.value;
-    const weight = this.medicalRecordForm.get('weight')?.value;
+    // Get the raw values
+    const heightValue = this.medicalRecordForm.get('height')?.value;
+    const weightValue = this.medicalRecordForm.get('weight')?.value;
 
-    if (height && weight) {
+    // Convert to numbers and check if they're valid
+    const height =
+      typeof heightValue === 'string' ? parseFloat(heightValue) : heightValue;
+    const weight =
+      typeof weightValue === 'string' ? parseFloat(weightValue) : weightValue;
+
+    console.log('Height:', height, 'Weight:', weight);
+
+    if (
+      height &&
+      weight &&
+      !isNaN(height) &&
+      !isNaN(weight) &&
+      height > 0 &&
+      weight > 0
+    ) {
       const bmi = this.calculateBMI(height, weight);
+      console.log('Calculated BMI:', bmi);
       this.medicalRecordForm.patchValue({ bmi }, { emitEvent: false });
+    } else {
+      console.log('Invalid height or weight values for BMI calculation');
     }
   }
 
@@ -186,7 +229,7 @@ export class MedicalRecordsComponent
       // Physical Information
       height: formValues.height,
       weight: formValues.weight,
-      bMI: formValues.bmi, // Note: case difference between form and backend
+      bmi: formValues.bmi, // Note: case difference between form and backend
       bloodType: formValues.bloodType,
 
       // Medical History

@@ -22,7 +22,7 @@ export interface MedicalRecord {
   // Physical information
   height: number;
   weight: number;
-  bMI: number;
+  bmi: number;
   bloodType: string;
 
   // Medical history
