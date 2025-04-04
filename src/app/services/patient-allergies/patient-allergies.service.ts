@@ -13,18 +13,20 @@ export class PatientAllergiesService {
   constructor(private http: HttpClient) {}
 
   getAllergies(patientId: number): Observable<Allergy[]> {
-    return this.http.get<Allergy[]>(`${this.apiUrl}/${patientId}/allergies`);
+    return this.http.get<Allergy[]>(
+      `${this.apiUrl}/api/${patientId}/allergies`
+    );
   }
 
   getAllergy(patientId: number, id: number): Observable<Allergy> {
     return this.http.get<Allergy>(
-      `${this.apiUrl}/${patientId}/allergies/${id}`
+      `${this.apiUrl}/api/${patientId}/allergies/${id}`
     );
   }
 
   createAllergy(patientId: number, allergy: Allergy): Observable<Allergy> {
     return this.http.post<Allergy>(
-      `${this.apiUrl}/${patientId}/allergies`,
+      `${this.apiUrl}/api/${patientId}/allergies`,
       allergy
     );
   }
@@ -35,14 +37,14 @@ export class PatientAllergiesService {
     allergy: Allergy
   ): Observable<void> {
     return this.http.put<void>(
-      `${this.apiUrl}/${patientId}/allergies/${id}`,
+      `${this.apiUrl}/api/${patientId}/allergies/${id}`,
       allergy
     );
   }
 
   deleteAllergy(patientId: number, id: number): Observable<void> {
     return this.http.delete<void>(
-      `${this.apiUrl}/${patientId}/allergies/${id}`
+      `${this.apiUrl}/api/${patientId}/allergies/${id}`
     );
   }
 }

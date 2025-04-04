@@ -14,13 +14,14 @@ import { differenceInYears } from 'date-fns/differenceInYears';
 })
 export class PatientService {
   private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/patients';
 
   constructor(private http: HttpClient) {}
 
   /** Fetch all patients */
   getPatients(): Observable<Patients[]> {
     return this.http
-      .get<Patients[]>(`${this.apiUrl}/api/patients`)
+      .get<Patients[]>(`${this.apiUrl}${this.baseUrl}`)
       .pipe(catchError(this.handleError));
   }
 
@@ -32,25 +33,25 @@ export class PatientService {
 
   getPatient(id: number): Observable<Patients> {
     return this.http
-      .get<Patients>(`${this.apiUrl}/api/patients/${id}`)
+      .get<Patients>(`${this.apiUrl}${this.baseUrl}/${id}`)
       .pipe(catchError(this.handleError));
   }
 
   createPatient(patient: Patients): Observable<Patients> {
     return this.http
-      .post<Patients>(`${this.apiUrl}/api/patients`, patient)
+      .post<Patients>(`${this.apiUrl}${this.baseUrl}`, patient)
       .pipe(catchError(this.handleError));
   }
 
   updatePatient(id: number, patient: Patients): Observable<Patients> {
     return this.http
-      .put<Patients>(`${this.apiUrl}/api/patients/${id}`, patient)
+      .put<Patients>(`${this.apiUrl}${this.baseUrl}/${id}`, patient)
       .pipe(catchError(this.handleError));
   }
 
   deletePatient(id: number): Observable<any> {
     return this.http
-      .delete(`${this.apiUrl}/api/patients/${id}`)
+      .delete(`${this.apiUrl}${this.baseUrl}/${id}`)
       .pipe(catchError(this.handleError));
   }
 

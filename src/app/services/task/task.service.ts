@@ -11,28 +11,36 @@ import { environment } from '../../../environments/environment';
 })
 export class TaskService {
   private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/patient-tasks';
 
   constructor(private http: HttpClient) {}
 
   getTasks(nurseId: number): Observable<PatientTask[]> {
-    return this.http.get<PatientTask[]>(`${this.apiUrl}/nurse/${nurseId}`);
+    return this.http.get<PatientTask[]>(
+      `${this.apiUrl}${this.baseUrl}/nurse/${nurseId}`
+    );
   }
 
   getTasksByPatient(patientId: number): Observable<PatientTask[]> {
-    return this.http.get<PatientTask[]>(`${this.apiUrl}/patient/${patientId}`);
+    return this.http.get<PatientTask[]>(
+      `${this.apiUrl}${this.baseUrl}/patient/${patientId}`
+    );
   }
 
   createTask(task: Omit<PatientTask, 'id'>): Observable<PatientTask> {
-    return this.http.post<PatientTask>(this.apiUrl, task);
+    return this.http.post<PatientTask>(`${this.apiUrl}${this.baseUrl}`, task);
   }
 
   updateTaskStatus(
     taskId: number,
     status: TaskStatus
   ): Observable<PatientTask> {
-    return this.http.patch<PatientTask>(`${this.apiUrl}/${taskId}/status`, {
-      status,
-    });
+    return this.http.patch<PatientTask>(
+      `${this.apiUrl}${this.baseUrl}/${taskId}/status`,
+      {
+        status,
+      }
+    );
   }
 
   updateTask(task: PatientTask): Observable<PatientTask> {
@@ -40,6 +48,6 @@ export class TaskService {
   }
 
   deleteTask(taskId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${taskId}`);
+    return this.http.delete<void>(`${this.apiUrl}${this.baseUrl}/${taskId}`);
   }
 }

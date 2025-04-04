@@ -15,6 +15,7 @@ export class AuthService {
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
   private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/Auth';
 
   constructor(private http: HttpClient, private router: Router) {
     // Initialize from localStorage
@@ -30,10 +31,10 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<User> {
-    const link = `${this.apiUrl}/api/Auth/login`;
+    const link = `${this.apiUrl}${this.baseUrl}/login`;
     console.log('linklogin', link);
     return this.http
-      .post<any>(`${this.apiUrl}/api/auth/login`, { username, password })
+      .post<any>(`${this.apiUrl}${this.baseUrl}/login`, { username, password })
       .pipe(
         map((user) => {
           // Make sure user object has all required properties
@@ -93,19 +94,19 @@ export class AuthService {
 
   register(registerData: RegisterModel): Observable<any> {
     return this.http
-      .post(`${this.apiUrl}/api/auth/register`, registerData)
+      .post(`${this.apiUrl}${this.baseUrl}/register`, registerData)
       .pipe(catchError(this.handleError));
   }
 
   forgotPassword(email: string): Observable<any> {
     return this.http
-      .post(`${this.apiUrl}/api/auth/forgot-password`, { email })
+      .post(`${this.apiUrl}${this.baseUrl}/forgot-password`, { email })
       .pipe(catchError(this.handleError));
   }
 
   validateResetToken(email: string, token: string): Observable<any> {
     return this.http
-      .post(`${this.apiUrl}/validate-reset-token`, {
+      .post(`${this.apiUrl}${this.baseUrl}/validate-reset-token`, {
         email,
         token,
       })
@@ -132,7 +133,7 @@ export class AuthService {
     token: string,
     password: string
   ): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset-password`, {
+    return this.http.post(`${this.apiUrl}${this.baseUrl}/reset-password`, {
       email,
       token,
       password,

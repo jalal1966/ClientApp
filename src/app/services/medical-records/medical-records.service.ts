@@ -8,7 +8,8 @@ import { MedicalRecord } from '../../models/medicalRecord.model';
   providedIn: 'root',
 })
 export class MedicalRecordsService {
-  private apiUrl = '/api/patients';
+  private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/patients';
 
   constructor(private http: HttpClient) {}
 
@@ -19,7 +20,9 @@ export class MedicalRecordsService {
    */
   getMedicalRecord(patientId: number): Observable<MedicalRecord> {
     return this.http
-      .get<MedicalRecord>(`${this.apiUrl}/${patientId}/medical-record`)
+      .get<MedicalRecord>(
+        `${this.apiUrl}${this.baseUrl}/${patientId}/medical-record`
+      )
       .pipe(catchError(this.handleError));
   }
 
@@ -35,7 +38,7 @@ export class MedicalRecordsService {
   ): Observable<MedicalRecord> {
     return this.http
       .post<MedicalRecord>(
-        `${this.apiUrl}/${patientId}/medical-record`,
+        `${this.apiUrl}${this.baseUrl}/${patientId}/medical-record`,
         medicalRecord
       )
       .pipe(catchError(this.handleError));
@@ -52,7 +55,10 @@ export class MedicalRecordsService {
     medicalRecord: MedicalRecord
   ): Observable<void> {
     return this.http
-      .put<void>(`${this.apiUrl}/${patientId}/medical-record`, medicalRecord)
+      .put<void>(
+        `${this.apiUrl}${this.baseUrl}/${patientId}/medical-record`,
+        medicalRecord
+      )
       .pipe(catchError(this.handleError));
   }
 

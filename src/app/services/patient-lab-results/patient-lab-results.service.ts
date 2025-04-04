@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { LabResult } from '../../models/medicalRecord.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PatientLabResultsService {
-  private baseUrl = '/api/patients';
+  private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/patients';
 
   constructor(private http: HttpClient) {}
 
@@ -18,7 +20,7 @@ export class PatientLabResultsService {
    */
   getLabResults(patientId: number): Observable<LabResult[]> {
     return this.http.get<LabResult[]>(
-      `${this.baseUrl}/${patientId}/lab-results`
+      `${this.apiUrl}${this.baseUrl}/${patientId}/lab-results`
     );
   }
 
@@ -30,7 +32,7 @@ export class PatientLabResultsService {
    */
   getLabResult(patientId: number, resultId: number): Observable<LabResult> {
     return this.http.get<LabResult>(
-      `${this.baseUrl}/${patientId}/lab-results/${resultId}`
+      `${this.apiUrl}${this.baseUrl}/${patientId}/lab-results/${resultId}`
     );
   }
 
@@ -45,7 +47,7 @@ export class PatientLabResultsService {
     labResult: LabResult
   ): Observable<LabResult> {
     return this.http.post<LabResult>(
-      `${this.baseUrl}/${patientId}/lab-results`,
+      `${this.apiUrl}${this.baseUrl}/${patientId}/lab-results`,
       labResult
     );
   }
@@ -63,7 +65,7 @@ export class PatientLabResultsService {
     labResult: LabResult
   ): Observable<any> {
     return this.http.put(
-      `${this.baseUrl}/${patientId}/lab-results/${resultId}`,
+      `${this.apiUrl}${this.baseUrl}/${patientId}/lab-results/${resultId}`,
       labResult
     );
   }
@@ -76,7 +78,7 @@ export class PatientLabResultsService {
    */
   deleteLabResult(patientId: number, resultId: number): Observable<any> {
     return this.http.delete(
-      `${this.baseUrl}/${patientId}/lab-results/${resultId}`
+      `${this.apiUrl}${this.baseUrl}/${patientId}/lab-results/${resultId}`
     );
   }
 }

@@ -9,27 +9,33 @@ import { environment } from '../../../environments/environment';
 })
 export class PatientInfoService {
   private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/patients';
 
   constructor(private http: HttpClient) {}
 
   getPatientInfo(id: number): Observable<PatientInfo> {
-    return this.http.get<PatientInfo>(`${this.apiUrl}/api/patients/${id}/info`);
+    return this.http.get<PatientInfo>(
+      `${this.apiUrl}${this.baseUrl}/${id}/info`
+    );
   }
 
   updatePatientInfo(id: number, patientInfo: PatientInfo): Observable<any> {
-    return this.http.put(`${this.apiUrl}/api/patients/${id}/info`, patientInfo);
+    return this.http.put(
+      `${this.apiUrl}${this.baseUrl}/${id}/info`,
+      patientInfo
+    );
   }
 
   updateContactInfo(id: number, contactInfo: any): Observable<any> {
     return this.http.patch(
-      `${this.apiUrl}/api/patients/${id}/info/contact`,
+      `${this.apiUrl}${this.baseUrl}/${id}/info/contact`,
       contactInfo
     );
   }
 
   updateInsuranceInfo(id: number, insuranceInfo: any): Observable<any> {
     return this.http.patch(
-      `${this.apiUrl}/api/patients/${id}/info/insurance`,
+      `${this.apiUrl}${this.baseUrl}/${id}/info/insurance`,
       insuranceInfo
     );
   }

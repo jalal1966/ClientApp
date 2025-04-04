@@ -9,30 +9,33 @@ import { environment } from '../../../environments/environment';
 })
 export class AvailabilitiesService {
   private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/Availabilities';
 
   constructor(private http: HttpClient) {}
 
   getAvailabilityByUser(userId: number): Observable<Availability[]> {
-    return this.http.get<Availability[]>(`${this.apiUrl}/user/${userId}`);
+    return this.http.get<Availability[]>(
+      `${this.apiUrl}${this.baseUrl}/user/${userId}`
+    );
   }
 
   getAvailability(id: number): Observable<Availability> {
-    return this.http.get<Availability>(`${this.apiUrl}/${id}`);
+    return this.http.get<Availability>(`${this.apiUrl}${this.baseUrl}/${id}`);
   }
 
   createAvailability(availability: Availability): Observable<Availability> {
-    return this.http.post<Availability>(this.apiUrl, availability);
+    return this.http.post<Availability>(`${this.apiUrl}/api/`, availability);
   }
 
   updateAvailability(availability: Availability): Observable<void> {
     return this.http.put<void>(
-      `${this.apiUrl}/${availability.id}`,
+      `${this.apiUrl}${this.baseUrl}/${availability.id}`,
       availability
     );
   }
 
   deleteAvailability(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}${this.baseUrl}/${id}`);
   }
 
   getAvailabilityCalendar(
@@ -45,7 +48,7 @@ export class AvailabilitiesService {
       .set('endDate', endDate.toISOString());
 
     return this.http.get<{ [key: string]: TimeSlot[] }>(
-      `${this.apiUrl}/calendar/${userId}`,
+      `${this.apiUrl}${this.baseUrl}/calendar/${userId}`,
       { params }
     );
   }

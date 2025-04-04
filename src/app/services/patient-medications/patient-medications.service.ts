@@ -2,26 +2,28 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Medication } from '../../models/medicalRecord.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PatientMedicationsService {
-  private baseUrl = 'api/patients';
+  private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/patients';
 
   constructor(private http: HttpClient) {}
 
   // Get all medications for a patient
   getMedications(patientId: number): Observable<Medication[]> {
     return this.http.get<Medication[]>(
-      `${this.baseUrl}/${patientId}/medications`
+      `${this.apiUrl}${this.baseUrl}/${patientId}/medications`
     );
   }
 
   // Get active medications for a patient
   getActiveMedications(patientId: number): Observable<Medication[]> {
     return this.http.get<Medication[]>(
-      `${this.baseUrl}/${patientId}/medications/active`
+      `${this.apiUrl}${this.baseUrl}/${patientId}/medications/active`
     );
   }
 
@@ -31,7 +33,7 @@ export class PatientMedicationsService {
     medicationId: number
   ): Observable<Medication> {
     return this.http.get<Medication>(
-      `${this.baseUrl}/${patientId}/medications/${medicationId}`
+      `${this.apiUrl}${this.baseUrl}/${patientId}/medications/${medicationId}`
     );
   }
 
@@ -41,7 +43,7 @@ export class PatientMedicationsService {
     medication: Medication
   ): Observable<Medication> {
     return this.http.post<Medication>(
-      `${this.baseUrl}/${patientId}/medications`,
+      `${this.apiUrl}${this.baseUrl}/${patientId}/medications`,
       medication
     );
   }
@@ -52,7 +54,7 @@ export class PatientMedicationsService {
     medication: Medication
   ): Observable<void> {
     return this.http.put<void>(
-      `${this.baseUrl}/${patientId}/medications/${medication.id}`,
+      `${this.apiUrl}${this.baseUrl}/${patientId}/medications/${medication.id}`,
       medication
     );
   }
@@ -60,7 +62,7 @@ export class PatientMedicationsService {
   // Delete a medication
   deleteMedication(patientId: number, medicationId: number): Observable<void> {
     return this.http.delete<void>(
-      `${this.baseUrl}/${patientId}/medications/${medicationId}`
+      `${this.apiUrl}${this.baseUrl}/${patientId}/medications/${medicationId}`
     );
   }
 }

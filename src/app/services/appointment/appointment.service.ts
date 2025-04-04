@@ -15,24 +15,25 @@ import { of } from 'rxjs';
 })
 export class AppointmentService {
   private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/appointments';
   // private apiUrl = 'https://localhost:5000/api/appointments';
 
   constructor(private http: HttpClient) {}
 
   // Active
   getAppointments(): Observable<Appointment[]> {
-    return this.http.get<Appointment[]>(`${this.apiUrl}/api/appointments`);
+    return this.http.get<Appointment[]>(`${this.apiUrl}${this.baseUrl}`);
   }
 
   // Active
   getAppointment(id: number): Observable<Appointment> {
-    return this.http.get<Appointment>(`${this.apiUrl}/api/appointments/${id}`);
+    return this.http.get<Appointment>(`${this.apiUrl}${this.baseUrl}/${id}`);
   }
 
   // Active
   getAppointmentsByProvider(providerId: number): Observable<Appointment[]> {
     return this.http.get<Appointment[]>(
-      `${this.apiUrl}/api/Appointments/provider/${providerId}`
+      `${this.apiUrl}${this.baseUrl}/provider/${providerId}`
     );
   }
 
@@ -52,7 +53,7 @@ export class AppointmentService {
   // Active
   createAppointment(appointment: AppointmentCreate): Observable<Appointment> {
     return this.http.post<Appointment>(
-      `${this.apiUrl}/api/appointments`,
+      `${this.apiUrl}${this.baseUrl}`,
       appointment
     );
   }
@@ -62,7 +63,7 @@ export class AppointmentService {
     appointment: AppointmentUpdate
   ): Observable<Appointment> {
     return this.http.put<Appointment>(
-      `${this.apiUrl}/api/appointments/${id}`,
+      `${this.apiUrl}${this.baseUrl}/${id}`,
       appointment
     );
   }
@@ -72,7 +73,7 @@ export class AppointmentService {
     appointmentId: number,
     status: string
   ): Observable<Appointment> {
-    const url = `${this.apiUrl}/api/appointments/${appointmentId}/status`;
+    const url = `${this.apiUrl}${this.baseUrl}/${appointmentId}/status`;
     return this.http.put<Appointment>(url, JSON.stringify(status), {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
@@ -81,10 +82,10 @@ export class AppointmentService {
   }
 
   deleteAppointment(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/appointments/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}${this.baseUrl}/${id}`);
   }
 
-  rescheduleAppointment(
+  /* rescheduleAppointment(
     id: number,
     startTime: string,
     endTime: string
@@ -94,7 +95,7 @@ export class AppointmentService {
       `${this.apiUrl}/${id}/reschedule`,
       rescheduleData
     );
-  }
+  } */
 
   getAppointmentsByDateRange(
     startDate: string | Date,
@@ -106,12 +107,12 @@ export class AppointmentService {
     const formattedEndDate =
       endDate instanceof Date ? endDate.toISOString() : endDate;
     const test = this.http.get<Appointment[]>(
-      `${this.apiUrl}/api/appointments/date-range?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
+      `${this.apiUrl}${this.baseUrl}/date-range?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
     );
 
     console.log('test', test);
     return this.http.get<Appointment[]>(
-      `${this.apiUrl}/api/appointments/date-range?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
+      `${this.apiUrl}${this.baseUrl}/date-range?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
     );
   }
 
@@ -129,18 +130,24 @@ export class AppointmentService {
     }
 
     return this.http.get<Appointment[]>(
-      `${this.apiUrl}/api/appointments/doctr-waiting-list?startDate=${startDate}&endDate=${endDate}providerId`,
+      `${this.apiUrl}${this.baseUrl}/doctr-waiting-list?startDate=${startDate}&endDate=${endDate}providerId`,
       {
         params,
       }
     );
   }
   confirmAppointment(id: number): Observable<Appointment> {
-    return this.http.patch<Appointment>(`${this.apiUrl}/${id}/confirm`, {});
+    return this.http.patch<Appointment>(
+      `${this.apiUrl}${this.baseUrl}/${id}/confirm`,
+      {}
+    );
   }
 
   completeAppointment(id: number, notes?: string): Observable<Appointment> {
     const data = notes ? { notes } : {};
-    return this.http.patch<Appointment>(`${this.apiUrl}/${id}/complete`, data);
+    return this.http.patch<Appointment>(
+      `${this.apiUrl}${this.baseUrl}/${id}/complete`,
+      data
+    );
   }
 }

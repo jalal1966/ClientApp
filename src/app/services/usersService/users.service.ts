@@ -9,37 +9,38 @@ import { environment } from '../../../environments/environment';
 })
 export class UsersService {
   private apiUrl = environment.apiUrl;
+  private readonly baseUrl = '/api/Users';
 
   constructor(private http: HttpClient) {}
   // active
   getUsers(): Observable<User[]> {
-    console.log(this.http.get<User[]>(`${this.apiUrl}/api/Users`));
-    return this.http.get<User[]>(`${this.apiUrl}/api/Users`);
+    console.log(this.http.get<User[]>(`${this.apiUrl}${this.baseUrl}`));
+    return this.http.get<User[]>(`${this.apiUrl}${this.baseUrl}`);
   }
 
   getDoctors(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/api/Users/doctors`);
+    return this.http.get<User[]>(`${this.apiUrl}${this.baseUrl}/doctors`);
   }
 
   getNurses(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/api/Users/nurses`);
+    return this.http.get<User[]>(`${this.apiUrl}${this.baseUrl}/nurses`);
   }
 
   getAdministrator(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/api/Users/Administrator`);
+    return this.http.get<User[]>(`${this.apiUrl}${this.baseUrl}/Administrator`);
   }
 
   getManagement(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/api/Users/Management`);
+    return this.http.get<User[]>(`${this.apiUrl}${this.baseUrl}/Management`);
   }
 
   // Not Active Yet ///////////////////////77//////////////////////////////////////////777
   getUser(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`);
+    return this.http.get<User>(`${this.apiUrl}${this.baseUrl}/${id}`);
   }
 
   createUser(user: User): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
+    return this.http.post<User>(`${this.apiUrl}${this.baseUrl}/`, user);
   }
 
   updateUser(user: User): Observable<void> {
@@ -47,6 +48,6 @@ export class UsersService {
   }
 
   deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}${this.baseUrl}/${id}`);
   }
 }
