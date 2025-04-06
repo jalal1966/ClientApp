@@ -1,11 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Medication } from '../../../models/medicalRecord.model';
 import { PatientMedicationsService } from '../../../services/patient-medications/patient-medications.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-patient-medications',
@@ -27,9 +28,11 @@ export class PatientMedicationsComponent
   constructor(
     private medicationService: PatientMedicationsService,
     private route: ActivatedRoute,
+    authService: AuthService,
+    router: Router,
     private fb: FormBuilder
   ) {
-    super();
+    super(authService, router);
     this.medicationForm = this.fb.group({
       name: ['', Validators.required],
       dosage: ['', Validators.required],

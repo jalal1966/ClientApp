@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -18,6 +18,9 @@ import { PatientInfoService } from '../../../services/patientinfo/patient-info.s
 import { CommonModule } from '@angular/common';
 import { PatientDetail } from '../../../models/patient.model';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { Location } from '@angular/common';
+import { User } from '../../../models/user';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-patient-info',
@@ -37,14 +40,19 @@ export class PatientInfoComponent
   loading = false;
   errorMessage: string | null = null;
   updateSuccess = false;
+  currentUserID: any;
+  error: string | null = null;
   @Input() patient: PatientDetail | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private patientInfoService: PatientInfoService,
+    private location: Location,
+    authService: AuthService,
+    router: Router,
     private fb: FormBuilder
   ) {
-    super();
+    super(authService, router);
 
     // Initialize forms
     this.patientForm = this.fb.group({
@@ -73,7 +81,7 @@ export class PatientInfoComponent
   }
 
   ngOnInit(): void {
-    this.route.parent?.params.subscribe((params) => {
+    this.route.params.subscribe((params) => {
       this.patientId = +params['id'];
       this.loadPatientInfo();
     });
@@ -103,10 +111,15 @@ export class PatientInfoComponent
   }
 
   populatePatientForm(info: PatientInfo): void {
+    //  Convert the value of dataeOfBirth before patching
+    const formattedDate = info.dateOfBirth
+      ? new Date(info.dateOfBirth).toISOString().substring(0, 10)
+      : '';
+
     this.patientForm.patchValue({
       firstName: info.firstName,
       lastName: info.lastName,
-      dateOfBirth: info.dateOfBirth,
+      dateOfBirth: formattedDate,
       genderID: info.genderID,
       nursID: info.nursID,
       nursName: info.nursName,
@@ -244,5 +257,8 @@ export class PatientInfoComponent
       return 'Please enter a valid phone number';
     }
     return '';
+  }
+  backClicked() {
+    this.location.back();
   }
 }

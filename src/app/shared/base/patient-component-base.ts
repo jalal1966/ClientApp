@@ -1,10 +1,16 @@
 import { Directive, Input } from '@angular/core';
+import { Router } from '@angular/router';
+import { BaseComponent } from './base.component';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Directive()
-export class PatientComponentBase {
+export abstract class PatientComponentBase extends BaseComponent {
   @Input() patientId: number = 0;
 
-  // Optional common functionality for all patient-related components
+  constructor(authService: AuthService, router: Router) {
+    super(authService, router);
+  }
+
   protected getPatientIdString(): string {
     return `Patient ID: ${this.patientId}`;
   }

@@ -36,6 +36,8 @@ export class MedicalRecordsService {
     patientId: number,
     medicalRecord: MedicalRecord
   ): Observable<MedicalRecord> {
+    const path = `${this.apiUrl}${this.baseUrl}/${patientId}/medical-record`;
+    console.log('path', path);
     return this.http
       .post<MedicalRecord>(
         `${this.apiUrl}${this.baseUrl}/${patientId}/medical-record`,

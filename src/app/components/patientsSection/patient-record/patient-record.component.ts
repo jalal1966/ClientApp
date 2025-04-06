@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PatientService } from '../../../services/patient/patient.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PatientInfoComponent } from '../patient-info/patient-info.component';
 import { PatientAllergiesComponent } from '../patient-allergies/patient-allergies.component';
 import { PatientLabResultsComponent } from '../patient-lab-results/patient-lab-results.component';
@@ -10,6 +10,7 @@ import { PatientDetail } from '../../../models/patient.model';
 import { Allergy } from '../../../models/medicalRecord.model';
 import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-patient-record',
@@ -37,9 +38,11 @@ export class PatientRecordComponent
 
   constructor(
     private route: ActivatedRoute,
-    private patientService: PatientService
+    private patientService: PatientService,
+    authService: AuthService,
+    router: Router
   ) {
-    super();
+    super(authService, router);
   }
 
   ngOnInit(): void {

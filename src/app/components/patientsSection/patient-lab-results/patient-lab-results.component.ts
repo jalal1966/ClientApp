@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Route, Router, RouterModule } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -10,6 +10,7 @@ import {
 import { LabResult } from '../../../models/medicalRecord.model';
 import { PatientLabResultsService } from '../../../services/patient-lab-results/patient-lab-results.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-patient-lab-results',
@@ -29,10 +30,13 @@ export class PatientLabResultsComponent
 
   constructor(
     private route: ActivatedRoute,
+    authService: AuthService,
+    router: Router,
     private labResultsService: PatientLabResultsService,
+
     private fb: FormBuilder
   ) {
-    super();
+    super(authService, router);
   }
 
   ngOnInit(): void {

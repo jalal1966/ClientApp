@@ -8,9 +8,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Allergy } from '../../../models/medicalRecord.model';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-patient-allergies',
@@ -31,9 +32,11 @@ export class PatientAllergiesComponent
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
+    authService: AuthService,
+    router: Router,
     private fb: FormBuilder
   ) {
-    super();
+    super(authService, router);
     this.patientId = 0;
     this.allergyForm = this.fb.group({
       allergyType: ['', Validators.required],

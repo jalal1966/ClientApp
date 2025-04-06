@@ -46,7 +46,7 @@ export const routes: Routes = [
   { path: 'doctor-schedule', component: MapComponent },
 
   { path: 'patients', component: PatientListComponent }, // List of patients
-  { path: 'patients/:id', component: PatientInfoComponent }, // Patient details page
+  { path: 'patients/:id/info', component: PatientInfoComponent }, // Patient details page
   { path: 'patients/:id/medical-records', component: MedicalRecordsComponent },
   { path: 'patients/:id/allergies', component: PatientAllergiesComponent },
   { path: 'patients/:id/medications', component: PatientMedicationsComponent },

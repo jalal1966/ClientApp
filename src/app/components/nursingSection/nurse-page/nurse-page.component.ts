@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormGroup } from '@angular/forms';
 import { User } from '../../../models/user';
 import { AuthService } from '../../../services/auth/auth.service';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 
 @Component({
   selector: 'app-nursepage',
@@ -11,13 +12,10 @@ import { AuthService } from '../../../services/auth/auth.service';
   templateUrl: './nurse-page.component.html',
   styleUrl: './nurse-page.component.scss',
 })
-export class NursePageComponent {
-  public curntUserToSave!: User;
-  public curntUser!: User;
+export class NursePageComponent extends PatientComponentBase {
+  public currentUserToSave!: User;
   isPatientFormVisible = false;
   isaddPatientFormVisible = false;
-  private authService!: AuthService;
-  private router!: Router;
   loginForm!: FormGroup;
   sections = [
     {
@@ -47,14 +45,9 @@ export class NursePageComponent {
   ];
 
   constructor(authService: AuthService, router: Router) {
-    this.curntUser = authService.currentUserValue ?? ({} as User);
-    sessionStorage.setItem(
-      'savedData',
-      JSON.stringify(authService.currentUserValue ?? ({} as User))
-    );
-    this.authService = authService;
-    this.router = router;
+    super(authService, router);
   }
+
   onAction(action: string) {
     console.log(`${action} clicked`);
 

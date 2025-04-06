@@ -13,6 +13,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { GenderPipe } from '../../../pipes/gender/gender.pipe';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 
 @Component({
   selector: 'app-patient-list',
@@ -20,9 +21,11 @@ import { GenderPipe } from '../../../pipes/gender/gender.pipe';
   templateUrl: './patient-list.component.html',
   styleUrl: './patient-list.component.scss',
 })
-export class PatientListComponent implements OnInit {
+export class PatientListComponent
+  extends PatientComponentBase
+  implements OnInit
+{
   patientForm!: FormGroup;
-  currentUser: User | null = null;
   patients: Patients[] = [];
   filteredPatients: Patients[] = [];
   appoment: AppointmentService | undefined;
@@ -31,10 +34,12 @@ export class PatientListComponent implements OnInit {
 
   constructor(
     private patientService: PatientService,
-    private authService: AuthService,
-    private router: Router,
+    authService: AuthService,
+    router: Router,
     private fb: FormBuilder // Inject FormBuilder
-  ) {}
+  ) {
+    super(authService, router);
+  }
 
   ngOnInit(): void {
     this.loadPatients();
@@ -42,32 +47,18 @@ export class PatientListComponent implements OnInit {
   }
 
   Initializing(): void {
-    this.initializeForm(); // Ensure form is initialized before using it
-    // this.initializeForm();
-    // Get current user (nurse) from AuthService
-    this.authService.getCurrentUser().subscribe({
-      next: (user) => {
-        if (user) {
-          console.log('Full user object:', JSON.stringify(user)); // This will show all properties
-          console.log('Current user loaded:', user);
-          this.currentUser = user;
-
-          // Update form with nurse information
-          this.patientForm.patchValue({
-            // nursID: user.userID,
-            nursName: `${user.firstName} ${user.lastName}`,
-          });
-
-          // Now fetch doctor info after we have user info
-          // this.loadDoctorInformation();
-        }
-      },
-      error: (err) => {
-        console.error('Error getting current user:', err);
-        this.error = 'Failed to load user information';
-      },
-    });
+    // Ensure form is initialized before using it
+    this.initializeForm();
   }
+
+  viewPatientDetailsInfo(patients: Patients): void {
+    console.log('Opening patient record for');
+
+    if (patients?.id) {
+      this.router.navigate(['/patients', patients?.id, 'info']);
+    }
+  }
+
   initializeForm(): void {
     this.patientForm = this.fb.group({
       nursName: ['', Validators.required],

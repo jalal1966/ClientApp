@@ -21,6 +21,8 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { MapComponent } from '../../commonSection/map/map.component';
 import { WaitingListComponent } from '../../commonSection/waiting-list/waiting-list.component';
 import { AppointmentComponent } from '../../commonSection/appointment/appointment.component';
+import { UsersService } from '../../../services/usersService/users.service';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 
 @Component({
   selector: 'app-clinic-dashboard',
@@ -39,7 +41,10 @@ import { AppointmentComponent } from '../../commonSection/appointment/appointmen
   templateUrl: './clinic-dashboard.component.html',
   styleUrl: './clinic-dashboard.component.scss',
 })
-export class ClinicDashboardComponent implements OnInit {
+export class ClinicDashboardComponent
+  extends PatientComponentBase
+  implements OnInit
+{
   error = '';
   patientForm!: FormGroup;
   // Form for new appointments
@@ -49,7 +54,6 @@ export class ClinicDashboardComponent implements OnInit {
   patients: Patients[] = [];
   activeTab: string = 'waitingList';
   doctors: User[] = [];
-  currentUser: User | null = null;
   appointmentsDoctor: Appointment[] = [];
   appointment: Appointment | null = null;
   showNewAppointmentForm: boolean = false;
@@ -73,13 +77,16 @@ export class ClinicDashboardComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router,
     private patientService: PatientService,
     private docorsService: AuthService,
     private appointmentService: AppointmentService,
-    private authService: AuthService,
+    private usersService: UsersService,
+    authService: AuthService,
+    router: Router,
     private fb: FormBuilder
-  ) {}
+  ) {
+    super(authService, router);
+  }
 
   ngOnInit(): void {
     this.Initializing();
@@ -126,30 +133,6 @@ export class ClinicDashboardComponent implements OnInit {
   Initializing(): void {
     this.initializeForm(); // Ensure form is initialized before using it
     this.initializeAppointmentForm();
-    // this.initializeForm();
-    // Get current user (nurse) from AuthService
-    this.authService.getCurrentUser().subscribe({
-      next: (user) => {
-        if (user) {
-          console.log('Full user object:', JSON.stringify(user)); // This will show all properties
-          console.log('Current user loaded:', user);
-          this.currentUser = user;
-
-          // Update form with nurse information
-          this.patientForm.patchValue({
-            // nursID: user.userID,
-            nursName: `${user.firstName} ${user.lastName}`,
-          });
-
-          // Now fetch doctor info after we have user info
-          // this.loadDoctorInformation();
-        }
-      },
-      error: (err) => {
-        console.error('Error getting current user:', err);
-        this.error = 'Failed to load user information';
-      },
-    });
   }
   initializeForm(): void {
     this.patientForm = this.fb.group({
@@ -245,9 +228,13 @@ export class ClinicDashboardComponent implements OnInit {
     // In a real application, this would navigate to the patient's record
   }
 
-  viewPatientDetails(id: number | undefined): void {
+  viewPatientDetailsInfo(id: number | undefined): void {
     console.log('Viewing details for patient ID', id);
-    // In a real application, this would navigate to patient details
+    console.log('Opening patient record for');
+
+    if (id) {
+      this.router.navigate(['/patients', id, 'info']);
+    }
   }
   editPatientDetails(id: number | undefined): void {
     console.log('Editing patient ID', id);

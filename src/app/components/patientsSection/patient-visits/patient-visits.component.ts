@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Visit } from '../../../models/visits.model';
 import { PatientVisitService } from '../../../services/patient-visits/patient-visits.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-patient-visit',
@@ -32,10 +33,11 @@ export class PatientVisitComponent
   constructor(
     private patientVisitService: PatientVisitService,
     private route: ActivatedRoute,
-    private router: Router,
+    authService: AuthService,
+    router: Router,
     private fb: FormBuilder
   ) {
-    super();
+    super(authService, router);
     this.visitForm = this.createVisitForm();
   }
 

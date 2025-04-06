@@ -1,18 +1,25 @@
 <div class="patient-info-container">
-  <h2>Patient Information</h2>
-  
+  <button (click)="backClicked()" class="btn btn-success">
+    <span class="bi bi-arrow-left-square"></span>
+    Go Back
+  </button>
+  <h2>
+    Patient Information {{ patient?.firstName }} {{ patient?.lastName }} By
+    {{ currentUser.firstName }} {{ currentUser.lastName }}
+  </h2>
+
   <div *ngIf="loading" class="loading-spinner">
     <span>Loading...</span>
   </div>
-  
+
   <div *ngIf="errorMessage" class="error-message">
     {{ errorMessage }}
   </div>
-  
+
   <div *ngIf="updateSuccess" class="success-message">
     Information updated successfully!
   </div>
-  
+
   <div *ngIf="patientInfo && !loading" class="patient-info-forms">
     <!-- Basic Information Form -->
     <div class="form-section">
@@ -21,76 +28,122 @@
         <div class="form-row">
           <div class="form-group">
             <label for="firstName">First Name*</label>
-            <input type="text" id="firstName" formControlName="firstName" class="form-control">
+            <input
+              type="text"
+              id="firstName"
+              formControlName="firstName"
+              class="form-control"
+            />
             <div *ngIf="isInvalid(patientForm, 'firstName')" class="error-text">
-              {{ getErrorMessage(patientForm, 'firstName') }}
+              {{ getErrorMessage(patientForm, "firstName") }}
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="lastName">Last Name*</label>
-            <input type="text" id="lastName" formControlName="lastName" class="form-control">
+            <input
+              type="text"
+              id="lastName"
+              formControlName="lastName"
+              class="form-control"
+            />
             <div *ngIf="isInvalid(patientForm, 'lastName')" class="error-text">
-              {{ getErrorMessage(patientForm, 'lastName') }}
+              {{ getErrorMessage(patientForm, "lastName") }}
             </div>
           </div>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="dateOfBirth">Date of Birth*</label>
-            <input type="date" id="dateOfBirth" formControlName="dateOfBirth" class="form-control">
-            <div *ngIf="isInvalid(patientForm, 'dateOfBirth')" class="error-text">
-              {{ getErrorMessage(patientForm, 'dateOfBirth') }}
+            <input
+              type="date"
+              id="dateOfBirth"
+              formControlName="dateOfBirth"
+              class="form-control"
+            />
+            <div
+              *ngIf="isInvalid(patientForm, 'dateOfBirth')"
+              class="error-text"
+            >
+              {{ getErrorMessage(patientForm, "dateOfBirth") }}
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="genderID">Gender*</label>
-            <select id="genderID" formControlName="genderID" class="form-control">
+            <select
+              id="genderID"
+              formControlName="genderID"
+              class="form-control"
+            >
               <option [ngValue]="null">Select Gender</option>
               <option [ngValue]="1">Male</option>
               <option [ngValue]="2">Female</option>
               <option [ngValue]="3">Other</option>
             </select>
             <div *ngIf="isInvalid(patientForm, 'genderID')" class="error-text">
-              {{ getErrorMessage(patientForm, 'genderID') }}
+              {{ getErrorMessage(patientForm, "genderID") }}
             </div>
           </div>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="nursID">Nurse ID</label>
-            <input type="number" id="nursID" formControlName="nursID" class="form-control">
+            <input
+              type="number"
+              id="nursID"
+              formControlName="nursID"
+              class="form-control"
+            />
           </div>
-          
+
           <div class="form-group">
             <label for="nursName">Nurse Name</label>
-            <input type="text" id="nursName" formControlName="nursName" class="form-control">
+            <input
+              type="text"
+              id="nursName"
+              formControlName="nursName"
+              class="form-control"
+            />
           </div>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="patientDoctorID">Doctor ID</label>
-            <input type="number" id="patientDoctorID" formControlName="patientDoctorID" class="form-control">
+            <input
+              type="number"
+              id="patientDoctorID"
+              formControlName="patientDoctorID"
+              class="form-control"
+            />
           </div>
-          
+
           <div class="form-group">
             <label for="patientDoctorName">Doctor Name</label>
-            <input type="text" id="patientDoctorName" formControlName="patientDoctorName" class="form-control">
+            <input
+              type="text"
+              id="patientDoctorName"
+              formControlName="patientDoctorName"
+              class="form-control"
+            />
           </div>
         </div>
-        
+
         <div class="form-actions">
-          <button type="submit" [disabled]="patientForm.invalid || loading" class="btn btn-primary">
+          <button
+            type="submit"
+            [disabled]="patientForm.invalid || loading"
+            class="btn btn-primary"
+          >
             Update Basic Information
           </button>
         </div>
       </form>
     </div>
-    
+
     <!-- Contact Information Form -->
     <div class="form-section">
       <h3>Contact Information</h3>
@@ -98,49 +151,84 @@
         <div class="form-row">
           <div class="form-group">
             <label for="contactNumber">Contact Number</label>
-            <input type="tel" id="contactNumber" formControlName="contactNumber" class="form-control">
-            <div *ngIf="isInvalid(contactForm, 'contactNumber')" class="error-text">
-              {{ getErrorMessage(contactForm, 'contactNumber') }}
+            <input
+              type="tel"
+              id="contactNumber"
+              formControlName="contactNumber"
+              class="form-control"
+            />
+            <div
+              *ngIf="isInvalid(contactForm, 'contactNumber')"
+              class="error-text"
+            >
+              {{ getErrorMessage(contactForm, "contactNumber") }}
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" formControlName="email" class="form-control">
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-control"
+            />
             <div *ngIf="isInvalid(contactForm, 'email')" class="error-text">
-              {{ getErrorMessage(contactForm, 'email') }}
+              {{ getErrorMessage(contactForm, "email") }}
             </div>
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="address">Address</label>
-          <textarea id="address" formControlName="address" class="form-control" rows="3"></textarea>
+          <textarea
+            id="address"
+            formControlName="address"
+            class="form-control"
+            rows="3"
+          ></textarea>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="emergencyContactName">Emergency Contact Name</label>
-            <input type="text" id="emergencyContactName" formControlName="emergencyContactName" class="form-control">
+            <input
+              type="text"
+              id="emergencyContactName"
+              formControlName="emergencyContactName"
+              class="form-control"
+            />
           </div>
-          
+
           <div class="form-group">
             <label for="emergencyContactNumber">Emergency Contact Number</label>
-            <input type="tel" id="emergencyContactNumber" formControlName="emergencyContactNumber" class="form-control">
-            <div *ngIf="isInvalid(contactForm, 'emergencyContactNumber')" class="error-text">
-              {{ getErrorMessage(contactForm, 'emergencyContactNumber') }}
+            <input
+              type="tel"
+              id="emergencyContactNumber"
+              formControlName="emergencyContactNumber"
+              class="form-control"
+            />
+            <div
+              *ngIf="isInvalid(contactForm, 'emergencyContactNumber')"
+              class="error-text"
+            >
+              {{ getErrorMessage(contactForm, "emergencyContactNumber") }}
             </div>
           </div>
         </div>
-        
+
         <div class="form-actions">
-          <button type="submit" [disabled]="contactForm.invalid || loading" class="btn btn-primary">
+          <button
+            type="submit"
+            [disabled]="contactForm.invalid || loading"
+            class="btn btn-primary"
+          >
             Update Contact Information
           </button>
         </div>
       </form>
     </div>
-    
+
     <!-- Insurance Information Form -->
     <div class="form-section">
       <h3>Insurance Information</h3>
@@ -148,34 +236,52 @@
         <div class="form-row">
           <div class="form-group">
             <label for="insuranceProvider">Insurance Provider</label>
-            <input type="text" id="insuranceProvider" formControlName="insuranceProvider" class="form-control">
+            <input
+              type="text"
+              id="insuranceProvider"
+              formControlName="insuranceProvider"
+              class="form-control"
+            />
           </div>
-          
+
           <div class="form-group">
             <label for="insuranceNumber">Insurance Number</label>
-            <input type="text" id="insuranceNumber" formControlName="insuranceNumber" class="form-control">
+            <input
+              type="text"
+              id="insuranceNumber"
+              formControlName="insuranceNumber"
+              class="form-control"
+            />
           </div>
         </div>
-        
+
         <div class="form-actions">
-          <button type="submit" [disabled]="insuranceForm.invalid || loading" class="btn btn-primary">
+          <button
+            type="submit"
+            [disabled]="insuranceForm.invalid || loading"
+            class="btn btn-primary"
+          >
             Update Insurance Information
           </button>
         </div>
       </form>
     </div>
-    
+
     <!-- Registration Information (Read-only) -->
     <div class="form-section">
       <h3>Registration Information</h3>
       <div class="info-table">
         <div class="info-row">
           <div class="info-label">Registration Date:</div>
-          <div class="info-value">{{ patientInfo.registrationDate | date:'mediumDate' }}</div>
+          <div class="info-value">
+            {{ patientInfo.registrationDate | date : "mediumDate" }}
+          </div>
         </div>
         <div class="info-row" *ngIf="patientInfo.lastVisitDate">
           <div class="info-label">Last Visit Date:</div>
-          <div class="info-value">{{ patientInfo.lastVisitDate | date:'mediumDate' }}</div>
+          <div class="info-value">
+            {{ patientInfo.lastVisitDate | date : "mediumDate" }}
+          </div>
         </div>
       </div>
     </div>

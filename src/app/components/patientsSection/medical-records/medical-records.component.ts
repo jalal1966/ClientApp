@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MedicalRecord } from '../../../models/medicalRecord.model';
 import {
   FormBuilder,
@@ -12,6 +12,9 @@ import { MedicalRecordsService } from '../../../services/medical-records/medical
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { Patients } from '../../../models/patient.model';
 import { PatientService } from '../../../services/patient/patient.service';
+import { AuthService } from '../../../services/auth/auth.service';
+import { User } from '../../../models/user';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-medical-records',
@@ -31,14 +34,18 @@ export class MedicalRecordsComponent
   error: string | null = null;
   recordExists = false;
   patient: Patients | undefined;
+  userID: any;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private medicalRecordsService: MedicalRecordsService,
-    private patientService: PatientService
+    private patientService: PatientService,
+    authService: AuthService,
+    router: Router,
+    private location: Location
   ) {
-    super();
+    super(authService, router);
     // Initialize the form with the fields from the updated MedicalRecord interface
     this.medicalRecordForm = this.fb.group({
       // Physical Information
@@ -46,6 +53,7 @@ export class MedicalRecordsComponent
       weight: ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
       bmi: [''],
       bloodType: [''],
+      userID: [''],
 
       // Medical History
       chronicConditions: [''],
@@ -79,6 +87,28 @@ export class MedicalRecordsComponent
         this.loading = false;
       }
     });
+
+    /* this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        if (user) {
+          console.log('Full user object:', JSON.stringify(user)); // This will show all properties
+          console.log('Current user loaded:', user);
+          this.currentUser = user;
+
+          // Update form with nurse information
+          this.medicalRecordForm.patchValue({
+            userID: user.userID,
+          });
+          this.userID = user.userID;
+          // Now fetch doctor info after we have user info
+          // this.loadDoctorInformation();
+        }
+      },
+      error: (err) => {
+        console.error('Error getting current user:', err);
+        this.error = 'Failed to load user information';
+      },
+    }); */
 
     // Watch for changes to the isFollowUpRequired field to validate followUpDate
     this.medicalRecordForm
@@ -226,6 +256,7 @@ export class MedicalRecordsComponent
 
     const record: Partial<MedicalRecord> = {
       patientId: this.patientId,
+      userID: this.userID,
       // Physical Information
       height: formValues.height,
       weight: formValues.weight,
@@ -287,5 +318,9 @@ export class MedicalRecordsComponent
           },
         });
     }
+  }
+
+  backClicked() {
+    this.location.back();
   }
 }

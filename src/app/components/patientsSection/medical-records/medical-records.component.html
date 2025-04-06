@@ -1,5 +1,12 @@
 <div class="container mt-4">
-  <h2>Medical Record for {{ patient?.firstName }} {{ patient?.lastName }}</h2>
+  <button (click)="backClicked()" class="btn btn-success">
+    <span class="bi bi-arrow-left-square"></span>
+    Go Back
+  </button>
+  <h2>
+    Medical Record for {{ patient?.firstName }} {{ patient?.lastName }} By
+    {{ currentUser.firstName }} {{ currentUser.lastName }}
+  </h2>
 
   <div *ngIf="loading" class="alert alert-info">Loading medical record...</div>
 

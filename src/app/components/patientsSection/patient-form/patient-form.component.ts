@@ -11,6 +11,7 @@ import { PatientService } from '../../../services/patient/patient.service';
 import { User } from '../../../models/user';
 import { AuthService } from '../../../services/auth/auth.service';
 import { Location } from '@angular/common'; // Correct import
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 
 @Component({
   selector: 'app-patient-form',
@@ -18,11 +19,12 @@ import { Location } from '@angular/common'; // Correct import
   templateUrl: './patient-form.component.html',
   styleUrl: './patient-form.component.scss',
 })
-export class PatientFormComponent implements OnInit {
+export class PatientFormComponent
+  extends PatientComponentBase
+  implements OnInit
+{
   patientForm!: FormGroup;
   isSubmitting: boolean = false;
-
-  currentUser: User | null = null;
   errorMessage: string | null = null; // For single error messages
   errorMessages: string[] = []; // For multiple error messages
   doctorRecords: User[] = [];
@@ -41,11 +43,11 @@ export class PatientFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private patientService: PatientService,
-    private route: ActivatedRoute,
-    private router: Router,
+    router: Router,
     private location: Location,
-    private authService: AuthService // Correct injection
+    authService: AuthService // Correct injection
   ) {
+    super(authService, router);
     this.patientForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(3)]],
       lastName: ['', [Validators.required, Validators.minLength(3)]],
@@ -67,30 +69,6 @@ export class PatientFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // this.initializeForm();
-    // Get current user (nurse) from AuthService
-    this.authService.getCurrentUser().subscribe({
-      next: (user) => {
-        if (user) {
-          console.log('Full user object:', JSON.stringify(user)); // This will show all properties
-          console.log('Current user loaded:', user);
-          this.currentUser = user;
-
-          // Update form with nurse information
-          this.patientForm.patchValue({
-            nursID: user.userID,
-            nursName: `${user.firstName} ${user.lastName}`,
-          });
-
-          // Now fetch doctor info after we have user info
-          // this.loadDoctorInformation();
-        }
-      },
-      error: (err) => {
-        console.error('Error getting current user:', err);
-        this.errorMessage = 'Failed to load user information';
-      },
-    });
     // Fetch doctor list
     this.patientService.getDoctorList(1).subscribe({
       next: (doctors) => {
@@ -216,28 +194,6 @@ export class PatientFormComponent implements OnInit {
         }
       }
     }
-  }
-  // Method to get current user
-  getCurrentUser(): void {
-    // This assumes your AuthService has a getCurrentUser method
-    // Adjust this based on your actual AuthService implementation
-    this.authService.getCurrentUser().subscribe({
-      next: (user) => {
-        this.currentUser = user;
-
-        // Pre-populate the nurse fields
-        if (user) {
-          this.patientForm.patchValue({
-            nursID: user.userID,
-            nursName: `${user.firstName} ${user.lastName}`,
-          });
-          console.log('nursData ', this.nursID, this.nursName);
-        }
-      },
-      error: (error) => {
-        console.error('Error fetching current user:', error);
-      },
-    });
   }
 
   // Debug method to check form validity

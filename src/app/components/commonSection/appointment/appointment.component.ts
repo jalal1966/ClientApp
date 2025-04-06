@@ -27,6 +27,7 @@ import { FilterService } from '../../../services/filterService/filter.service';
 import { WaitingPatient } from '../../../models/waiting.model';
 import { PatientService } from '../../../services/patient/patient.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { UsersService } from '../../../services/usersService/users.service';
 
 @Component({
   selector: 'app-appointment',
@@ -88,7 +89,7 @@ export class AppointmentComponent implements OnInit {
     private appointmentService: AppointmentService,
     private patientService: PatientService,
     private docorsService: AuthService,
-    private authService: AuthService,
+    private usersService: UsersService,
     private fb: FormBuilder,
     private router: Router
   ) {
@@ -142,28 +143,8 @@ export class AppointmentComponent implements OnInit {
     this.initializeAppointmentForm();
     // this.initializeForm();
     // Get current user (nurse) from AuthService
-    this.authService.getCurrentUser().subscribe({
-      next: (user) => {
-        if (user) {
-          console.log('Full user object:', JSON.stringify(user)); // This will show all properties
-          console.log('Current user loaded:', user);
-          this.currentUser = user;
 
-          // Update form with nurse information
-          this.patientForm.patchValue({
-            // nursID: user.userID,
-            nursName: `${user.firstName} ${user.lastName}`,
-          });
-
-          // Now fetch doctor info after we have user info
-          // this.loadDoctorInformation();
-        }
-      },
-      error: (err) => {
-        console.error('Error getting current user:', err);
-        this.error = 'Failed to load user information';
-      },
-    });
+    this.usersService.loadCurrentUserAndPatchForm(this.patientForm);
   }
   initializeForm(): void {
     this.patientForm = this.fb.group({
@@ -464,13 +445,13 @@ export class AppointmentComponent implements OnInit {
     });
   }
 
-  openPatientRecord(appointment: Appointment): void {
+  openPatientRecord(appointments: Appointment): void {
     console.log('Opening patient record for');
 
-    if (appointment?.patientId) {
+    if (appointments?.patientId) {
       this.router.navigate([
         '/patients',
-        appointment.patientId,
+        appointments.patientId,
         'medical-records',
       ]);
     }
