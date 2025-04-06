@@ -4,3 +4,28 @@
   background-position: center;
   height: 100vh; /* Adjust the height to your needs */
 } /* You can add global styles to this file, and also import other style files */
+
+// styles.scss (global stylesheet)
+
+// Apply styles using classes (recommended for maintainability)
+.welcome-banner {
+  .welcome-text {
+    color: black;
+  }
+
+  .user-name {
+    color: rgb(153, 145, 61);
+    animation: blink 1s 15; // 1s duration, 15 iterations
+  }
+}
+
+// Define the blink animation
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}

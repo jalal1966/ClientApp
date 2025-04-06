@@ -78,7 +78,7 @@ export class ClinicDashboardComponent
   constructor(
     private http: HttpClient,
     private patientService: PatientService,
-    private docorsService: AuthService,
+    private doctorsService: AuthService,
     private appointmentService: AppointmentService,
     private usersService: UsersService,
     authService: AuthService,
@@ -198,12 +198,10 @@ export class ClinicDashboardComponent
   }
 
   loadDoctors(): void {
-    // In a real application, this would be an API call
     this.loading = true;
-    this.docorsService.getCurrentUserByJop(1).subscribe({
-      next: (data) => {
-        this.doctors = data || [];
-        //this.filteredPatients = data;
+    this.doctorsService.getDoctorsWithFullName().subscribe({
+      next: (doctors) => {
+        this.doctors = doctors;
         this.loading = false;
       },
       error: (err) => {
@@ -211,7 +209,6 @@ export class ClinicDashboardComponent
         this.loading = false;
       },
     });
-    //this.doctors;
   }
 
   filterPatients(event: Event): void {

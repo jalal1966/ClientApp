@@ -1,3 +1,6 @@
+// _variables.scss (or any SCSS file)
+$blink-animation: blink 1s infinite;
+
 .dashboard-container {
   background: #f8f9fa;
   border-radius: 8px;
@@ -13,6 +16,13 @@
   color: white;
 }
 
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
 .modal-content {
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);

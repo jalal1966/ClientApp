@@ -42,12 +42,15 @@ export class PatientInfoComponent
   updateSuccess = false;
   currentUserID: any;
   error: string | null = null;
+
+  doctors: { firstName: string; lastName: string; fullName: string }[] = [];
   @Input() patient: PatientDetail | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private patientInfoService: PatientInfoService,
     private location: Location,
+    private doctorsService: AuthService,
     authService: AuthService,
     router: Router,
     private fb: FormBuilder
@@ -84,6 +87,21 @@ export class PatientInfoComponent
     this.route.params.subscribe((params) => {
       this.patientId = +params['id'];
       this.loadPatientInfo();
+      this.loadDoctors();
+    });
+  }
+
+  loadDoctors(): void {
+    this.loading = true;
+    this.doctorsService.getDoctorsWithFullName().subscribe({
+      next: (doctors) => {
+        this.doctors = doctors;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load Doctors. Please try again.';
+        this.loading = false;
+      },
     });
   }
 

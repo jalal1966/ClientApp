@@ -6,10 +6,9 @@ import {
   ReactiveFormsModule,
   FormGroup,
   Validators,
-  FormControl,
   FormBuilder,
 } from '@angular/forms';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import {
   Appointment,
   AppointmentCreate,
@@ -46,6 +45,7 @@ export class AppointmentComponent implements OnInit {
   filterStatuses(arg0: string): any {
     throw new Error('Method not implemented.');
   }
+
   // Form for new appointments
   appointmentForm!: FormGroup;
   appointments: Appointment[] = [];
@@ -59,7 +59,7 @@ export class AppointmentComponent implements OnInit {
   refreshInterval: any;
   patientForm!: FormGroup;
   error = '';
-
+  updateSuccess = false;
   // Then update your appointment form initialization to use these enums
   appointmentTypes = [
     { value: AppointmentType.CheckUp, label: 'CheckUp' },
@@ -83,12 +83,13 @@ export class AppointmentComponent implements OnInit {
     { value: AppointmentStatus.NoShow, label: 'NoShow' },
   ];
 
-  private originalScheduleNewAppointment: (() => void) | undefined; // Add this property to store the original implementation
+  // Add this property to store the original implementation
+  private originalScheduleNewAppointment: (() => void) | undefined;
   constructor(
     private filterService: FilterService,
     private appointmentService: AppointmentService,
     private patientService: PatientService,
-    private docorsService: AuthService,
+    private doctorsService: AuthService,
     private usersService: UsersService,
     private fb: FormBuilder,
     private router: Router
@@ -98,6 +99,7 @@ export class AppointmentComponent implements OnInit {
     this.filterService.setAppointments(this.appointments);
     this.filterService.setPatients(this.patients);
   }
+
   ngOnInit(): void {
     this.Initializing();
     this.loadAppointments();
@@ -111,9 +113,9 @@ export class AppointmentComponent implements OnInit {
 
     // Refresh every minute to update wait times
     this.refreshInterval = setInterval(() => {
-      // this.updateWaitTimes();
       this.loadAppointments();
       this.Initializing();
+      this.updateSuccess = false;
     }, 60000);
   }
 
@@ -122,6 +124,7 @@ export class AppointmentComponent implements OnInit {
       clearInterval(this.refreshInterval);
     }
   }
+
   // Initialize the appointment form in ngOnInit or in a dedicated method
   initializeAppointmentForm(): void {
     this.appointmentForm = this.fb.group({
@@ -139,13 +142,14 @@ export class AppointmentComponent implements OnInit {
   }
 
   Initializing(): void {
-    this.initializeForm(); // Ensure form is initialized before using it
+    // Ensure form is initialized before using it
+    this.initializeForm();
     this.initializeAppointmentForm();
-    // this.initializeForm();
-    // Get current user (nurse) from AuthService
 
+    // Get current user (nurse) from AuthService
     this.usersService.loadCurrentUserAndPatchForm(this.patientForm);
   }
+
   initializeForm(): void {
     this.patientForm = this.fb.group({
       nursName: ['', Validators.required],
@@ -200,6 +204,7 @@ export class AppointmentComponent implements OnInit {
     };
 
     console.log('appointment', appointment);
+
     // Call your service to create appointment
     this.appointmentService.createAppointment(appointment).subscribe({
       next: (newAppointment) => {
@@ -211,6 +216,7 @@ export class AppointmentComponent implements OnInit {
           appointmentTime: '09:00',
           appointmentStatus: 'Scheduled',
         });
+
         // Clear any previous errors
         this.error = '';
       },
@@ -235,7 +241,6 @@ export class AppointmentComponent implements OnInit {
   showErrorAlert(message: string): void {
     // Example using Angular Material snackbar
     // this.snackBar.open(message, 'Close', { duration: 5000 });
-
     // Or using a custom alert method
     alert(message);
   }
@@ -283,8 +288,6 @@ export class AppointmentComponent implements OnInit {
       next: () => {
         // Reload UI data
         this.loadAppointments();
-        //this.loadWaitingList();
-        //this.loadDoctors();
       },
       error: (err: any) => {
         console.error('Error updating status:', err);
@@ -374,6 +377,7 @@ export class AppointmentComponent implements OnInit {
       .updateAppointment(appointmentId, updatedAppointment)
       .subscribe({
         next: () => {
+          this.updateSuccess = true;
           console.log('Appointment updated successfully');
           this.loadAppointments();
           this.showNewAppointmentForm = false;
@@ -412,12 +416,10 @@ export class AppointmentComponent implements OnInit {
   }
 
   loadDoctors(): void {
-    // In a real application, this would be an API call
     this.loading = true;
-    this.docorsService.getCurrentUserByJop(1).subscribe({
-      next: (data) => {
-        this.doctors = data || [];
-        //this.filteredPatients = data;
+    this.doctorsService.getDoctorsWithFullName().subscribe({
+      next: (doctors) => {
+        this.doctors = doctors;
         this.loading = false;
       },
       error: (err) => {
@@ -425,7 +427,6 @@ export class AppointmentComponent implements OnInit {
         this.loading = false;
       },
     });
-    //this.doctors;
   }
 
   loadAppointments(): void {
@@ -479,337 +480,4 @@ export class AppointmentComponent implements OnInit {
     console.log('Editing patient ID', id);
     // In a real application, this would open a form to edit patient details
   }
-
-  /*appointments: Appointment[] = [];
-  appointmentForm!: FormGroup;
-  appointment: Appointment | null = null;
-  loading = true;
-  error: string | null = null;
-  isEditing = false;
-  isNew = false;
-  filteredAppointments: Appointment[] = [];
-
-  selectedStatus: string = 'all';
-
-  constructor(
-    private appointmentService: AppointmentService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    // Determine if we're creating a new appointment or editing an existing one
-    this.getAppointments();
-    const id = this.route.snapshot.paramMap.get('id');
-    this.isNew = id === 'new';
-    this.isEditing = this.isNew;
-
-    // Initialize the form with default values
-    this.initializeForm();
-
-    if (!this.isNew && id) {
-      this.loadAppointment(+id);
-    } else {
-      this.loading = false;
-    }
-  }
-
-  // Initialize the form with default values or existing appointment data
-  initializeForm(): void {
-    this.appointmentForm = new FormGroup({
-      patientId: new FormControl(this.appointment?.patientId || '', [
-        Validators.required,
-      ]),
-      providerId: new FormControl(this.appointment?.providerId || '', [
-        Validators.required,
-      ]),
-      startTime: new FormControl(
-        this.formatDateForInput(this.appointment?.startTime || new Date()),
-        [Validators.required]
-      ),
-      endTime: new FormControl(
-        this.formatDateForInput(this.appointment?.endTime || new Date()),
-        [Validators.required]
-      ),
-      type: new FormControl(this.appointment?.type || '', [
-        Validators.required,
-      ]),
-      status: new FormControl(this.appointment?.status || 'Scheduled'),
-      notes: new FormControl(this.appointment?.notes || ''),
-    });
-
-    // Set form state based on current mode
-    this.updateFormControlState();
-  }
-
-  // Update form control state based on editing mode
-  updateFormControlState(): void {
-    const formControls = this.appointmentForm.controls;
-
-    if (this.isEditing) {
-      // Enable all fields when editing
-      Object.values(formControls).forEach((control) => control.enable());
-    } else {
-      // Disable all fields when not editing
-      Object.values(formControls).forEach((control) => control.disable());
-    }
-  }
-
-  // Load appointment data from the service
-  loadAppointment(id: number): void {
-    this.loading = true;
-    this.appointmentService.getAppointment(id).subscribe({
-      next: (data) => {
-        this.appointment = data;
-
-        // Update form with appointment data
-        this.appointmentForm.patchValue({
-          patientId: data.patientId,
-          providerId: data.providerId,
-          startTime: this.formatDateForInput(data.startTime),
-          endTime: this.formatDateForInput(data.endTime),
-          type: data.type,
-          status: data.status,
-          notes: data.notes,
-        });
-
-        // Update form control state
-        this.updateFormControlState();
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Failed to load appointment. Please try again.';
-        this.loading = false;
-        console.error(err);
-      },
-    });
-  }
-
-  // Format date for datetime-local input
-  formatDateForInput(dateValue: string | Date): string {
-    if (!dateValue) {
-      return '';
-    }
-
-    const date =
-      typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
-
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return '';
-    }
-
-    // Format date as YYYY-MM-DDThh:mm
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  }
-
-  // Format date from input to ISO string for API
-  formatDateForApi(dateString: string): string {
-    if (!dateString) return '';
-
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-
-    return date.toISOString();
-  }
-
-  // Toggle edit mode
-  toggleEdit(): void {
-    this.isEditing = !this.isEditing;
-
-    if (this.isEditing) {
-      // When entering edit mode, enable form fields
-      this.updateFormControlState();
-    } else if (!this.isNew && this.appointment) {
-      // When cancelling edit, reset form to original values
-      this.appointmentForm.patchValue({
-        patientId: this.appointment.patientId,
-        providerId: this.appointment.providerId,
-        startTime: this.formatDateForInput(this.appointment.startTime),
-        endTime: this.formatDateForInput(this.appointment.endTime),
-        type: this.appointment.type,
-        status: this.appointment.status,
-        notes: this.appointment.notes,
-      });
-
-      // Update form control state
-      this.updateFormControlState();
-    }
-  }
-
-  // Save appointment (create new or update existing)
-
-  saveAppointment(): void {
-    console.log('this.appointmentForm.invalid', this.appointmentForm.invalid);
-    if (this.appointmentForm.invalid) {
-      // Mark all fields as touched to trigger validation messages
-      Object.values(this.appointmentForm.controls).forEach((control) =>
-        control.markAsTouched()
-      );
-
-      return;
-    }
-
-    // Get form values
-    const formValue = this.appointmentForm.getRawValue();
-
-    // Ensure dates are in proper string format for API
-    const appointmentData = {
-      ...formValue,
-      startTime: this.formatDateForApi(formValue.startTime),
-      endTime: this.formatDateForApi(formValue.endTime),
-    };
-    console.log('appointmentData', appointmentData);
-    this.loading = true;
-
-    if (this.isNew) {
-      // Create new appointment
-      this.appointmentService.createAppointment(appointmentData).subscribe({
-        next: (data) => {
-          this.router.navigate(['/appointments', data.id]);
-          this.loading = false;
-        },
-        error: (err) => {
-          this.error = `Failed to create appointment: ${err.message || err}`;
-          this.loading = false;
-          console.error(err);
-        },
-      });
-    } else if (this.appointment) {
-      // Update existing appointment
-      this.appointmentService
-        .updateAppointment(this.appointment.id, appointmentData)
-        .subscribe({
-          next: () => {
-            this.loadAppointment(this.appointment!.id);
-            this.isEditing = false;
-            this.loading = false;
-          },
-          error: (err) => {
-            this.error = `Failed to update appointment: ${err.message || err}`;
-            this.loading = false;
-            console.error(err);
-          },
-        });
-    }
-  }
-
-  // Cancel an appointment
-  cancelAppointment(appointment: any): void {
-    if (!appointment) return;
-    this.appointment = appointment;
-    if (!this.appointment) return;
-    if (confirm('Are you sure you want to cancel this appointment?')) {
-      this.loading = true;
-
-      // Create update payload with string dates
-      const appointmentData: AppointmentUpdate = {
-        patientId: this.appointment.patientId,
-        providerId: this.appointment.providerId,
-        startTime:
-          typeof this.appointment.startTime === 'string'
-            ? this.appointment.startTime
-            : this.appointment.startTime.toISOString(),
-        endTime:
-          typeof this.appointment.endTime === 'string'
-            ? this.appointment.endTime
-            : this.appointment.endTime.toISOString(),
-        type: this.appointment.type,
-        status: 'Cancelled',
-        notes: this.appointment.notes,
-      };
-
-      this.appointmentService
-        .updateAppointment(this.appointment.id, appointmentData)
-        .subscribe({
-          next: () => {
-            this.loadAppointment(this.appointment!.id);
-            this.loading = false;
-          },
-          error: (err) => {
-            this.error = `Failed to cancel appointment: ${err.message || err}`;
-            this.loading = false;
-            console.error(err);
-          },
-        });
-    }
-  }
-
-  // Mark an appointment as completed
-  completeAppointment(): void {
-    if (!this.appointment) return;
-
-    if (
-      confirm('Are you sure you want to mark this appointment as completed?')
-    ) {
-      this.loading = true;
-
-      // Create update payload with string dates
-      const appointmentData: AppointmentUpdate = {
-        patientId: this.appointment.patientId,
-        providerId: this.appointment.providerId,
-        startTime:
-          typeof this.appointment.startTime === 'string'
-            ? this.appointment.startTime
-            : this.appointment.startTime.toISOString(),
-        endTime:
-          typeof this.appointment.endTime === 'string'
-            ? this.appointment.endTime
-            : this.appointment.endTime.toISOString(),
-        type: this.appointment.type,
-        status: 'Completed',
-        notes: this.appointment.notes,
-      };
-
-      this.appointmentService
-        .updateAppointment(this.appointment.id, appointmentData)
-        .subscribe({
-          next: () => {
-            this.loadAppointment(this.appointment!.id);
-            this.loading = false;
-          },
-          error: (err) => {
-            this.error = `Failed to complete appointment: ${
-              err.message || err
-            }`;
-            this.loading = false;
-            console.error(err);
-          },
-        });
-    }
-  }
-
-  // Fetch all appointments
-  getAppointments(): void {
-    this.loading = true;
-    this.appointmentService.getAppointments().subscribe({
-      next: (appointments) => {
-        this.appointments = appointments;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Failed to load appointments';
-        this.loading = false;
-        console.error(err);
-      },
-    });
-  }
-
-  filterAppointments(): Appointment[] {
-    console.log('Selected status:', this.selectedStatus);
-    const filtered =
-      this.selectedStatus === 'all'
-        ? this.appointments
-        : this.appointments.filter(
-            (appointment) => appointment.status === this.selectedStatus
-          );
-    console.log('Filtered appointments:', filtered);
-    return filtered;
-  }*/
 }

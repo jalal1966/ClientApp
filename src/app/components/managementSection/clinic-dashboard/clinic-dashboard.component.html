@@ -1,8 +1,11 @@
 <div class="dashboard-container container-fluid py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <span style="background-color: aquamarine"
-      >Welcome, {{ currentUser.firstName }} {{ currentUser.lastName }}</span
-    >
+    <span class="welcome-banner">
+      <span class="welcome-text">Welcome 😉 </span>
+      <span class="user-name"
+        >{{ currentUser.firstName }} {{ currentUser.lastName }}</span
+      >
+    </span>
     <button (click)="logout()" class="btn btn-outline-danger btn-sm">
       Logout
     </button>
@@ -176,7 +179,7 @@
                 >
                   View Patient Info
                 </button>
-                <button
+                <!--<button
                   class="btn btn-sm btn-success me-2"
                   (click)="editPatientDetails(patient.id)"
                 >
@@ -187,7 +190,7 @@
                   (click)="scheduleAppointment(patient.id)"
                 >
                   Schedule
-                </button>
+                </button>-->
               </td>
             </tr>
           </tbody>

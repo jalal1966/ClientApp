@@ -26,6 +26,18 @@ export class AuthService {
     this.currentUser = this.currentUserSubject.asObservable();
   }
 
+  getDoctorsWithFullName(): Observable<any[]> {
+    return this.getCurrentUserByJop(1).pipe(
+      map(
+        (data) =>
+          data?.map((doctor: any) => ({
+            ...doctor,
+            fullName: `${doctor.firstName} ${doctor.lastName}`,
+          })) || []
+      )
+    );
+  }
+
   public get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
