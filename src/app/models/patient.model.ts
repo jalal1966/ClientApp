@@ -15,11 +15,11 @@ export interface Patients {
   genderID: number;
   contactNumber: string;
   email: string;
-  address: string;
   emergencyContactName: string;
   emergencyContactNumber: string;
   insuranceProvider: string;
   insuranceNumber: string;
+  address: string;
   nursID: number;
   nursName: string;
   patientDoctorID: number;

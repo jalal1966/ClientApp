@@ -48,11 +48,15 @@ export class PatientFormComponent
     authService: AuthService // Correct injection
   ) {
     super(authService, router);
+
+    // Get current user
+    const currentUser = authService;
+
     this.patientForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(3)]],
       lastName: ['', [Validators.required, Validators.minLength(3)]],
       dateOfBirth: ['', Validators.required],
-      genderID: [null, [Validators.required, this.oneOf([1, 2])]], // Apply custom validator
+      genderID: ['', [Validators.required, this.oneOf([1, 2])]], // Apply custom validator
       contactNumber: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       emergencyContactName: [''],
@@ -69,6 +73,11 @@ export class PatientFormComponent
   }
 
   ngOnInit(): void {
+    this.patientForm.patchValue({
+      nursID: this.currentUser.userID,
+      nursName: `${this.currentUser.firstName} ${this.currentUser.lastName}`,
+    });
+    console.log('Nurs', this.nursID, this.nursName);
     // Fetch doctor list
     this.patientService.getDoctorList(1).subscribe({
       next: (doctors) => {
@@ -126,6 +135,18 @@ export class PatientFormComponent
         });
       });
     }
+    // Assign form controls to component properties for easier access
+    this.firstName = this.patientForm.get('firstName');
+    this.lastName = this.patientForm.get('lastName');
+    this.dateOfBirth = this.patientForm.get('dateOfBirth');
+    this.genderID = this.patientForm.get('genderID');
+    this.contactNumber = this.patientForm.get('contactNumber');
+    this.email = this.patientForm.get('email');
+    this.nursID = this.patientForm.get('nursID');
+    this.nursName = this.patientForm.get('nursName');
+    this.patientDoctorID = this.patientForm.get('patientDoctorID');
+    this.patientDoctor = this.patientForm.get('patientDoctorName');
+    this.lastVisitDate = this.patientForm.get('lastVisitDate');
   }
 
   // Custom validator for oneOf
@@ -213,7 +234,7 @@ export class PatientFormComponent
       'nursName',
       'patientDoctorID',
       'patientDoctorName',
-      'lastVisitDate',
+      //'lastVisitDate'
     ];
 
     requiredFields.forEach((field) => {
