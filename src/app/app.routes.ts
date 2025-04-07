@@ -4,9 +4,6 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
 } from '@angular/router';
-import { ProductListComponent } from './components/product-list/product-list.component';
-import { ProductDetailsComponent } from './components/product-details/product-details.component';
-import { ProductFormComponent } from './components/product-form/product-form.component';
 import { LoginComponent } from './components/commonSection/login/login.component';
 import { RegisterComponent } from './components/commonSection/register/register.component';
 import { ForgotPasswordComponent } from './components/commonSection/forgot-password/forgot-password.component';
@@ -53,26 +50,6 @@ export const routes: Routes = [
   { path: 'patients/:id/lab-results', component: PatientLabResultsComponent },
   { path: 'patients/:id/visits', component: PatientVisitComponent },
 
-  {
-    path: 'products',
-    component: ProductListComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'products/new',
-    component: ProductFormComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'products/:id',
-    component: ProductDetailsComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'products/:id/edit',
-    component: ProductFormComponent,
-    canActivate: [AuthGuard],
-  },
   {
     path: 'admin',
     component: AdministratorComponent,
