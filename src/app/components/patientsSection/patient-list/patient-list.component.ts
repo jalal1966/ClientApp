@@ -4,7 +4,6 @@ import { Route, Router, RouterModule } from '@angular/router';
 import { PatientService } from '../../../services/patient/patient.service';
 import { AppointmentService } from '../../../services/appointment/appointment.service';
 import { Patients } from '../../../models/patient.model';
-import { User } from '../../../models/user';
 import { AuthService } from '../../../services/auth/auth.service';
 import {
   FormBuilder,

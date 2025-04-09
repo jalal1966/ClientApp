@@ -2,15 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-export interface Immunization {
-  id: number;
-  patientId: number;
-  vaccineName: string;
-  administrationDate: Date;
-  lotNumber: string;
-  administeringProvider: string;
-}
+import { Immunization } from '../../models/patient.model';
 
 @Injectable({
   providedIn: 'root',

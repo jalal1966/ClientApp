@@ -27,11 +27,11 @@
           (change)="applyFilters()"
         >
           <option [ngValue]="null">All Patients</option>
-          <option *ngFor="let patient of patientDetails" [value]="patient.id">
+          <option *ngFor="let patient of patients" [value]="patient.id">
             {{ patient.firstName }} {{ patient.lastName }} ({{
-              patient.roomNumber
+              patient.patientDetails.roomNumber
             }}
-            - {{ patient.bedNumber }})
+            - {{ patient.patientDetails.bedNumber }})
           </option>
         </select>
       </div>
@@ -230,12 +230,9 @@
               <label for="taskPatient" class="form-label">Patient</label>
               <select class="form-select" id="taskPatient" required>
                 <option selected disabled value="">Choose patient...</option>
-                <option
-                  *ngFor="let patient of patientDetails"
-                  [value]="patient.id"
-                >
+                <option *ngFor="let patient of patients" [value]="patient.id">
                   {{ patient.firstName }} {{ patient.lastName }}
-                  {{ patient.roomNumber }}
+                  {{ patient.patientDetails.roomNumber }}
                 </option>
               </select>
             </div>

@@ -23,6 +23,8 @@ import { WaitingListComponent } from '../../commonSection/waiting-list/waiting-l
 import { AppointmentComponent } from '../../commonSection/appointment/appointment.component';
 import { UsersService } from '../../../services/usersService/users.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { PatientDetailComponent } from '../../patientsSection/patient-detail/patient-detail.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-clinic-dashboard',
@@ -80,9 +82,9 @@ export class ClinicDashboardComponent
     private patientService: PatientService,
     private doctorsService: AuthService,
     private appointmentService: AppointmentService,
-    private usersService: UsersService,
     authService: AuthService,
     router: Router,
+    private modalService: NgbModal,
     private fb: FormBuilder
   ) {
     super(authService, router);
@@ -130,6 +132,14 @@ export class ClinicDashboardComponent
     });
   }
 
+  openPatientDetailModal(patientId: number): void {
+    const modalRef = this.modalService.open(PatientDetailComponent, {
+      size: 'lg',
+      centered: true,
+    });
+    modalRef.componentInstance.patientId = patientId;
+  }
+
   Initializing(): void {
     this.initializeForm(); // Ensure form is initialized before using it
     this.initializeAppointmentForm();
@@ -147,12 +157,16 @@ export class ClinicDashboardComponent
       this.router.navigate(['/patient-info']);
     }
   } */
-  openMap(patientId: number = 3): void {
-    this.router.navigate(['/patients', patientId, 'allergies']);
+  openMap(patientId: number): void {
+    this.router.navigate(['/patient-detail', patientId]);
   }
 
-  openLabResults(patientId: number = 3): void {
-    this.router.navigate(['/patients', patientId, 'lab-results']);
+  openLabResults(patientId: number): void {
+    this.router.navigate(['/patients/', patientId, 'lab-results']);
+  }
+
+  openMedicalRecords(patientId: number) {
+    this.router.navigate(['/patients/', patientId, 'medical-records']);
   }
 
   loadAppointmentsDoctor(value: number | null): void {

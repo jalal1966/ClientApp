@@ -179,13 +179,19 @@
                 >
                   View Patient Info
                 </button>
-                <!--<button
-                  class="btn btn-sm btn-success me-2"
-                  (click)="editPatientDetails(patient.id)"
+                <button
+                  class="btn btn-sm btn-info me-2"
+                  (click)="openMap(patient.id ?? 0)"
                 >
-                  Edit
+                  View Patient Detail
                 </button>
                 <button
+                  class="btn btn-sm btn-success me-2"
+                  (click)="openMedicalRecords(patient.id ?? 0)"
+                >
+                  Patient Medical Record
+                </button>
+                <!--   <button
                   class="btn btn-sm btn-secondary me-2"
                   (click)="scheduleAppointment(patient.id)"
                 >

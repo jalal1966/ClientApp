@@ -34,7 +34,6 @@ export class MedicalRecordsComponent
   error: string | null = null;
   recordExists = false;
   patient: Patients | undefined;
-  userID: any;
 
   constructor(
     private fb: FormBuilder,
@@ -87,28 +86,6 @@ export class MedicalRecordsComponent
         this.loading = false;
       }
     });
-
-    /* this.authService.getCurrentUser().subscribe({
-      next: (user) => {
-        if (user) {
-          console.log('Full user object:', JSON.stringify(user)); // This will show all properties
-          console.log('Current user loaded:', user);
-          this.currentUser = user;
-
-          // Update form with nurse information
-          this.medicalRecordForm.patchValue({
-            userID: user.userID,
-          });
-          this.userID = user.userID;
-          // Now fetch doctor info after we have user info
-          // this.loadDoctorInformation();
-        }
-      },
-      error: (err) => {
-        console.error('Error getting current user:', err);
-        this.error = 'Failed to load user information';
-      },
-    }); */
 
     // Watch for changes to the isFollowUpRequired field to validate followUpDate
     this.medicalRecordForm
@@ -181,7 +158,9 @@ export class MedicalRecordsComponent
           medications: data.medications,
           notes: data.notes,
           isFollowUpRequired: data.isFollowUpRequired,
-          followUpDate: data.followUpDate,
+          followUpDate: data.followUpDate
+            ? new Date(data.followUpDate).toISOString().split('T')[0]
+            : null,
         });
 
         console.log('Form values after patch:', this.medicalRecordForm.value);
@@ -211,8 +190,6 @@ export class MedicalRecordsComponent
       typeof heightValue === 'string' ? parseFloat(heightValue) : heightValue;
     const weight =
       typeof weightValue === 'string' ? parseFloat(weightValue) : weightValue;
-
-    console.log('Height:', height, 'Weight:', weight);
 
     if (
       height &&
@@ -256,7 +233,7 @@ export class MedicalRecordsComponent
 
     const record: Partial<MedicalRecord> = {
       patientId: this.patientId,
-      userID: this.userID,
+      userID: this.currentUser.userID,
       // Physical Information
       height: formValues.height,
       weight: formValues.weight,
@@ -280,7 +257,7 @@ export class MedicalRecordsComponent
         ? formValues.followUpDate
         : null,
     };
-
+    console.log('record', this.currentUser.userID);
     this.saving = true;
     this.saveSuccess = false;
 

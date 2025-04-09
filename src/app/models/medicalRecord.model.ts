@@ -9,7 +9,7 @@ export interface MedicalRecord {
   userID: number;
 
   // Basic record info
-  recordDate: Date;
+  recordDate?: Date;
   diagnosis: string;
   treatment: string;
   medications: string;
@@ -58,6 +58,9 @@ export interface Medication {
 }
 
 export interface LabResult {
+  orderedBy: any;
+  tests: any;
+  date: string | number | Date;
   id?: number;
   testDate?: Date;
   testName?: string;

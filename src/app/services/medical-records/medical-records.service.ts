@@ -55,9 +55,9 @@ export class MedicalRecordsService {
   updateMedicalRecord(
     patientId: number,
     medicalRecord: MedicalRecord
-  ): Observable<void> {
+  ): Observable<MedicalRecord> {
     return this.http
-      .put<void>(
+      .put<MedicalRecord>(
         `${this.apiUrl}${this.baseUrl}/${patientId}/medical-record`,
         medicalRecord
       )

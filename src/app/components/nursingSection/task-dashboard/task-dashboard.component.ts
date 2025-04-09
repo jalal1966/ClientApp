@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 
 import { switchMap } from 'rxjs';
 import { PatientTask } from '../../../models/patient-task.model';
-import { PatientDetails, Patients } from '../../../models/patient.model';
+import { Patients } from '../../../models/patient.model';
 import { TaskPriority, TaskStatus } from '../../../models/enums.model';
 import { TaskService } from '../../../services/task/task.service';
 import { PatientService } from '../../../services/patient/patient.service';
@@ -28,7 +28,6 @@ import { User } from '../../../models/user';
 export class TaskDashboardComponent implements OnInit {
   tasks: PatientTask[] = [];
   patients: Patients[] = [];
-  patientDetails: PatientDetails[] = [];
   filteredTasks: PatientTask[] = [];
   selectedPatientId: number | null = null;
   currentNurseId: number = 0;
@@ -81,30 +80,13 @@ export class TaskDashboardComponent implements OnInit {
       .subscribe({
         next: (patients) => {
           this.patients = patients;
-          this.patientDetails = patients.map((patient) =>
-            this.mapToPatientDetails(patient)
-          );
         },
         error: (error) => console.error('Error in initialization', error),
       });
     this.loadTasks();
     this.loadPatients();
   }
-  // Helper method to map Patients to PatientDetails
-  private mapToPatientDetails(patient: Patients): PatientDetails {
-    return {
-      PatientId: patient.id ?? 0, // Provide a default value if id is undefined
-      firstName: patient.firstName,
-      lastName: patient.lastName,
-      roomNumber: patient.patientDetails.roomNumber ?? 'N/A',
-      bedNumber: patient.patientDetails.bedNumber ?? 'N/A',
-      dateOfBirth: patient.dateOfBirth ?? new Date(), // Provide a default date if undefined
-      primaryDiagnosis:
-        patient.patientDetails.primaryDiagnosis ?? 'Not Specified',
-      admissionDate: patient.patientDetails.admissionDate ?? new Date(), // Provide a default date if undefined
-      // Add any other required properties with default values
-    };
-  }
+
   loadTasks(): void {
     this.taskService.getTasks(this.currentNurseId).subscribe({
       next: (tasks) => {
@@ -119,18 +101,6 @@ export class TaskDashboardComponent implements OnInit {
     this.patientService.getPatients().subscribe({
       next: (patients) => {
         this.patients = patients;
-        // Populate patientDetails for the patient filter dropdown
-        this.patientDetails = patients.map((patient) => ({
-          PatientId: patient.id ?? 0,
-          firstName: patient.firstName,
-          lastName: patient.lastName,
-          roomNumber: patient.patientDetails?.roomNumber || 'N/A',
-          bedNumber: patient.patientDetails?.bedNumber || 'N/A',
-          dateOfBirth: patient.patientDetails?.dateOfBirth || new Date(),
-          primaryDiagnosis:
-            patient.patientDetails?.primaryDiagnosis || 'Not Specified',
-          admissionDate: patient.patientDetails?.admissionDate || new Date(),
-        }));
       },
       error: (error) => console.error('Error loading patients', error),
     });
@@ -149,6 +119,7 @@ export class TaskDashboardComponent implements OnInit {
     });
   }
 
+  // Helper method to map Patients to PatientDetails
   applyFilters(): void {
     this.filteredTasks = this.tasks.filter((task) => {
       let matches = true;
@@ -205,4 +176,19 @@ export class TaskDashboardComponent implements OnInit {
         return '';
     }
   }
+
+  /*  private mapToPatientDetails(patient: Patients): Patients {
+    return {
+      id: patient.id ?? 0, // Provide a default value if id is undefined
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      roomNumber: patient.patientDetails.roomNumber ?? 'N/A',
+      bedNumber: patient.patientDetails.bedNumber ?? 'N/A',
+      dateOfBirth: patient.dateOfBirth ?? new Date(), // Provide a default date if undefined
+      primaryDiagnosis:
+        patient.patientDetails.primaryDiagnosis ?? 'Not Specified',
+      admissionDate: patient.patientDetails.admissionDate ?? new Date(), // Provide a default date if undefined
+      // Add any other required properties with default values
+    };
+  } */
 }

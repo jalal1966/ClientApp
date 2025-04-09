@@ -26,8 +26,8 @@ import { PatientAllergiesComponent } from './components/patientsSection/patient-
 import { PatientInfoComponent } from './components/patientsSection/patient-info/patient-info.component';
 import { PatientLabResultsComponent } from './components/patientsSection/patient-lab-results/patient-lab-results.component';
 import { PatientMedicationsComponent } from './components/patientsSection/patient-medications/patient-medications.component';
-import { PatientRecordComponent } from './components/patientsSection/patient-record/patient-record.component';
 import { PatientVisitComponent } from './components/patientsSection/patient-visits/patient-visits.component';
+import { PatientDetailComponent } from './components/patientsSection/patient-detail/patient-detail.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -49,7 +49,8 @@ export const routes: Routes = [
   { path: 'patients/:id/medications', component: PatientMedicationsComponent },
   { path: 'patients/:id/lab-results', component: PatientLabResultsComponent },
   { path: 'patients/:id/visits', component: PatientVisitComponent },
-
+  { path: 'patient-detail/:id', component: PatientDetailComponent },
+  { path: 'patient/edit/:id', component: PatientDetailComponent },
   {
     path: 'admin',
     component: AdministratorComponent,

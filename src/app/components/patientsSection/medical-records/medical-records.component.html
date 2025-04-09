@@ -220,6 +220,15 @@
                 id="followUpDate"
                 formControlName="followUpDate"
               />
+              <div
+                *ngIf="
+                  formControls['followUpDate'].invalid &&
+                  formControls['followUpDate'].touched
+                "
+                class="text-danger"
+              >
+                Follow-up date is required when follow-up is checked
+              </div>
             </div>
           </div>
         </div>

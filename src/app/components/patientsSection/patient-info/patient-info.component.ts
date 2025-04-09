@@ -16,7 +16,7 @@ import {
 } from '../../../models/patientInfo';
 import { PatientInfoService } from '../../../services/patientinfo/patient-info.service';
 import { CommonModule } from '@angular/common';
-import { PatientDetail } from '../../../models/patient.model';
+import { PatientDetail, Patients } from '../../../models/patient.model';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { Location } from '@angular/common';
 import { User } from '../../../models/user';
@@ -44,7 +44,7 @@ export class PatientInfoComponent
   error: string | null = null;
 
   doctors: { firstName: string; lastName: string; fullName: string }[] = [];
-  @Input() patient: PatientDetail | null = null;
+  @Input() patient: Patients | null = null;
 
   constructor(
     private route: ActivatedRoute,

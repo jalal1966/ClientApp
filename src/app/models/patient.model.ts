@@ -25,56 +25,50 @@ export interface Patients {
   patientDoctorID: number;
   patientDoctorName: string;
   registrationDate: Date;
-  patientDetails: PatientDetails;
-  lastVisitDate: Date;
+  patientDetails: PatientDetail;
+  lastVisitDate: Date | null; // Changed this to allow null;
 }
 
-export interface PatientDetails {
-  id?: number;
-  PatientId: number;
-  firstName: string;
-  lastName: string;
+export interface PatientDetail {
   roomNumber: string;
   bedNumber: string;
   dateOfBirth: Date;
   primaryDiagnosis: string;
   admissionDate: Date;
   profileImageUrl?: string;
-}
-
-export interface PatientDetail {
-  // Basic patient info (from Patients)
-  id?: number;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: Date;
-  genderID: number;
-  contactNumber: string;
-  email: string;
-  address: string;
-  emergencyContactName: string;
-  emergencyContactNumber: string;
-  insuranceProvider: string;
-  insuranceNumber: string;
-  nursID: number;
-  nursName: string;
-  patientDoctorID: number;
-  patientDoctorName: string;
-  registrationDate: Date;
-  lastVisitDate: Date;
-
   // Medical history specific to the patient
   familyMedicalHistory: string;
   socialHistory: string;
 
   // Related medical information
+  medicalConditions?: MedicalCondition[];
   medicalRecord?: MedicalRecord;
-  bloodType?: string;
-  bmi: number;
-  weight: number;
   allergies?: Allergy[];
   currentMedications?: Medication[];
+  // to do
   recentVisits?: Visit[];
   recentLabResults?: LabResult[];
+  immunizations?: Immunization[];
   appointment?: AppComponent;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MedicalCondition {
+  id: number;
+  name: string;
+  diagnosedDate: Date;
+  notes?: string;
+  status: 'active' | 'resolved' | 'managed';
+}
+
+export interface Immunization {
+  id: number;
+  patientId: number;
+  vaccineName: string;
+  administrationDate: Date;
+  lotNumber: string;
+  administeringProvider: string;
+  manufacturer: string;
 }
