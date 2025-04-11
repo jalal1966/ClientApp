@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { PatientDetail, Patients } from '../../models/patient.model';
-
+import { Visit } from '../../models/visits.model';
 @Injectable({
   providedIn: 'root',
 })
@@ -8,6 +8,7 @@ export class PatientAdapterService {
   /**
    * Transforms the API response to match the Patients interface
    */
+
   adaptApiResponseToPatient(apiResponse: any): Patients {
     // Create PatientDetail object
     const patientDetail: PatientDetail = {
@@ -22,78 +23,94 @@ export class PatientAdapterService {
       socialHistory: apiResponse.socialHistory || '',
       createdAt: new Date(apiResponse.registrationDate),
       updatedAt: new Date(),
-      // Transform allergies
-      allergies:
-        apiResponse.allergies?.map((allergy: any) => ({
-          id: allergy.id,
-          allergyType: allergy.allergyType,
-          name: allergy.name || allergy.allergyType,
-          reaction: allergy.reaction,
-          severity: allergy.severity,
-        })) || [],
-      // Transform medications
-      currentMedications:
-        apiResponse.currentMedications?.map((med: any) => ({
-          id: med.id,
-          name: med.name,
-          dosage: med.dosage,
-          frequency: med.frequency,
-          startDate: med.startDate ? new Date(med.startDate) : new Date(),
-          endDate: med.endDate ? new Date(med.endDate) : null,
-        })) || [],
-      // Transform immunizations
-      immunizations:
-        apiResponse.immunizations?.map((imm: any) => ({
-          id: imm.id,
-          patientId: imm.patientId || apiResponse.id,
-          vaccineName: imm.vaccineName,
-          administrationDate: new Date(imm.administrationDate),
-          lotNumber: imm.lotNumber,
-          administeringProvider: imm.administeringProvider,
-          manufacturer: imm.manufacturer,
-        })) || [],
-      // Transform medical record
+      // Transform medical record to match the interface
       medicalRecord: {
+        id: apiResponse.medicalRecord?.id,
+        patientId: apiResponse.id,
+        userID: apiResponse.medicalRecord?.userID || 0,
+        recordDate: apiResponse.medicalRecord?.recordDate
+          ? new Date(apiResponse.medicalRecord.recordDate)
+          : undefined,
+        recentVisits: [
+          {
+            id: apiResponse.medicalRecord?.visit?.id || 0,
+            patientId: apiResponse.id,
+            visitDate: apiResponse.lastVisitDate
+              ? new Date(apiResponse.lastVisitDate)
+              : new Date(),
+            providerName: apiResponse.patientDoctorName,
+            providerId: apiResponse.patientDoctorID,
+            visitType:
+              apiResponse.medicalRecord?.visit?.visitType || 'Check-up',
+            reason: apiResponse.medicalRecord?.visit?.reason || '',
+            assessment: apiResponse.medicalRecord?.visit?.assessment || '',
+            diagnosis: apiResponse.medicalRecord?.visit?.diagnosis || [],
+            planTreatment:
+              apiResponse.medicalRecord?.visit?.planTreatment || '',
+            currentMedications:
+              apiResponse.medicalRecord?.visit?.medication || [],
+            notes: apiResponse.medicalRecord?.visit?.notes || '',
+            followUpRequired:
+              apiResponse.medicalRecord?.isFollowUpRequired || false,
+            followUpDate: apiResponse.medicalRecord?.followUpDate
+              ? new Date(apiResponse.medicalRecord.followUpDate)
+              : undefined,
+          },
+        ],
+        height: apiResponse.height || 0,
+        weight: apiResponse.weight || 0,
+        bmi: apiResponse.bmi || 0,
         bloodType: apiResponse.bloodType || 'Unknown',
-        height: apiResponse.height,
-        weight: apiResponse.weight,
-        bmi: apiResponse.bmi,
-        patientId: 0,
-        userID: 0,
-        recordDate: undefined,
-        diagnosis: '',
-        treatment: '',
-        medications: '',
-        notes: '',
-        isFollowUpRequired: false,
-        chronicConditions: '',
-        surgicalHistory: '',
-        socialHistory: '',
-        familyMedicalHistory: '',
+        chronicConditions: apiResponse.chronicConditions || '',
+        surgicalHistory: apiResponse.surgicalHistory || '',
+        socialHistory: apiResponse.socialHistory || '',
+        familyMedicalHistory: apiResponse.familyMedicalHistory || '',
+        allergies:
+          apiResponse.allergies?.map((allergy: any) => ({
+            id: allergy.id,
+            patientId: apiResponse.id,
+            allergyType: allergy.allergyType,
+            name: allergy.name || allergy.allergyType,
+            reaction: allergy.reaction,
+            severity: allergy.severity,
+            dateIdentified: allergy.dateIdentified
+              ? new Date(allergy.dateIdentified)
+              : new Date(),
+          })) || [],
+        recentLabResults:
+          apiResponse.recentLabResults?.map((lab: any) => ({
+            id: lab.id,
+            patientId: lab.patientId || apiResponse.id,
+            testDate: new Date(lab.testDate),
+            testName: lab.testName,
+            result: lab.result,
+            referenceRange: lab.referenceRange,
+            orderingProvider: apiResponse.patientDoctorName || 'Unknown',
+            notes: lab.notes || '',
+            orderedBy: lab.orderedBy || apiResponse.patientDoctorID,
+            tests: lab.tests || [],
+            date: lab.testDate ? new Date(lab.testDate) : new Date(),
+          })) || [],
+        immunizations:
+          apiResponse.immunizations?.map((imm: any) => ({
+            id: imm.id,
+            patientId: imm.patientId || apiResponse.id,
+            vaccineName: imm.vaccineName,
+            administrationDate: new Date(imm.administrationDate),
+            lotNumber: imm.lotNumber,
+            administeringProvider: imm.administeringProvider,
+            manufacturer: imm.manufacturer,
+          })) || [],
       },
-      // Transform visits
-      recentVisits:
-        apiResponse.recentVisits?.map((visit: any) => ({
-          id: visit.id,
-          patientId: visit.patientId || apiResponse.id,
-          date: new Date(visit.visitDate || visit.date),
-          type: visit.visitType || visit.type || 'Check-up',
-          providerId: visit.providerId || apiResponse.patientDoctorName,
-          diagnoses: visit.diagnoses || '',
-          notes: visit.notes,
-        })) || [],
-      // Transform lab results
-      recentLabResults:
-        apiResponse.recentLabResults?.map((lab: any) => ({
-          id: lab.id,
-          patientId: lab.patientId || apiResponse.id,
-          testDate: new Date(lab.testDate),
-          testName: lab.testName,
-          result: lab.result,
-          referenceRange: lab.referenceRange,
-          orderingProvider: apiResponse.patientDoctorName || 'Unknown',
-          notes: lab.notes,
-        })) || [],
+      // Optional fields
+      medicalConditions:
+        apiResponse.medicalConditions?.map((condition: any) => ({
+          id: condition.id,
+          name: condition.name,
+          diagnosedDate: new Date(condition.diagnosedDate),
+          notes: condition.notes || '',
+          status: condition.status || 'active',
+        })) || undefined,
     };
 
     // Create patient object with patientDetails

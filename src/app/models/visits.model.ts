@@ -1,7 +1,4 @@
-import { Patients } from './patient.model';
-
 export interface Visit {
-  type: any;
   id: number;
   patientId: number;
   visitDate: Date;
@@ -10,31 +7,34 @@ export interface Visit {
   visitType?: string;
   reason?: string;
   assessment?: string;
-  plan?: string;
+  diagnosis: Diagnosis[];
+  planTreatment?: string;
+  currentMedications: Medication[];
   notes?: string;
-  patient?: Patients;
-  diagnoses: Diagnosis[];
-  date: Date;
   followUpRequired?: boolean;
   followUpDate?: Date;
-  vitals?: {
-    bloodPressure?: string;
-    heartRate?: number;
-    temperature?: number;
-    respiratoryRate?: number;
-    height?: number;
-    weight?: number;
-    bmi?: number;
-  };
 
-  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  // status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
 }
 
 export interface Diagnosis {
   id: number;
   visitId: number;
-  code?: string;
+  diagnosisCode?: string;
   description?: string;
+  diagnosisDate: Date;
+  isActive: boolean;
+}
+
+export interface Medication {
+  id: number;
+  name: string;
+  dosage: string;
+  frequency: string;
+  startDate: Date;
+  endDate?: Date;
+  prescribingProvider: string;
+  purpose: string;
 }
 
 export interface LabResult {

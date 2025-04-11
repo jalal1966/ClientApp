@@ -1,5 +1,6 @@
 import { Patients } from './patient.model';
 import { User } from './user';
+import { Visit } from './visits.model';
 
 // Interfaces for the medical records system
 export interface MedicalRecord {
@@ -7,17 +8,9 @@ export interface MedicalRecord {
   id?: number;
   patientId: number;
   userID: number;
-
-  // Basic record info
   recordDate?: Date;
-  diagnosis: string;
-  treatment: string;
-  medications: string;
-  notes: string;
 
-  // Follow-up information
-  isFollowUpRequired: boolean;
-  followUpDate?: Date;
+  recentVisits: Visit[];
 
   // Physical information
   height: number;
@@ -32,8 +25,11 @@ export interface MedicalRecord {
   familyMedicalHistory: string;
 
   // Related entities - typically used for join operations
-  patient?: Patients;
+
   user?: User;
+  allergies: Allergy[];
+  recentLabResults: LabResult[];
+  immunizations?: Immunization[];
 }
 
 export interface Allergy {
@@ -44,17 +40,6 @@ export interface Allergy {
   reaction: string;
   severity: string;
   dateIdentified: Date;
-}
-
-export interface Medication {
-  id: number;
-  name: string;
-  dosage: string;
-  frequency: string;
-  startDate: Date;
-  endDate?: Date;
-  prescribingProvider: string;
-  purpose: string;
 }
 
 export interface LabResult {
@@ -69,4 +54,13 @@ export interface LabResult {
   orderingProvider?: string;
   notes?: string;
   patientId?: number;
+}
+export interface Immunization {
+  id: number;
+  patientId: number;
+  vaccineName: string;
+  administrationDate: Date;
+  lotNumber: string;
+  administeringProvider: string;
+  manufacturer: string;
 }

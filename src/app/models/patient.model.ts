@@ -1,11 +1,6 @@
 import { AppComponent } from '../app.component';
-import {
-  Allergy,
-  LabResult,
-  MedicalRecord,
-  Medication,
-} from './medicalRecord.model';
-import { Visit } from './visits.model';
+import { Allergy, LabResult, MedicalRecord } from './medicalRecord.model';
+import { Medication, Visit } from './visits.model';
 
 export interface Patients {
   id?: number;
@@ -42,13 +37,10 @@ export interface PatientDetail {
 
   // Related medical information
   medicalConditions?: MedicalCondition[];
-  medicalRecord?: MedicalRecord;
-  allergies?: Allergy[];
-  currentMedications?: Medication[];
+  medicalRecord: MedicalRecord;
+
   // to do
-  recentVisits?: Visit[];
-  recentLabResults?: LabResult[];
-  immunizations?: Immunization[];
+
   appointment?: AppComponent;
 
   createdAt: Date;
@@ -61,14 +53,4 @@ export interface MedicalCondition {
   diagnosedDate: Date;
   notes?: string;
   status: 'active' | 'resolved' | 'managed';
-}
-
-export interface Immunization {
-  id: number;
-  patientId: number;
-  vaccineName: string;
-  administrationDate: Date;
-  lotNumber: string;
-  administeringProvider: string;
-  manufacturer: string;
 }

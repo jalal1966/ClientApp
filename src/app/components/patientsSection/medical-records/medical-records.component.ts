@@ -153,14 +153,22 @@ export class MedicalRecordsComponent
 
           // Current Visit
           recordDate: data.recordDate,
-          diagnosis: data.diagnosis,
-          treatment: data.treatment,
-          medications: data.medications,
-          notes: data.notes,
-          isFollowUpRequired: data.isFollowUpRequired,
+          diagnosis: data.recentVisits.flatMap(
+            (visit) => visit.diagnosis || []
+          ),
+          treatment: data.recentVisits.flatMap(
+            (visit) => visit.planTreatment || []
+          ),
+
+          medications: data.recentVisits.flatMap(
+            (visit) => visit.currentMedications || []
+          ),
+
+          notes: data.recentVisits.flatMap((visit) => visit.notes || []),
+          /*  isFollowUpRequired: data.isFollowUpRequired,
           followUpDate: data.followUpDate
             ? new Date(data.followUpDate).toISOString().split('T')[0]
-            : null,
+            : null, */
         });
 
         console.log('Form values after patch:', this.medicalRecordForm.value);
@@ -248,14 +256,15 @@ export class MedicalRecordsComponent
 
       // Current Visit
       recordDate: formValues.recordDate,
-      diagnosis: formValues.diagnosis,
-      treatment: formValues.treatment,
-      medications: formValues.medications,
-      notes: formValues.notes,
-      isFollowUpRequired: formValues.isFollowUpRequired,
-      followUpDate: formValues.isFollowUpRequired
-        ? formValues.followUpDate
-        : null,
+      recentVisits: formValues.Visit,
+      //diagnosis: formValues.visit.diagnosis,
+      //treatment: formValues.treatment,
+      //medications: formValues.medications,
+      //notes: formValues.notes,
+      // isFollowUpRequired: formValues.isFollowUpRequired,
+      // followUpDate: formValues.isFollowUpRequired
+      //  ? formValues.followUpDate
+      //  : null,
     };
     console.log('record', this.currentUser.userID);
     this.saving = true;

@@ -250,20 +250,24 @@ export class PatientDetailComponent
 
         // Initialize arrays to prevent length errors
         if (this.patient?.patientDetails) {
-          this.patient.patientDetails.allergies =
-            this.patient.patientDetails.allergies || [];
+          this.patient.patientDetails.medicalRecord.allergies =
+            this.patient.patientDetails.medicalRecord?.allergies || [];
           this.patient.patientDetails.medicalConditions =
             this.patient.patientDetails.medicalConditions || [];
-          this.patient.patientDetails.currentMedications =
-            this.patient.patientDetails.currentMedications || [];
-          this.patient.patientDetails.immunizations =
-            this.patient.patientDetails.immunizations || [];
-          this.patient.patientDetails.recentVisits =
-            this.patient.patientDetails.recentVisits || [];
-          this.patient.patientDetails.recentLabResults =
-            this.patient.patientDetails.recentLabResults || [];
+          this.patient.patientDetails.medicalRecord.recentVisits.flatMap(
+            (visit) => visit.currentMedications || []
+          );
+          this.patient.patientDetails.medicalRecord.immunizations =
+            this.patient.patientDetails.medicalRecord.immunizations || [];
+          this.patient.patientDetails.medicalRecord.recentVisits =
+            this.patient.patientDetails.medicalRecord.recentVisits || [];
+          this.patient.patientDetails.medicalRecord.recentLabResults =
+            this.patient.patientDetails.medicalRecord.recentLabResults || [];
         }
-        console.log('blod', this.patient.patientDetails.immunizations);
+        console.log(
+          'blod',
+          this.patient.patientDetails.medicalRecord.immunizations
+        );
 
         this.loading = false;
         this.isLoading = false;
@@ -289,6 +293,25 @@ export class PatientDetailComponent
       socialHistory: '',
       createdAt: new Date(),
       updatedAt: new Date(),
+      medicalRecord: this.createEmptyMedicalRecord(), // 👈 include this
+    };
+  }
+  createEmptyMedicalRecord(): MedicalRecord {
+    return {
+      patientId: 0,
+      userID: 0,
+      height: 0,
+      weight: 0,
+      bmi: 0,
+      bloodType: '',
+      chronicConditions: '',
+      surgicalHistory: '',
+      socialHistory: '',
+      familyMedicalHistory: '',
+      recentVisits: [],
+      allergies: [],
+      recentLabResults: [],
+      immunizations: [],
     };
   }
 
@@ -370,6 +393,20 @@ export class PatientDetailComponent
       });
     }
   }
+
+  get hasRecentLabResults(): boolean {
+    const results =
+      this.patient?.patientDetails?.medicalRecord?.recentLabResults;
+    return this.hasItems(results);
+  }
+
+  get hasCurrentMedications(): boolean {
+    const visits =
+      this.patient?.patientDetails?.medicalRecord?.recentVisits || [];
+    const meds = visits.flatMap((v) => v.currentMedications || []);
+    return this.hasItems(meds);
+  }
+
   backClicked() {
     this.location.back();
   }

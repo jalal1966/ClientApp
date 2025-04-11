@@ -92,7 +92,7 @@ export class PatientVisitComponent
       visitType: visit.visitType,
       reason: visit.reason,
       assessment: visit.assessment,
-      plan: visit.plan,
+      plan: visit.planTreatment,
       notes: visit.notes,
     });
 

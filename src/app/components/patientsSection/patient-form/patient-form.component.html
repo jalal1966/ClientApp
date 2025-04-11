@@ -4,6 +4,16 @@
     {{ errorMessage }}
   </div>
 
+  <!-- Error Messages List -->
+  <div
+    *ngIf="errorMessages && errorMessages.length > 0"
+    class="alert alert-danger mt-3 mb-4"
+  >
+    <ul class="mb-0">
+      <li *ngFor="let err of errorMessages">{{ err }}</li>
+    </ul>
+  </div>
+
   <!-- Patient Registration Form -->
   <div class="patient-form">
     <form
@@ -12,42 +22,9 @@
       class="max-w-2xl mx-auto"
     >
       <h1 class="h2 mb-4 text-center">
-        Patient Registration edit by {{ currentUser.firstName }}
+        Patient Registration by {{ currentUser.firstName }}
         {{ currentUser.lastName }}
       </h1>
-
-      <!-- Debugging Info -->
-      <div
-        class="debug-info"
-        style="
-          background: #f5f5f5;
-          padding: 10px;
-          margin-bottom: 10px;
-          border: 1px solid #ddd;
-          display: none;
-        "
-      >
-        <p>Form valid: {{ patientForm.valid }}</p>
-        <p>Form touched: {{ patientForm.touched }}</p>
-        <p>Form dirty: {{ patientForm.dirty }}</p>
-        <p>Form errors: {{ patientForm.errors | json }}</p>
-        <p>
-          First Name Errors: {{ patientForm.get("firstName")?.errors | json }}
-        </p>
-        <p>
-          Last Name Errors: {{ patientForm.get("lastName")?.errors | json }}
-        </p>
-        <p>
-          Date of Birth Errors:
-          {{ patientForm.get("dateOfBirth")?.errors | json }}
-        </p>
-        <p>Gender Errors: {{ patientForm.get("genderID")?.errors | json }}</p>
-        <p>
-          Contact Number Errors:
-          {{ patientForm.get("contactNumber")?.errors | json }}
-        </p>
-        <p>Email Errors: {{ patientForm.get("email")?.errors | json }}</p>
-      </div>
 
       <!-- Form Fields -->
       <div class="row">
@@ -122,7 +99,7 @@
 
         <!-- Gender -->
         <div class="col-md-6 mb-3">
-          <label class="form-label">Select Gender</label>
+          <label class="form-label">Gender</label>
           <select formControlName="genderID" class="form-select">
             <option [ngValue]="null" disabled>Select gender</option>
             <option [ngValue]="1">Male</option>
@@ -138,89 +115,89 @@
             <small *ngIf="genderID?.errors?.['oneOf']"
               >Please select a valid gender</small
             >
+            <small
+              *ngIf="genderID?.errors?.['serverError']"
+              >{{ genderID?.errors?.['serverError'] }}</small
+            >
           </div>
         </div>
 
-        <div class="row">
-          <!-- Contact Number -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Contact Number</label>
-            <input
-              type="tel"
-              formControlName="contactNumber"
-              class="form-control"
-            />
-            <div
-              *ngIf="
-                contactNumber?.invalid &&
-                (contactNumber?.dirty || contactNumber?.touched)
-              "
-              class="text-danger mt-1"
+        <!-- Contact Number -->
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Contact Number</label>
+          <input
+            type="tel"
+            formControlName="contactNumber"
+            class="form-control"
+          />
+          <div
+            *ngIf="
+              contactNumber?.invalid &&
+              (contactNumber?.dirty || contactNumber?.touched)
+            "
+            class="text-danger mt-1"
+          >
+            <small *ngIf="contactNumber?.errors?.['required']"
+              >Contact number is required</small
             >
-              <small *ngIf="contactNumber?.errors?.['required']"
-                >Contact number is required</small
-              >
-              <small
-                *ngIf="contactNumber?.errors?.['serverError']"
-                >{{ contactNumber?.errors?.['serverError'] }}</small
-              >
-            </div>
+            <small
+              *ngIf="contactNumber?.errors?.['serverError']"
+              >{{ contactNumber?.errors?.['serverError'] }}</small
+            >
           </div>
-          <!-- Email -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" formControlName="email" class="form-control" />
-            <div
-              *ngIf="email?.invalid && (email?.dirty || email?.touched)"
-              class="text-danger mt-1"
-            >
-              <small *ngIf="email?.errors?.['required']"
-                >Email is required</small
-              >
-              <small *ngIf="email?.errors?.['email']"
-                >Invalid email format</small
-              >
-              <small
-                *ngIf="email?.errors?.['serverError']"
-                >{{ email?.errors?.['serverError'] }}</small
-              >
-            </div>
-          </div>
-
-          <!-- Select Doctor -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Select Doctor</label>
-            <select
-              formControlName="patientDoctorID"
-              class="form-select"
-              placeholder="Select doctor"
-            >
-              <option [ngValue]="null" disabled>Select doctor</option>
-              <option
-                *ngFor="let doctor of doctorRecords"
-                [ngValue]="doctor.userID"
-              >
-                {{ doctor.firstName }} {{ doctor.lastName }}
-              </option>
-            </select>
-            <div
-              *ngIf="
-                patientDoctorID?.invalid &&
-                (patientDoctorID?.dirty || patientDoctorID?.touched)
-              "
-              class="text-danger mt-1"
-            >
-              <small *ngIf="patientDoctorID?.errors?.['required']"
-                >Doctor selection is required</small
-              >
-              <small *ngIf="genderID?.errors?.['oneOf']"
-                >Please select a valid gender</small
-              >
-            </div>
-          </div>
-          <!-- Doctor Name (Hidden) -->
-          <input type="hidden" formControlName="patientDoctorName" />
         </div>
+
+        <!-- Email -->
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" formControlName="email" class="form-control" />
+          <div
+            *ngIf="email?.invalid && (email?.dirty || email?.touched)"
+            class="text-danger mt-1"
+          >
+            <small *ngIf="email?.errors?.['required']">Email is required</small>
+            <small *ngIf="email?.errors?.['email']">Invalid email format</small>
+            <small
+              *ngIf="email?.errors?.['serverError']"
+              >{{ email?.errors?.['serverError'] }}</small
+            >
+          </div>
+        </div>
+
+        <!-- Select Doctor -->
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Select Doctor</label>
+          <select formControlName="patientDoctorID" class="form-select">
+            <option [ngValue]="null" disabled>Select doctor</option>
+            <option
+              *ngFor="let doctor of doctorRecords"
+              [ngValue]="doctor.userID"
+            >
+              {{ doctor.firstName }} {{ doctor.lastName }}
+            </option>
+          </select>
+          <div
+            *ngIf="
+              patientDoctorID?.invalid &&
+              (patientDoctorID?.dirty || patientDoctorID?.touched)
+            "
+            class="text-danger mt-1"
+          >
+            <small *ngIf="patientDoctorID?.errors?.['required']"
+              >Doctor selection is required</small
+            >
+            <small
+              *ngIf="patientDoctorID?.errors?.['serverError']"
+              >{{ patientDoctorID?.errors?.['serverError'] }}</small
+            >
+          </div>
+        </div>
+
+        <!-- Hidden Fields -->
+        <input type="hidden" formControlName="patientDoctorName" />
+        <input type="hidden" formControlName="nursID" />
+        <input type="hidden" formControlName="nursName" />
+
         <!-- Emergency Contact Name -->
         <div class="col-md-6 mb-3">
           <label class="form-label">Emergency Contact Name</label>
@@ -282,43 +259,10 @@
         >
           Cancel
         </button>
-        <div>
-          <button
-            type="submit"
-            [disabled]="patientForm.invalid || isSubmitting"
-            class="btn btn-primary me-2"
-          >
-            {{ isSubmitting ? "Registering..." : "Register" }}
-          </button>
-          <!-- Debug Button -->
-          <button
-            type="button"
-            (click)="onSubmit()"
-            style="background-color: orange; display: none"
-          >
-            Force Submit (Debug)
-          </button>
-          <!-- Error Messages -->
-          <!--<button type="button" (click)="checkFormValidity()">
-            Check Form Validity
-          </button>-->
-        </div>
+        <button type="submit" [disabled]="isSubmitting" class="btn btn-primary">
+          {{ isSubmitting ? "Registering..." : "Register" }}
+        </button>
       </div>
-
-      <!-- Error Messages -->
-      <div
-        *ngIf="errorMessages && errorMessages.length > 0"
-        class="alert alert-danger mt-3"
-      >
-        <ul class="mb-0">
-          <li *ngFor="let err of errorMessages">{{ err }}</li>
-        </ul>
-      </div>
-
-      <!-- Login Link -->
-      <p class="text-center mt-3">
-        Already have this patient? <a [routerLink]="['/login']">Login here</a>
-      </p>
     </form>
   </div>
 </div>

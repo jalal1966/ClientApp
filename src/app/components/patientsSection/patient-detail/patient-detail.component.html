@@ -214,15 +214,11 @@
                     <tr>
                       <th>Allergies</th>
                       <td>
-                        <span
-                          *ngIf="
-                            hasItems(patient?.patientDetails?.allergies);
-                            else noAllergies
-                          "
-                        >
+                        <span>
                           <span
                             *ngFor="
-                              let allergy of patient?.patientDetails?.allergies;
+                              let allergy of patient?.patientDetails
+                                ?.medicalRecord?.allergies;
                               let last = last
                             "
                           >
@@ -536,7 +532,12 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let vaccine of patient.patientDetails.immunizations">
+              <tr
+                *ngFor="
+                  let vaccine of patient.patientDetails.medicalRecord
+                    ?.immunizations
+                "
+              >
                 <td>{{ vaccine.vaccineName }}</td>
                 <td>{{ vaccine.administrationDate | date }}</td>
                 <td>{{ vaccine.administeringProvider }}</td>
@@ -546,10 +547,7 @@
             </tbody>
           </table>
           <p
-            *ngIf="
-              hasItems(patient.patientDetails?.currentMedications);
-              else noMedications
-            "
+            *ngIf="hasCurrentMedications; else noMedications"
             class="text-muted"
           >
             No immunization records available
@@ -579,11 +577,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let visit of patient.patientDetails?.recentVisits">
-              <td>{{ visit.date | date }}</td>
-              <td>{{ visit.type }}</td>
+            <tr
+              *ngFor="
+                let visit of patient.patientDetails?.medicalRecord?.recentVisits
+              "
+            >
+              <td>{{ visit.visitDate | date }}</td>
+              <td>{{ visit.visitType }}</td>
               <td>{{ visit.providerId }}</td>
-              <td>{{ visit.diagnoses || "N/A" }}</td>
+              <td>{{ visit.diagnosis }}</td>
               <td>
                 <div class="btn-group btn-group-sm">
                   <button
@@ -608,7 +610,10 @@
       </div>
 
       <div
-        *ngIf="hasItems(patient.patientDetails?.recentVisits); else noVisits"
+        *ngIf="
+          hasItems(patient.patientDetails?.medicalRecord?.recentVisits);
+          else noVisits
+        "
         class="alert alert-info"
       >
         <i class="bi bi-info-circle me-2"></i> No recent visits recorded for
@@ -628,15 +633,13 @@
       <div
         class="accordion"
         id="labResultsAccordion"
-        *ngIf="
-          hasItems(patient.patientDetails?.recentLabResults);
-          else noLabResults
-        "
+        *ngIf="hasRecentLabResults; else noLabResults"
       >
         <div
           class="accordion-item"
           *ngFor="
-            let labResult of patient.patientDetails?.recentLabResults;
+            let labResult of patient.patientDetails?.medicalRecord
+              ?.recentLabResults || [];
             let i = index
           "
         >
@@ -716,13 +719,8 @@
         </div>
       </div>
 
-      <div
-        *ngIf="
-          hasItems(patient.patientDetails?.recentLabResults);
-          else noLabResults
-        "
-        class="alert alert-info"
-      >
+      <div *ngIf="hasRecentLabResults; else noLabResults">
+        class="alert alert-info" >
         <i class="bi bi-info-circle me-2"></i> No lab results available for this
         patient.
       </div>

@@ -28,6 +28,8 @@ export class PatientFormComponent
   errorMessage: string | null = null; // For single error messages
   errorMessages: string[] = []; // For multiple error messages
   doctorRecords: User[] = [];
+
+  // Form control properties
   firstName: any;
   lastName: any;
   dateOfBirth: any;
@@ -73,11 +75,13 @@ export class PatientFormComponent
   }
 
   ngOnInit(): void {
+    // Set nurse ID and name from current user
     this.patientForm.patchValue({
       nursID: this.currentUser.userID,
       nursName: `${this.currentUser.firstName} ${this.currentUser.lastName}`,
     });
     console.log('Nurs', this.nursID, this.nursName);
+
     // Fetch doctor list
     this.patientService.getDoctorList(1).subscribe({
       next: (doctors) => {
@@ -112,6 +116,18 @@ export class PatientFormComponent
         }
       });
 
+    // Assign form controls to component properties for easier access
+    this.firstName = this.patientForm.get('firstName');
+    this.lastName = this.patientForm.get('lastName');
+    this.dateOfBirth = this.patientForm.get('dateOfBirth');
+    this.genderID = this.patientForm.get('genderID');
+    this.contactNumber = this.patientForm.get('contactNumber');
+    this.email = this.patientForm.get('email');
+    this.nursID = this.patientForm.get('nursID');
+    this.nursName = this.patientForm.get('nursName');
+    this.patientDoctorID = this.patientForm.get('patientDoctorID');
+    this.patientDoctor = this.patientForm.get('patientDoctorName');
+    this.lastVisitDate = this.patientForm.get('lastVisitDate');
     // For debugging the form
     if (typeof window !== 'undefined') {
       // Check for SSR
@@ -135,18 +151,6 @@ export class PatientFormComponent
         });
       });
     }
-    // Assign form controls to component properties for easier access
-    this.firstName = this.patientForm.get('firstName');
-    this.lastName = this.patientForm.get('lastName');
-    this.dateOfBirth = this.patientForm.get('dateOfBirth');
-    this.genderID = this.patientForm.get('genderID');
-    this.contactNumber = this.patientForm.get('contactNumber');
-    this.email = this.patientForm.get('email');
-    this.nursID = this.patientForm.get('nursID');
-    this.nursName = this.patientForm.get('nursName');
-    this.patientDoctorID = this.patientForm.get('patientDoctorID');
-    this.patientDoctor = this.patientForm.get('patientDoctorName');
-    this.lastVisitDate = this.patientForm.get('lastVisitDate');
   }
 
   // Custom validator for oneOf
@@ -162,6 +166,9 @@ export class PatientFormComponent
   }
 
   async onSubmit(): Promise<void> {
+    // Clear previous error messages
+    this.errorMessages = [];
+
     if (this.patientForm.invalid) {
       this.patientForm.markAllAsTouched();
       return this.navigateBack();
@@ -169,17 +176,98 @@ export class PatientFormComponent
 
     this.isSubmitting = true;
     try {
-      await this.patientService
-        .createPatient(this.patientForm.value)
-        .toPromise();
+      // Prepare the form data - ensure proper formatting
+      const formData = { ...this.patientForm.value };
+
+      // Ensure IDs are numbers
+      formData.genderID = Number(formData.genderID);
+      formData.nursID = Number(formData.nursID);
+      formData.patientDoctorID = Number(formData.patientDoctorID);
+
+      // Format dates
+      if (formData.dateOfBirth) {
+        formData.dateOfBirth = new Date(formData.dateOfBirth)
+          .toISOString()
+          .split('T')[0];
+      }
+
+      if (formData.lastVisitDate) {
+        formData.lastVisitDate = formData.lastVisitDate
+          ? new Date(formData.lastVisitDate).toISOString().split('T')[0]
+          : null;
+      }
+
+      console.log('Submitting patient data:', formData);
+
+      // Send to server
+      await this.patientService.createPatient(formData).toPromise();
       alert('Patient registered successfully!');
       this.location.back();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
-      alert('Failed to submit form. Please try again.');
+
+      // Improved error handling
+      if (error.error && error.error.errors) {
+        // Process validation errors from the server
+        const serverErrors = error.error.errors;
+        console.log('Server validation errors:', serverErrors);
+
+        this.errorMessages = [];
+        for (const key in serverErrors) {
+          if (serverErrors.hasOwnProperty(key)) {
+            // Get field display name
+            const fieldName = this.getFieldDisplayName(key);
+            const errorMessages = Array.isArray(serverErrors[key])
+              ? serverErrors[key]
+              : [serverErrors[key]];
+
+            // Add each error to the messages array
+            errorMessages.forEach((errorMsg: string) => {
+              this.errorMessages.push(`${fieldName}: ${errorMsg}`);
+            });
+
+            // Add server error to specific form control if it exists
+            const control = this.patientForm.get(key);
+            if (control) {
+              const currentErrors = control.errors || {};
+              control.setErrors({
+                ...currentErrors,
+                serverError: errorMessages.join(', '),
+              });
+            }
+          }
+        }
+      } else {
+        // Generic error message if specific errors aren't available
+        this.errorMessage = 'Failed to register patient. Please try again.';
+      }
     } finally {
       this.isSubmitting = false;
     }
+  }
+
+  // Helper method to get display name for fields
+  private getFieldDisplayName(fieldName: string): string {
+    const displayNames: { [key: string]: string } = {
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      dateOfBirth: 'Date of Birth',
+      genderID: 'Gender',
+      contactNumber: 'Contact Number',
+      email: 'Email',
+      nursID: 'Nurse ID',
+      nursName: 'Nurse Name',
+      patientDoctorID: 'Doctor',
+      patientDoctorName: 'Doctor Name',
+      lastVisitDate: 'Last Visit Date',
+      emergencyContactName: 'Emergency Contact Name',
+      emergencyContactNumber: 'Emergency Contact Number',
+      insuranceProvider: 'Insurance Provider',
+      insuranceNumber: 'Insurance Number',
+      address: 'Address',
+    };
+
+    return displayNames[fieldName] || fieldName;
   }
 
   navigateBack(): void {

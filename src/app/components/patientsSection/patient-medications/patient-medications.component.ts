@@ -3,10 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Medication } from '../../../models/medicalRecord.model';
 import { PatientMedicationsService } from '../../../services/patient-medications/patient-medications.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { AuthService } from '../../../services/auth/auth.service';
+import { Medication } from '../../../models/visits.model';
 
 @Component({
   selector: 'app-patient-medications',
