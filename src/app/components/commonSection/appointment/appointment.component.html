@@ -161,9 +161,9 @@
             {{ appointment.patientFirstName }}
             {{ appointment.patientLastName }}
           </td>
-          <td>
-            {{ appointment.type }}
-          </td>
+
+          <td>{{ getTypeLabel(appointment.type) }}</td>
+
           <td>
             {{ appointment.lastVisitDate | date : "yyyy/MM/dd" }}
           </td>
@@ -172,7 +172,9 @@
             {{ appointment.providerLastName }}
           </td>
           <td>
-            <span class="badge bg-info">{{ appointment.status }}</span>
+            <span class="badge bg-info">{{
+              getStatusLabel(appointment.status)
+            }}</span>
           </td>
           <td>
             <button

@@ -87,10 +87,14 @@
                 >
               </td>
               <td>
-                <span class="badge bg-info">{{ patient.type }}</span>
+                <span class="badge bg-info">{{
+                  getTypeLabel(patient.type)
+                }}</span>
               </td>
               <td>
-                <span class="badge bg-info">{{ patient.status }}</span>
+                <span class="badge bg-info">{{
+                  getStatusLabel(patient.status)
+                }}</span>
               </td>
               <td>
                 <span style="color: black"

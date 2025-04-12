@@ -238,6 +238,20 @@ export class AppointmentComponent implements OnInit {
     });
   }
 
+  getTypeLabel(typeValue: string): string {
+    const type = this.appointmentTypes.find(
+      (t) => t.value.toString() === typeValue
+    );
+    return type ? type.label : typeValue;
+  }
+
+  getStatusLabel(statusValue: string): string {
+    const status = this.appointmentStatuses.find(
+      (s) => s.value.toString() === statusValue
+    );
+    return status ? status.label : statusValue;
+  }
+
   showErrorAlert(message: string): void {
     // Example using Angular Material snackbar
     // this.snackBar.open(message, 'Close', { duration: 5000 });

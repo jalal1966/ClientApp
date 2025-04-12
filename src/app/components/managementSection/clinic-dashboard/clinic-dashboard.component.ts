@@ -25,6 +25,10 @@ import { UsersService } from '../../../services/usersService/users.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { PatientDetailComponent } from '../../patientsSection/patient-detail/patient-detail.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import {
+  AppointmentStatus,
+  AppointmentType,
+} from '../../../models/enums.model';
 
 @Component({
   selector: 'app-clinic-dashboard',
@@ -62,6 +66,8 @@ export class ClinicDashboardComponent
   selectedDoctor: number | null = null;
   selectedStatus: string = 'all';
   refreshInterval: any;
+  appointmentStatus?: AppointmentStatus;
+  appointmentTypes?: AppointmentType;
 
   tabs = [
     { key: 'waitingList', label: 'WaitingList' },
@@ -115,6 +121,16 @@ export class ClinicDashboardComponent
       this.appointmentsDoctor = [];
       this.selectedDoctor = null;
     }
+  }
+
+  getTypeLabel(typeValue: string): string {
+    const typeNumber = Number(typeValue);
+    return AppointmentType[typeNumber] ?? typeValue;
+  }
+
+  getStatusLabel(statusValue: string): string {
+    const typeNumber = Number(statusValue);
+    return AppointmentStatus[typeNumber] ?? statusValue;
   }
   // Initialize the appointment form in ngOnInit or in a dedicated method
   initializeAppointmentForm(): void {

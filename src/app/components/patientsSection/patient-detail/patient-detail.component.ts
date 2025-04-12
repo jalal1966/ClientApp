@@ -312,6 +312,8 @@ export class PatientDetailComponent
       allergies: [],
       recentLabResults: [],
       immunizations: [],
+      followUpDate: undefined,
+      isFollowUpRequired: false,
     };
   }
 

@@ -101,6 +101,8 @@ export class PatientAdapterService {
             administeringProvider: imm.administeringProvider,
             manufacturer: imm.manufacturer,
           })) || [],
+        followUpDate: undefined,
+        isFollowUpRequired: false,
       },
       // Optional fields
       medicalConditions:

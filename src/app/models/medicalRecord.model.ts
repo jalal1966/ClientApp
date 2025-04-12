@@ -4,6 +4,8 @@ import { Visit } from './visits.model';
 
 // Interfaces for the medical records system
 export interface MedicalRecord {
+  followUpDate: any;
+  isFollowUpRequired: boolean;
   // Record identifiers
   id?: number;
   patientId: number;

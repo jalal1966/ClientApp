@@ -1,158 +1,173 @@
-<div class="container">
-  <div class="row mb-4">
-    <div class="col">
-      <h2>Patient Visits</h2>
-      <button (click)="newVisit()" class="btn btn-primary">New Visit</button>
-    </div>
-  </div>
-
-  <div class="row" *ngIf="loading">
-    <div class="col">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
+<div class="card">
+  <div class="card-header">
+    <div class="row align-items-center">
+      <div class="col-md-4">
+        <h2 class="mb-0">Patient Visits</h2>
       </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <!-- Visits List -->
-    <div class="col-md-4">
-      <div class="list-group">
-        <div *ngIf="visits.length === 0 && !loading" class="alert alert-info">
+      <div class="col-md-4 text-center">
+        <button (click)="newVisit()" class="btn btn-primary">New Visit</button>
+      </div>
+      <div class="col-md-4 text-end">
+        <div *ngIf="loading" class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <div
+          *ngIf="!loading && visits.length === 0"
+          class="alert alert-info mb-0 p-1 d-inline-block"
+        >
           No visits found for this patient.
         </div>
-        <a
-          *ngFor="let visit of visits"
-          class="list-group-item list-group-item-action"
-          [class.active]="selectedVisit?.id === visit.id"
-          (click)="selectVisit(visit)"
-        >
-          <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ visit.visitDate | date : "short" }}</h5>
-            <small>{{ visit.visitType }}</small>
-          </div>
-          <p class="mb-1">{{ visit.reason }}</p>
-          <small>Provider: {{ visit.providerName || "Not specified" }}</small>
-          <button
-            *ngIf="selectedVisit?.id === visit.id"
-            (click)="deleteVisit(visit.id); $event.stopPropagation()"
-            class="btn btn-sm btn-danger float-end"
-          >
-            Delete
-          </button>
-        </a>
       </div>
     </div>
+  </div>
 
-    <!-- Visit Form -->
-    <div class="col-md-8" *ngIf="visitForm">
-      <div class="card">
-        <div class="card-header">
-          <h3>{{ isEditMode ? "Edit Visit" : "New Visit" }}</h3>
+  <div class="card-body">
+    <div class="row">
+      <!-- Show visits list only when not editing/creating a visit -->
+      <div class="col-md-12" *ngIf="!visitForm">
+        <div class="list-group">
+          <a
+            *ngFor="let visit of visits"
+            class="list-group-item list-group-item-action"
+            [class.active]="selectedVisit?.id === visit.id"
+            (click)="selectVisit(visit)"
+          >
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">{{ visit.visitDate | date : "short" }}</h5>
+              <small>{{ visit.visitType }}</small>
+            </div>
+            <p class="mb-1">{{ visit.reason }}</p>
+            <small>Provider: {{ visit.providerName || "Not specified" }}</small>
+            <button
+              *ngIf="selectedVisit?.id === visit.id"
+              (click)="deleteVisit(visit.id); $event.stopPropagation()"
+              class="btn btn-sm btn-danger float-end"
+            >
+              Delete
+            </button>
+          </a>
         </div>
-        <div class="card-body">
-          <form [formGroup]="visitForm" (ngSubmit)="saveVisit()">
-            <div class="mb-3">
-              <label for="visitDate" class="form-label">Visit Date</label>
-              <input
-                type="datetime-local"
-                class="form-control"
-                id="visitDate"
-                formControlName="visitDate"
-              />
-            </div>
+      </div>
 
-            <div class="mb-3">
-              <label for="visitType" class="form-label">Visit Type</label>
-              <select
-                class="form-select"
-                id="visitType"
-                formControlName="visitType"
-              >
-                <option value="">Select type</option>
-                <option value="Primary Care">Primary Care</option>
-                <option value="Specialist">Specialist</option>
-                <option value="Emergency">Emergency</option>
-                <option value="Follow-up">Follow-up</option>
-                <option value="Consultation">Consultation</option>
-              </select>
-            </div>
+      <!-- Show form at full width when editing/creating -->
+      <div class="col-md-12" *ngIf="visitForm">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="mb-6">{{ isEditMode ? "Edit Visit" : "New Visit" }}</h3>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="visitForm" (ngSubmit)="saveVisit()">
+              <!-- Visit Date and Type in same row -->
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="visitDate" class="form-label">Visit Date</label>
+                  <input
+                    type="datetime-local"
+                    class="form-control"
+                    id="visitDate"
+                    formControlName="visitDate"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="visitType" class="form-label">Visit Type</label>
+                  <select
+                    class="form-select"
+                    id="visitType"
+                    formControlName="visitType"
+                  >
+                    <option value="">Select type</option>
+                    <option value="Primary Care">Primary Care</option>
+                    <option value="Specialist">Specialist</option>
+                    <option value="Emergency">Emergency</option>
+                    <option value="Follow-up">Follow-up</option>
+                    <option value="Consultation">Consultation</option>
+                  </select>
+                </div>
+              </div>
 
-            <div class="mb-3">
-              <label for="providerName" class="form-label">Provider Name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="providerName"
-                formControlName="providerName"
-              />
-            </div>
+              <!-- Hidden Provider Name -->
+              <div class="mb-3 d-none">
+                <label for="providerName" class="form-label"
+                  >Provider Name</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="providerName"
+                  formControlName="providerName"
+                />
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="reason" class="form-label"
+                    >Reason for Visit</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="reason"
+                    formControlName="reason"
+                    rows="2"
+                  ></textarea>
+                </div>
 
-            <div class="mb-3">
-              <label for="reason" class="form-label">Reason for Visit</label>
-              <textarea
-                class="form-control"
-                id="reason"
-                formControlName="reason"
-                rows="2"
-              ></textarea>
-            </div>
+                <div class="col-md-6 mb-3">
+                  <label for="assessment" class="form-label">Assessment</label>
+                  <textarea
+                    class="form-control"
+                    id="assessment"
+                    formControlName="assessment"
+                    rows="3"
+                  ></textarea>
+                </div>
+              </div>
 
-            <div class="mb-3">
-              <label for="assessment" class="form-label">Assessment</label>
-              <textarea
-                class="form-control"
-                id="assessment"
-                formControlName="assessment"
-                rows="3"
-              ></textarea>
-            </div>
+              <!-- Plan and Notes in the same row -->
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="plan" class="form-label">Plan</label>
+                  <textarea
+                    class="form-control"
+                    id="plan"
+                    formControlName="plan"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="notes" class="form-label">Notes</label>
+                  <textarea
+                    class="form-control"
+                    id="notes"
+                    formControlName="notes"
+                    rows="3"
+                  ></textarea>
+                </div>
+              </div>
 
-            <div class="mb-3">
-              <label for="plan" class="form-label">Plan</label>
-              <textarea
-                class="form-control"
-                id="plan"
-                formControlName="plan"
-                rows="3"
-              ></textarea>
-            </div>
+              <div class="mb-3">
+                <label class="form-label">Diagnoses</label>
+                <p class="text-muted">
+                  Diagnosis management not implemented in this basic example.
+                </p>
+              </div>
 
-            <div class="mb-3">
-              <label for="notes" class="form-label">Notes</label>
-              <textarea
-                class="form-control"
-                id="notes"
-                formControlName="notes"
-                rows="3"
-              ></textarea>
-            </div>
-
-            <!-- Diagnoses would be more complex and could be handled in a child component -->
-            <div class="mb-3">
-              <label class="form-label">Diagnoses</label>
-              <p class="text-muted">
-                Diagnosis management not implemented in this basic example.
-              </p>
-            </div>
-
-            <div class="d-flex justify-content-between">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                (click)="selectedVisit = null"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="btn btn-primary"
-                [disabled]="visitForm.invalid || loading"
-              >
-                {{ isEditMode ? "Update" : "Save" }}
-              </button>
-            </div>
-          </form>
+              <div class="d-flex justify-content-between">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  (click)="selectedVisit = null"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  [disabled]="visitForm.invalid || loading"
+                >
+                  {{ isEditMode ? "Update" : "Save" }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

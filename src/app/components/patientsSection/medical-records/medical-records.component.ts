@@ -15,11 +15,18 @@ import { PatientService } from '../../../services/patient/patient.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { User } from '../../../models/user';
 import { Location } from '@angular/common';
+import { Diagnosis, Medication, Visit } from '../../../models/visits.model';
+import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
 
 @Component({
   selector: 'app-medical-records',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    PatientVisitComponent,
+  ],
   templateUrl: './medical-records.component.html',
   styleUrl: './medical-records.component.scss',
 })
@@ -136,6 +143,30 @@ export class MedicalRecordsComponent
         this.recordExists = true;
         console.log('Raw data from API:', data);
 
+        // Prepare flattened arrays manually
+        const allDiagnoses: Diagnosis[] = [];
+        const allTreatments: string[] = [];
+        const allMedications: Medication[] = [];
+        const allNotes: string[] = [];
+
+        data.recentVisits?.forEach((visit) => {
+          if (visit.diagnosis?.length) {
+            allDiagnoses.push(...visit.diagnosis);
+          }
+
+          if (visit.planTreatment) {
+            allTreatments.push(visit.planTreatment);
+          }
+
+          if (visit.currentMedications?.length) {
+            allMedications.push(...visit.currentMedications);
+          }
+
+          if (visit.notes) {
+            allNotes.push(visit.notes);
+          }
+        });
+
         // Map the backend model to the form model
         this.medicalRecordForm.patchValue({
           // Physical Information
@@ -151,24 +182,16 @@ export class MedicalRecordsComponent
           familyMedicalHistory: data.familyMedicalHistory,
           socialHistory: data.socialHistory,
 
-          // Current Visit
-          recordDate: data.recordDate,
-          diagnosis: data.recentVisits.flatMap(
-            (visit) => visit.diagnosis || []
-          ),
-          treatment: data.recentVisits.flatMap(
-            (visit) => visit.planTreatment || []
-          ),
-
-          medications: data.recentVisits.flatMap(
-            (visit) => visit.currentMedications || []
-          ),
-
-          notes: data.recentVisits.flatMap((visit) => visit.notes || []),
-          /*  isFollowUpRequired: data.isFollowUpRequired,
+          // Current Visit info from flattened visits data
+          recordDate: data.recordDate ? new Date(data.recordDate) : new Date(),
+          diagnosis: allDiagnoses.join('\n\n'),
+          treatment: allTreatments.join('\n\n'),
+          medications: allMedications.join('\n\n'),
+          notes: allNotes.join('\n\n'),
+          isFollowUpRequired: data.isFollowUpRequired || false,
           followUpDate: data.followUpDate
             ? new Date(data.followUpDate).toISOString().split('T')[0]
-            : null, */
+            : null,
         });
 
         console.log('Form values after patch:', this.medicalRecordForm.value);
@@ -239,13 +262,55 @@ export class MedicalRecordsComponent
     // Map form values to the model expected by the backend
     const formValues = this.medicalRecordForm.value;
 
+    // Create a new Visit for the current entry
+    const newVisit: Partial<Visit> = {
+      visitDate: new Date(),
+      patientId: this.patientId,
+      providerId: this.currentUser.userID,
+      providerName: `${this.currentUser.firstName} ${this.currentUser.lastName}`,
+      visitType: 'Regular',
+      reason: 'Medical record update',
+      planTreatment: formValues.treatment,
+      notes: formValues.notes,
+      followUpRequired: formValues.isFollowUpRequired,
+      followUpDate: formValues.isFollowUpRequired
+        ? new Date(formValues.followUpDate)
+        : undefined,
+      diagnosis: [],
+      currentMedications: [],
+    };
+
+    // If diagnosis is provided, create diagnosis entries
+    if (formValues.diagnosis) {
+      const diagnosisEntry: Partial<Diagnosis> = {
+        diagnosisDate: new Date(),
+        description: formValues.diagnosis,
+        isActive: true,
+      };
+      newVisit.diagnosis = [diagnosisEntry as Diagnosis];
+    }
+
+    // Create a Medication entry if medications are provided
+    if (formValues.medications) {
+      const medicationEntry: Partial<Medication> = {
+        name: formValues.medications,
+        dosage: '',
+        frequency: '',
+        startDate: new Date(),
+        prescribingProvider: `${this.currentUser.firstName} ${this.currentUser.lastName}`,
+        purpose: formValues.diagnosis || '',
+      };
+      newVisit.currentMedications = [medicationEntry as Medication];
+    }
+
     const record: Partial<MedicalRecord> = {
       patientId: this.patientId,
       userID: this.currentUser.userID,
+
       // Physical Information
       height: formValues.height,
       weight: formValues.weight,
-      bmi: formValues.bmi, // Note: case difference between form and backend
+      bmi: formValues.bmi,
       bloodType: formValues.bloodType,
 
       // Medical History
@@ -254,19 +319,14 @@ export class MedicalRecordsComponent
       familyMedicalHistory: formValues.familyMedicalHistory,
       socialHistory: formValues.socialHistory,
 
-      // Current Visit
-      recordDate: formValues.recordDate,
-      recentVisits: formValues.Visit,
-      //diagnosis: formValues.visit.diagnosis,
-      //treatment: formValues.treatment,
-      //medications: formValues.medications,
-      //notes: formValues.notes,
-      // isFollowUpRequired: formValues.isFollowUpRequired,
-      // followUpDate: formValues.isFollowUpRequired
-      //  ? formValues.followUpDate
-      //  : null,
+      // Arrays - empty by default, to be populated by backend
+      recentVisits: [newVisit as Visit],
+      allergies: [],
+      recentLabResults: [],
+      immunizations: [],
     };
-    console.log('record', this.currentUser.userID);
+
+    console.log('Record to submit:', record);
     this.saving = true;
     this.saveSuccess = false;
 
@@ -305,7 +365,6 @@ export class MedicalRecordsComponent
         });
     }
   }
-
   backClicked() {
     this.location.back();
   }
