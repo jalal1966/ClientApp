@@ -19,8 +19,8 @@ export class PatientAdapterService {
       admissionDate: apiResponse.registrationDate
         ? new Date(apiResponse.registrationDate)
         : new Date(),
-      familyMedicalHistory: apiResponse.familyMedicalHistory || '',
-      socialHistory: apiResponse.socialHistory || '',
+      //familyMedicalHistory: apiResponse.familyMedicalHistory || '',
+      // socialHistory: apiResponse.socialHistory || '',
       createdAt: new Date(apiResponse.registrationDate),
       updatedAt: new Date(),
       // Transform medical record to match the interface
@@ -47,8 +47,7 @@ export class PatientAdapterService {
             diagnosis: apiResponse.medicalRecord?.visit?.diagnosis || [],
             planTreatment:
               apiResponse.medicalRecord?.visit?.planTreatment || '',
-            currentMedications:
-              apiResponse.medicalRecord?.visit?.medication || [],
+            medication: apiResponse.medicalRecord?.visit?.medication || [],
             notes: apiResponse.medicalRecord?.visit?.notes || '',
             followUpRequired:
               apiResponse.medicalRecord?.isFollowUpRequired || false,
@@ -105,14 +104,14 @@ export class PatientAdapterService {
         isFollowUpRequired: false,
       },
       // Optional fields
-      medicalConditions:
+      /* medicalConditions:
         apiResponse.medicalConditions?.map((condition: any) => ({
           id: condition.id,
           name: condition.name,
           diagnosedDate: new Date(condition.diagnosedDate),
           notes: condition.notes || '',
           status: condition.status || 'active',
-        })) || undefined,
+        })) || undefined, */
     };
 
     // Create patient object with patientDetails

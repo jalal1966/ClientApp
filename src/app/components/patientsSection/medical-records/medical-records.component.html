@@ -1,113 +1,125 @@
 <div class="container mt-4">
-  <button (click)="backClicked()" class="btn btn-success">
-    <span class="bi bi-arrow-left-square"></span>
-    Go Back
-  </button>
-  <h2>
-    Medical Record for {{ patient?.firstName }} {{ patient?.lastName }} By
-    {{ currentUser.firstName }} {{ currentUser.lastName }}
-  </h2>
+  <div class="row align-items-center">
+    <div class="col-auto">
+      <button (click)="backClicked()" class="btn btn-success">
+        <span class="bi bi-arrow-left-square"></span>
+        Go Back
+      </button>
+    </div>
 
-  <div *ngIf="loading" class="alert alert-info">Loading medical record...</div>
+    <div class="col text-center">
+      <h2 class="mb-0">
+        Medical Record for {{ patient?.firstName }} {{ patient?.lastName }} By
+        {{ currentUser.firstName }} {{ currentUser.lastName }}
+      </h2>
+    </div>
 
-  <div *ngIf="error" class="alert alert-danger">
-    {{ error }}
+    <div class="col-auto">
+      <div *ngIf="loading" class="alert alert-info mb-0 p-2">Loading...</div>
+      <div *ngIf="error" class="alert alert-danger mb-0 p-2">
+        {{ error }}
+      </div>
+    </div>
   </div>
-
   <form
     [formGroup]="medicalRecordForm"
     (ngSubmit)="onSubmit()"
     *ngIf="!loading"
   >
-    <!-- Card 1: Full-width -->
-    <div class="card mb-4">
-      <div class="card-header">
-        <h3 class="mb-0">Physical Information</h3>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-4 mb-3">
-            <label for="height">Height (cm)</label>
-            <input
-              type="number"
-              class="form-control"
-              id="height"
-              formControlName="height"
-              (input)="updateBMI()"
-            />
-            <div
-              *ngIf="
-                formControls['height'].invalid && formControls['height'].touched
-              "
-              class="text-danger"
-            >
-              Height is required
-            </div>
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label for="weight">Weight (kg)</label>
-            <input
-              type="number"
-              class="form-control"
-              id="weight"
-              formControlName="weight"
-              (input)="updateBMI()"
-            />
-            <div
-              *ngIf="
-                formControls['weight'].invalid && formControls['weight'].touched
-              "
-              class="text-danger"
-            >
-              Weight is required
-            </div>
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label for="bmi">BMI</label>
-            <input
-              type="number"
-              class="form-control"
-              id="bmi"
-              formControlName="bmi"
-              readonly
-            />
-            <small class="form-text text-muted">Automatically calculated</small>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label for="bloodType">Blood Type</label>
-          <select
-            class="form-control"
-            id="bloodType"
-            formControlName="bloodType"
-          >
-            <option value="">Select Blood Type</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row: Card 2 and Card 3 side-by-side -->
+    <!-- Two column layout -->
     <div class="row">
-      <!-- Card 2: Medical History -->
+      <!-- Column 1: Physical Information and Medical History -->
       <div class="col-md-6">
+        <!-- Physical Information Card -->
         <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="mb-0">Physical Information</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4 mb-1">
+                <label for="height">Height (cm)</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="height"
+                  formControlName="height"
+                  (input)="updateBMI()"
+                />
+                <div
+                  *ngIf="
+                    formControls['height'].invalid &&
+                    formControls['height'].touched
+                  "
+                  class="text-danger"
+                >
+                  Height is required
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-1">
+                <label for="weight">Weight (kg)</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="weight"
+                  formControlName="weight"
+                  (input)="updateBMI()"
+                />
+                <div
+                  *ngIf="
+                    formControls['weight'].invalid &&
+                    formControls['weight'].touched
+                  "
+                  class="text-danger"
+                >
+                  Weight is required
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-1">
+                <label for="bmi">BMI</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="bmi"
+                  formControlName="bmi"
+                  readonly
+                />
+                <small class="form-text text-muted"
+                  >Automatically calculated</small
+                >
+              </div>
+            </div>
+
+            <div class="mb-0">
+              <label for="bloodType">Blood Type</label>
+              <select
+                class="form-control"
+                id="bloodType"
+                formControlName="bloodType"
+              >
+                <option value="">Select Blood Type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Medical History Card -->
+        <div class="card mb-0">
           <div class="card-header">
             <h3 class="mb-0">Medical History</h3>
           </div>
           <div class="card-body">
-            <div class="mb-3">
+            <div class="mb-0">
               <label for="chronicConditions">Chronic Conditions</label>
               <textarea
                 class="form-control"
@@ -117,7 +129,7 @@
               ></textarea>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-0">
               <label for="surgicalHistory">Surgical History</label>
               <textarea
                 class="form-control"
@@ -127,7 +139,7 @@
               ></textarea>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-0">
               <label for="familyMedicalHistory">Family Medical History</label>
               <textarea
                 class="form-control"
@@ -137,7 +149,7 @@
               ></textarea>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-0">
               <label for="socialHistory">Social History</label>
               <textarea
                 class="form-control"
@@ -150,92 +162,11 @@
         </div>
       </div>
 
-      <!-- Card 3: Current Visit -->
-      <div class="col-md-6 card-header">
+      <!-- Column 2: Patient Visit -->
+      <div class="col-md-6">
         <app-patient-visit></app-patient-visit>
-        <!--<div class="card mb-4">
-          <div class="card-header">
-            <h3 class="mb-0">Current Visit</h3>
-          </div>
-          <div class="card-body">
-            <div class="mb-3">
-              <label for="diagnosis">Diagnosis</label>
-              <textarea
-                class="form-control"
-                id="diagnosis"
-                rows="2"
-                formControlName="diagnosis"
-              ></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label for="treatment">Treatment</label>
-              <textarea
-                class="form-control"
-                id="treatment"
-                rows="2"
-                formControlName="treatment"
-              ></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label for="medications">Medications</label>
-              <textarea
-                class="form-control"
-                id="medications"
-                rows="2"
-                formControlName="medications"
-              ></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label for="notes">Notes</label>
-              <textarea
-                class="form-control"
-                id="notes"
-                rows="3"
-                formControlName="notes"
-              ></textarea>
-            </div>
-
-            <div class="form-check mb-3">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="isFollowUpRequired"
-                formControlName="isFollowUpRequired"
-              />
-              <label class="form-check-label" for="isFollowUpRequired"
-                >Follow-up Required</label
-              >
-            </div>
-
-            <div
-              class="mb-3"
-              *ngIf="medicalRecordForm.get('isFollowUpRequired')?.value"
-            >
-              <label for="followUpDate">Follow-up Date</label>
-              <input
-                type="date"
-                class="form-control"
-                id="followUpDate"
-                formControlName="followUpDate"
-              />
-              <div
-                *ngIf="
-                  formControls['followUpDate'].invalid &&
-                  formControls['followUpDate'].touched
-                "
-                class="text-danger"
-              >
-                Follow-up date is required when follow-up is checked
-              </div>
-            </div>
-          </div>
-        </div>-->
       </div>
     </div>
-
     <!-- Submit Button and Feedback -->
     <button
       type="submit"
@@ -244,9 +175,7 @@
     >
       {{ recordExists ? "Update" : "Create" }} Medical Record
     </button>
-
     <div *ngIf="saving" class="mt-2">Saving...</div>
-
     <div *ngIf="saveSuccess" class="alert alert-success mt-3">
       Medical record saved successfully!
     </div>

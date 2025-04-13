@@ -9,7 +9,7 @@ export interface Visit {
   assessment?: string;
   diagnosis: Diagnosis[];
   planTreatment?: string;
-  currentMedications: Medication[];
+  medication: Medication[];
   notes?: string;
   followUpRequired?: boolean;
   followUpDate?: Date;

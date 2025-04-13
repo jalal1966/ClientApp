@@ -158,8 +158,8 @@ export class MedicalRecordsComponent
             allTreatments.push(visit.planTreatment);
           }
 
-          if (visit.currentMedications?.length) {
-            allMedications.push(...visit.currentMedications);
+          if (visit.medication?.length) {
+            allMedications.push(...visit.medication);
           }
 
           if (visit.notes) {
@@ -277,7 +277,7 @@ export class MedicalRecordsComponent
         ? new Date(formValues.followUpDate)
         : undefined,
       diagnosis: [],
-      currentMedications: [],
+      medication: [],
     };
 
     // If diagnosis is provided, create diagnosis entries
@@ -300,7 +300,7 @@ export class MedicalRecordsComponent
         prescribingProvider: `${this.currentUser.firstName} ${this.currentUser.lastName}`,
         purpose: formValues.diagnosis || '',
       };
-      newVisit.currentMedications = [medicationEntry as Medication];
+      newVisit.medication = [medicationEntry as Medication];
     }
 
     const record: Partial<MedicalRecord> = {

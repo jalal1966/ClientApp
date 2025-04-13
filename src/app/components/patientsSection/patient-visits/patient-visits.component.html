@@ -2,7 +2,7 @@
   <div class="card-header">
     <div class="row align-items-center">
       <div class="col-md-4">
-        <h2 class="mb-0">Patient Visits</h2>
+        <h3 class="mb-0">Patient Visits</h3>
       </div>
       <div class="col-md-4 text-center">
         <button (click)="newVisit()" class="btn btn-primary">New Visit</button>
@@ -23,145 +23,785 @@
 
   <div class="card-body">
     <div class="row">
-      <!-- Show visits list only when not editing/creating a visit -->
-      <div class="col-md-12" *ngIf="!visitForm">
+      <!-- Show visits list only when not in detail view, edit mode, or creating a visit -->
+      <div class="col-md-12" *ngIf="!selectedVisit && !showForm && !viewMode">
         <div class="list-group">
           <a
             *ngFor="let visit of visits"
             class="list-group-item list-group-item-action"
-            [class.active]="selectedVisit?.id === visit.id"
-            (click)="selectVisit(visit)"
+            (click)="viewVisitDetails(visit)"
           >
             <div class="d-flex w-100 justify-content-between">
               <h5 class="mb-1">{{ visit.visitDate | date : "short" }}</h5>
-              <small>{{ visit.visitType }}</small>
+              <span
+                class="badge"
+                [ngClass]="{
+                  'bg-warning': visit.followUpRequired && visit.followUpDate,
+                  'bg-info': !visit.followUpRequired
+                }"
+              >
+                {{ visit.visitType || "Unknown" }}
+              </span>
             </div>
             <p class="mb-1">{{ visit.reason }}</p>
-            <small>Provider: {{ visit.providerName || "Not specified" }}</small>
-            <button
-              *ngIf="selectedVisit?.id === visit.id"
-              (click)="deleteVisit(visit.id); $event.stopPropagation()"
-              class="btn btn-sm btn-danger float-end"
-            >
-              Delete
-            </button>
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <small
+                  >Provider: {{ visit.providerName || "Not specified" }}</small
+                >
+                <small
+                  *ngIf="visit.followUpRequired && visit.followUpDate"
+                  class="ms-3"
+                >
+                  Follow-up: {{ visit.followUpDate | date }}
+                </small>
+              </div>
+              <div>
+                <span
+                  *ngIf="visit.diagnosis?.length"
+                  class="badge bg-secondary me-2"
+                >
+                  {{ visit.diagnosis.length }} diagnosis
+                </span>
+                <span
+                  *ngIf="visit.medication?.length"
+                  class="badge bg-secondary"
+                >
+                  {{ visit.medication.length }} medications
+                </span>
+              </div>
+            </div>
+            <div class="mt-2 text-end">
+              <button
+                (click)="selectVisit(visit); $event.stopPropagation()"
+                class="btn btn-sm btn-primary me-2"
+              >
+                Edit
+              </button>
+              <button
+                (click)="deleteVisit(visit.id); $event.stopPropagation()"
+                class="btn btn-sm btn-danger"
+              >
+                Delete
+              </button>
+            </div>
           </a>
         </div>
       </div>
 
+      <!-- Visit Detail View -->
+      <div class="col-md-12" *ngIf="viewMode && selectedVisit">
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between">
+            <h4 class="mb-2">Visit Details</h4>
+            <div>
+              <button
+                (click)="selectVisit(selectedVisit)"
+                class="btn btn-sm btn-primary me-2"
+              >
+                Edit
+              </button>
+              <button (click)="backToList()" class="btn btn-sm btn-secondary">
+                Back
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h5>Visit Information</h5>
+                <table class="table table-sm">
+                  <tbody>
+                    <tr>
+                      <th>Date & Time:</th>
+                      <td>{{ selectedVisit.visitDate | date : "medium" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Type:</th>
+                      <td>{{ selectedVisit.visitType }}</td>
+                    </tr>
+                    <tr>
+                      <th>Provider:</th>
+                      <td>
+                        {{ selectedVisit.providerName || "Not specified" }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Reason:</th>
+                      <td>{{ selectedVisit.reason }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <h5>Assessment & Plan</h5>
+                <table class="table table-sm">
+                  <tbody>
+                    <tr>
+                      <th>Assessment:</th>
+                      <td>
+                        {{ selectedVisit.assessment || "None documented" }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Treatment Plan:</th>
+                      <td>
+                        {{ selectedVisit.planTreatment || "None documented" }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Notes:</th>
+                      <td>{{ selectedVisit.notes || "None" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Follow-up:</th>
+                      <td>
+                        <span
+                          *ngIf="
+                            selectedVisit.followUpRequired &&
+                            selectedVisit.followUpDate
+                          "
+                        >
+                          Required by {{ selectedVisit.followUpDate | date }}
+                        </span>
+                        <span *ngIf="!selectedVisit.followUpRequired">
+                          Not required
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Diagnoses Section -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  Diagnoses ({{ selectedVisit.diagnosis.length || 0 }})
+                </h5>
+              </div>
+              <div class="card-body">
+                <div *ngIf="selectedVisit.diagnosis?.length">
+                  <div
+                    *ngFor="let diagnosis of selectedVisit.diagnosis"
+                    class="border-bottom mb-3 pb-3"
+                  >
+                    <div class="row">
+                      <div class="col-md-6">
+                        <span
+                          class="badge"
+                          [ngClass]="
+                            diagnosis.isActive ? 'bg-success' : 'bg-secondary'
+                          "
+                        >
+                          {{ diagnosis.isActive ? "Active" : "Inactive" }}
+                        </span>
+                        <span
+                          *ngIf="diagnosis.diagnosisCode"
+                          class="ms-2 fw-bold"
+                        >
+                          Code: {{ diagnosis.diagnosisCode }}
+                        </span>
+                      </div>
+                      <div class="col-md-6 text-end fw-bold">
+                        <small
+                          >Date: {{ diagnosis.diagnosisDate | date }}</small
+                        >
+                      </div>
+                    </div>
+                    <p class="my-2 fw-bold">
+                      Description: {{ diagnosis.description }}
+                    </p>
+                  </div>
+                </div>
+                <div
+                  *ngIf="!selectedVisit.diagnosis?.length"
+                  class="text-center py-3"
+                >
+                  <p class="text-muted mb-0">
+                    No diagnosis recorded for this visit.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Medications Section -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  Medications ({{ selectedVisit.medication.length || 0 }})
+                </h5>
+              </div>
+              <div class="card-body">
+                <div *ngIf="selectedVisit.medication?.length">
+                  <div
+                    *ngFor="let med of selectedVisit.medication"
+                    class="border-bottom mb-3 pb-3"
+                  >
+                    <div class="row">
+                      <div class="col-md-6">
+                        <h6 class="mb-1">{{ med.name }}</h6>
+                        <div>
+                          <span class="me-3"
+                            ><strong>Dosage:</strong> {{ med.dosage }}</span
+                          >
+                          <span
+                            ><strong>Frequency:</strong>
+                            {{ med.frequency }}</span
+                          >
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="text-md-end">
+                          <div>
+                            <strong>Start Date:</strong>
+                            {{ med.startDate | date }}
+                          </div>
+                          <div *ngIf="med.endDate">
+                            <strong>End Date:</strong> {{ med.endDate | date }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="col-md-6" *ngIf="med.purpose">
+                        <div><strong>Purpose:</strong> {{ med.purpose }}</div>
+                      </div>
+                      <div
+                        class="col-md-6 text-md-end"
+                        *ngIf="med.prescribingProvider"
+                      >
+                        <div>
+                          <strong>Prescribed by:</strong>
+                          {{ med.prescribingProvider }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  *ngIf="!selectedVisit.medication?.length"
+                  class="text-center py-3"
+                >
+                  <p class="text-muted mb-0">
+                    No medications recorded for this visit.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Show form at full width when editing/creating -->
-      <div class="col-md-12" *ngIf="visitForm">
-        <div class="card mb-4">
+      <div
+        class="col-md-12"
+        *ngIf="(selectedVisit || showForm) && visitForm && !viewMode"
+      >
+        <div class="card mb-3">
           <div class="card-header">
-            <h3 class="mb-6">{{ isEditMode ? "Edit Visit" : "New Visit" }}</h3>
+            <h4 class="mb-2">{{ isEditMode ? "Edit Visit" : "New Visit" }}</h4>
           </div>
           <div class="card-body">
             <form [formGroup]="visitForm" (ngSubmit)="saveVisit()">
               <!-- Visit Date and Type in same row -->
               <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="visitDate" class="form-label">Visit Date</label>
+                <!-- Visit Date -->
+                <div class="col-md-4 mb-3">
+                  <label for="visitDate" class="form-label">Visit Date*</label>
                   <input
                     type="datetime-local"
                     class="form-control"
                     id="visitDate"
                     formControlName="visitDate"
+                    [ngClass]="{
+                      'is-invalid':
+                        visitForm.get('visitDate')?.invalid &&
+                        visitForm.get('visitDate')?.touched
+                    }"
                   />
+                  <div
+                    *ngIf="
+                      visitForm.get('visitDate')?.invalid &&
+                      visitForm.get('visitDate')?.touched
+                    "
+                    class="invalid-feedback"
+                  >
+                    Visit date is required
+                  </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label for="visitType" class="form-label">Visit Type</label>
+
+                <!-- Visit Type -->
+                <div class="col-md-4 mb-3">
+                  <label for="visitType" class="form-label">Visit Type*</label>
                   <select
                     class="form-select"
                     id="visitType"
                     formControlName="visitType"
+                    [ngClass]="{
+                      'is-invalid':
+                        visitForm.get('visitType')?.invalid &&
+                        visitForm.get('visitType')?.touched
+                    }"
                   >
                     <option value="">Select type</option>
-                    <option value="Primary Care">Primary Care</option>
-                    <option value="Specialist">Specialist</option>
-                    <option value="Emergency">Emergency</option>
-                    <option value="Follow-up">Follow-up</option>
-                    <option value="Consultation">Consultation</option>
+                    <option
+                      *ngFor="let type of appointmentTypes"
+                      [value]="type.value"
+                    >
+                      {{ type.key }}
+                    </option>
                   </select>
+                  <div
+                    *ngIf="
+                      visitForm.get('visitType')?.invalid &&
+                      visitForm.get('visitType')?.touched
+                    "
+                    class="invalid-feedback"
+                  >
+                    Visit type is required
+                  </div>
+                </div>
+
+                <!-- Provider Name -->
+                <div class="col-md-4 mb-3">
+                  <label for="providerName" class="form-label"
+                    >Provider Name</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="providerName"
+                    formControlName="providerName"
+                  />
                 </div>
               </div>
 
-              <!-- Hidden Provider Name -->
-              <div class="mb-3 d-none">
-                <label for="providerName" class="form-label"
-                  >Provider Name</label
-                >
+              <!-- Hidden Provider ID -->
+              <div class="visually-hidden">
                 <input
-                  type="text"
-                  class="form-control"
-                  id="providerName"
-                  formControlName="providerName"
+                  type="number"
+                  id="providerId"
+                  formControlName="providerId"
                 />
               </div>
+
+              <!-- Reason and Assessment -->
               <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-1">
                   <label for="reason" class="form-label"
-                    >Reason for Visit</label
+                    >Reason for Visit*</label
                   >
                   <textarea
                     class="form-control"
                     id="reason"
                     formControlName="reason"
                     rows="2"
+                    [ngClass]="{
+                      'is-invalid':
+                        visitForm.get('reason')?.invalid &&
+                        visitForm.get('reason')?.touched
+                    }"
                   ></textarea>
+                  <div
+                    *ngIf="
+                      visitForm.get('reason')?.invalid &&
+                      visitForm.get('reason')?.touched
+                    "
+                    class="invalid-feedback"
+                  >
+                    Reason is required
+                  </div>
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-1">
                   <label for="assessment" class="form-label">Assessment</label>
                   <textarea
                     class="form-control"
                     id="assessment"
                     formControlName="assessment"
-                    rows="3"
+                    rows="2"
                   ></textarea>
                 </div>
               </div>
 
-              <!-- Plan and Notes in the same row -->
+              <!-- Plan and Notes -->
               <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="plan" class="form-label">Plan</label>
+                <div class="col-md-6 mb-1">
+                  <label for="planTreatment" class="form-label"
+                    >Treatment Plan</label
+                  >
                   <textarea
                     class="form-control"
-                    id="plan"
-                    formControlName="plan"
-                    rows="3"
+                    id="planTreatment"
+                    formControlName="planTreatment"
+                    rows="2"
                   ></textarea>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-1">
                   <label for="notes" class="form-label">Notes</label>
                   <textarea
                     class="form-control"
                     id="notes"
                     formControlName="notes"
-                    rows="3"
+                    rows="2"
                   ></textarea>
                 </div>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Diagnoses</label>
-                <p class="text-muted">
-                  Diagnosis management not implemented in this basic example.
-                </p>
+              <!-- In the follow-up date input section -->
+              <div
+                class="col-md-6"
+                *ngIf="visitForm.get('followUpRequired')?.value"
+              >
+                <label for="followUpDate" class="form-label"
+                  >Follow-up Date</label
+                >
+                <input
+                  type="date"
+                  class="form-control"
+                  id="followUpDate"
+                  formControlName="followUpDate"
+                  [ngClass]="{
+                    'is-invalid':
+                      visitForm.get('followUpRequired')?.value &&
+                      (!visitForm.get('followUpDate')?.value ||
+                        visitForm.get('followUpDate')?.invalid) &&
+                      visitForm.get('followUpDate')?.touched
+                  }"
+                />
+                <div
+                  *ngIf="
+                    visitForm.get('followUpRequired')?.value &&
+                    (!visitForm.get('followUpDate')?.value ||
+                      visitForm.get('followUpDate')?.invalid) &&
+                    visitForm.get('followUpDate')?.touched
+                  "
+                  class="invalid-feedback"
+                >
+                  Follow-up date is required when follow-up is required
+                </div>
+              </div>
+
+              <!-- Diagnoses Section -->
+              <div class="card mb-2">
+                <div
+                  class="card-header d-flex justify-content-between align-items-center"
+                >
+                  <h5 class="mb-0">Diagnoses</h5>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    (click)="addDiagnosis()"
+                  >
+                    Add Diagnosis
+                  </button>
+                </div>
+                <div class="card-body">
+                  <div formArrayName="diagnosis">
+                    <ng-container *ngIf="diagnosisArray">
+                      <div
+                        *ngFor="
+                          let diagnosisCtrl of diagnosisArray.controls;
+                          let i = index
+                        "
+                        [formGroupName]="i"
+                        class="border-bottom pb-3 mb-3"
+                      >
+                        <div class="row">
+                          <div class="col-md-6 mb-2">
+                            <label
+                              [for]="'diagnosisCode-' + i"
+                              class="form-label"
+                              >Diagnosis Code</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              [id]="'diagnosisCode-' + i"
+                              formControlName="diagnosisCode"
+                            />
+                          </div>
+                          <div class="col-md-6 mb-2">
+                            <label
+                              [for]="'diagnosisDate-' + i"
+                              class="form-label"
+                              >Diagnosis Date</label
+                            >
+                            <input
+                              type="date"
+                              class="form-control"
+                              [id]="'diagnosisDate-' + i"
+                              formControlName="diagnosisDate"
+                            />
+                          </div>
+                        </div>
+                        <div class="mb-2">
+                          <label [for]="'description-' + i" class="form-label"
+                            >Description*</label
+                          >
+                          <textarea
+                            class="form-control"
+                            [id]="'description-' + i"
+                            formControlName="description"
+                            rows="2"
+                            [ngClass]="{
+                              'is-invalid':
+                                diagnosisCtrl.get('description')?.invalid &&
+                                diagnosisCtrl.get('description')?.touched
+                            }"
+                          ></textarea>
+                          <div
+                            *ngIf="
+                              diagnosisCtrl.get('description')?.invalid &&
+                              diagnosisCtrl.get('description')?.touched
+                            "
+                            class="invalid-feedback"
+                          >
+                            Description is required
+                          </div>
+                        </div>
+                        <div
+                          class="d-flex justify-content-between align-items-center"
+                        >
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              [id]="'isActive-' + i"
+                              formControlName="isActive"
+                            />
+                            <label
+                              class="form-check-label"
+                              [for]="'isActive-' + i"
+                              >Active Diagnosis</label
+                            >
+                          </div>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-danger"
+                            (click)="removeDiagnosis(i)"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                      <div
+                        *ngIf="diagnosisArray.length === 0"
+                        class="text-center py-3"
+                      >
+                        <p class="text-muted mb-0">
+                          No diagnosis added. Click "Add Diagnosis" to add one.
+                        </p>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Medications Section -->
+              <div class="card mb-3">
+                <div
+                  class="card-header d-flex justify-content-between align-items-center"
+                >
+                  <h5 class="mb-0">Medications</h5>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    (click)="addMedication()"
+                  >
+                    Add Medication
+                  </button>
+                </div>
+                <div class="card-body">
+                  <div formArrayName="medication">
+                    <ng-container *ngIf="medicationsArray">
+                      <div
+                        *ngFor="
+                          let medCtrl of medicationsArray.controls;
+                          let i = index
+                        "
+                        [formGroupName]="i"
+                        class="border-bottom pb-3 mb-3"
+                      >
+                        <div class="row">
+                          <div class="col-md-6 mb-2">
+                            <label [for]="'medName-' + i" class="form-label"
+                              >Medication Name*</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              [id]="'medName-' + i"
+                              formControlName="name"
+                              [ngClass]="{
+                                'is-invalid':
+                                  medCtrl.get('name')?.invalid &&
+                                  medCtrl.get('name')?.touched
+                              }"
+                            />
+                            <div
+                              *ngIf="
+                                medCtrl.get('name')?.invalid &&
+                                medCtrl.get('name')?.touched
+                              "
+                              class="invalid-feedback"
+                            >
+                              Medication name is required
+                            </div>
+                          </div>
+                          <div class="col-md-6 mb-2">
+                            <label
+                              [for]="'prescribingProvider-' + i"
+                              class="form-label"
+                              >Prescribing Provider</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              [id]="'prescribingProvider-' + i"
+                              formControlName="prescribingProvider"
+                            />
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-4 mb-2">
+                            <label [for]="'dosage-' + i" class="form-label"
+                              >Dosage*</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              [id]="'dosage-' + i"
+                              formControlName="dosage"
+                              [ngClass]="{
+                                'is-invalid':
+                                  medCtrl.get('dosage')?.invalid &&
+                                  medCtrl.get('dosage')?.touched
+                              }"
+                            />
+                            <div
+                              *ngIf="
+                                medCtrl.get('dosage')?.invalid &&
+                                medCtrl.get('dosage')?.touched
+                              "
+                              class="invalid-feedback"
+                            >
+                              Dosage is required
+                            </div>
+                          </div>
+                          <div class="col-md-4 mb-2">
+                            <label [for]="'frequency-' + i" class="form-label"
+                              >Frequency*</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              [id]="'frequency-' + i"
+                              formControlName="frequency"
+                              [ngClass]="{
+                                'is-invalid':
+                                  medCtrl.get('frequency')?.invalid &&
+                                  medCtrl.get('frequency')?.touched
+                              }"
+                            />
+                            <div
+                              *ngIf="
+                                medCtrl.get('frequency')?.invalid &&
+                                medCtrl.get('frequency')?.touched
+                              "
+                              class="invalid-feedback"
+                            >
+                              Frequency is required
+                            </div>
+                          </div>
+                          <div class="col-md-4 mb-2">
+                            <label [for]="'purpose-' + i" class="form-label"
+                              >Purpose</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              [id]="'purpose-' + i"
+                              formControlName="purpose"
+                            />
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-6 mb-2">
+                            <label [for]="'startDate-' + i" class="form-label"
+                              >Start Date*</label
+                            >
+                            <input
+                              type="date"
+                              class="form-control"
+                              [id]="'startDate-' + i"
+                              formControlName="startDate"
+                              [ngClass]="{
+                                'is-invalid':
+                                  medCtrl.get('startDate')?.invalid &&
+                                  medCtrl.get('startDate')?.touched
+                              }"
+                            />
+                            <div
+                              *ngIf="
+                                medCtrl.get('startDate')?.invalid &&
+                                medCtrl.get('startDate')?.touched
+                              "
+                              class="invalid-feedback"
+                            >
+                              Start date is required
+                            </div>
+                          </div>
+                          <div class="col-md-6 mb-2">
+                            <label [for]="'endDate-' + i" class="form-label"
+                              >End Date</label
+                            >
+                            <input
+                              type="date"
+                              class="form-control"
+                              [id]="'endDate-' + i"
+                              formControlName="endDate"
+                            />
+                          </div>
+                        </div>
+                        <div class="text-end">
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-danger"
+                            (click)="removeMedication(i)"
+                          >
+                            Remove Medication
+                          </button>
+                        </div>
+                      </div>
+                      <div
+                        *ngIf="medicationsArray.length === 0"
+                        class="text-center py-3"
+                      >
+                        <p class="text-muted mb-0">
+                          No medications added. Click "Add Medication" to add
+                          one.
+                        </p>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
               </div>
 
               <div class="d-flex justify-content-between">
                 <button
                   type="button"
                   class="btn btn-secondary"
-                  (click)="selectedVisit = null"
+                  (click)="cancelEdit()"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  [disabled]="visitForm.invalid || loading"
+                  [disabled]="loading || visitForm.invalid"
                 >
                   {{ isEditMode ? "Update" : "Save" }}
                 </button>

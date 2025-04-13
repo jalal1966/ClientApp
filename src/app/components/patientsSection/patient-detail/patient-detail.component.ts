@@ -252,10 +252,10 @@ export class PatientDetailComponent
         if (this.patient?.patientDetails) {
           this.patient.patientDetails.medicalRecord.allergies =
             this.patient.patientDetails.medicalRecord?.allergies || [];
-          this.patient.patientDetails.medicalConditions =
-            this.patient.patientDetails.medicalConditions || [];
+          //this.patient.patientDetails.medicalConditions =
+          //this.patient.patientDetails.medicalConditions || [];
           this.patient.patientDetails.medicalRecord.recentVisits.flatMap(
-            (visit) => visit.currentMedications || []
+            (visit) => visit.medication || []
           );
           this.patient.patientDetails.medicalRecord.immunizations =
             this.patient.patientDetails.medicalRecord.immunizations || [];
@@ -405,7 +405,7 @@ export class PatientDetailComponent
   get hasCurrentMedications(): boolean {
     const visits =
       this.patient?.patientDetails?.medicalRecord?.recentVisits || [];
-    const meds = visits.flatMap((v) => v.currentMedications || []);
+    const meds = visits.flatMap((v) => v.medication || []);
     return this.hasItems(meds);
   }
 

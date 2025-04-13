@@ -32,11 +32,11 @@ export interface PatientDetail {
   admissionDate: Date;
   profileImageUrl?: string;
   // Medical history specific to the patient
-  familyMedicalHistory: string;
-  socialHistory: string;
+  //familyMedicalHistory: string;
+  //socialHistory: string;
 
   // Related medical information
-  medicalConditions?: MedicalCondition[];
+  //  medicalConditions?: MedicalCondition[];
   medicalRecord: MedicalRecord;
 
   // to do
