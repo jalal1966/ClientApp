@@ -34,7 +34,9 @@ export class PatientAdapterService {
         recentVisits: [
           {
             id: apiResponse.medicalRecord?.visit?.id || 0,
+
             patientId: apiResponse.id,
+            medicalRecordId: apiResponse.medicalRecordId,
             visitDate: apiResponse.lastVisitDate
               ? new Date(apiResponse.lastVisitDate)
               : new Date(),

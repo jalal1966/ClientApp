@@ -164,7 +164,13 @@
 
       <!-- Column 2: Patient Visit -->
       <div class="col-md-6">
-        <app-patient-visit></app-patient-visit>
+        <div *ngIf="!idToPass" class="alert alert-info">
+          Please input a medical record first.
+        </div>
+        <app-patient-visit
+          *ngIf="idToPass"
+          [medicalRecordId]="idToPass"
+        ></app-patient-visit>
       </div>
     </div>
     <!-- Submit Button and Feedback -->

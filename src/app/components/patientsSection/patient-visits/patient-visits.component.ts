@@ -26,6 +26,7 @@ export class PatientVisitComponent
   extends PatientComponentBase
   implements OnInit
 {
+  @Input() medicalRecordId!: number;
   @Input() visits: Visit[] = [];
   selectedVisit: Visit | null = null;
   visitForm!: FormGroup; // Use definite assignment assertion
@@ -35,6 +36,8 @@ export class PatientVisitComponent
   isEditMode = false;
   doctorName: string | undefined;
   visitStatuses = ['scheduled', 'in-progress', 'completed', 'cancelled'];
+
+  appointmentTypeEnum = AppointmentType;
   appointmentTypes = Object.keys(AppointmentType)
     .filter((key) => isNaN(Number(key)))
     .map((key) => ({
@@ -77,10 +80,16 @@ export class PatientVisitComponent
     });
   }
 
+  getVisitTypeLabel(type: string | number | undefined): string {
+    const typeId = Number(type);
+    return this.appointmentTypeEnum[typeId] ?? 'Unknown';
+  }
+
   createVisitForm(): FormGroup {
     const form = this.fb.group({
       id: [0],
       patientId: [this.patientId],
+      medicalRecordId: [this.medicalRecordId],
       visitDate: [this.getCurrentDateTimeLocal(), Validators.required],
       providerName: [this.doctorName],
       providerId: [this.currentUser.userID],
@@ -158,6 +167,7 @@ export class PatientVisitComponent
     this.visitForm.patchValue({
       id: visit.id,
       patientId: visit.patientId,
+      medicalRecordId: visit.medicalRecordId,
       visitDate: this.formatDateForInput(visit.visitDate),
       providerName: visit.providerName,
       providerId: visit.providerId,
@@ -216,6 +226,9 @@ export class PatientVisitComponent
     this.loading = true;
     const visitData = this.visitForm.value;
 
+    // 🔥 Convert from string to number
+    visitData.visitType = Number(visitData.visitType);
+
     // Ensure dates are properly formatted
     if (visitData.visitDate) {
       visitData.visitDate = new Date(visitData.visitDate).toISOString();
@@ -262,7 +275,40 @@ export class PatientVisitComponent
         },
       });
     } else {
-      this.patientVisitService.createVisit(visitData).subscribe({
+      [
+        'followUpDate',
+        'followUpReason',
+        'followUpInstructions',
+        'followUpProviderName',
+        'followUpProviderId',
+        'followUpType',
+      ].forEach((key) => {
+        if (!visitData[key]) {
+          delete visitData[key];
+        }
+      });
+      if (!visitData.medication) visitData.medication = [];
+
+      visitData.medication.forEach((med: any) => {
+        if (!med.endDate) {
+          delete med.endDate;
+        }
+        med.isActive ??= true; // Ensure isActive is defined (backend expects it)
+      });
+
+      visitData.diagnosis ??= [];
+      visitData.medication ??= [];
+
+      // 🔥 Convert from string to number
+      visitData.visitType = Number(visitData.visitType);
+      // ✅ Wrap the data as expected by the backend
+      const wrappedPayload = { visit: visitData };
+      console.log(
+        'Wrapped Payload:',
+        JSON.stringify({ visit: visitData }, null, 2)
+      );
+
+      this.patientVisitService.createVisit(wrappedPayload).subscribe({
         next: () => {
           this.loading = false;
           this.loadPatientVisits();

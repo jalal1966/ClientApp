@@ -41,6 +41,7 @@ export class MedicalRecordsComponent
   error: string | null = null;
   recordExists = false;
   patient: Patients | undefined;
+  idToPass: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -55,6 +56,8 @@ export class MedicalRecordsComponent
     // Initialize the form with the fields from the updated MedicalRecord interface
     this.medicalRecordForm = this.fb.group({
       // Physical Information
+      idToPass: [null], // Add this to your form group if missing
+      id: [''],
       height: ['', [Validators.required]],
       weight: ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
       bmi: [''],
@@ -142,6 +145,7 @@ export class MedicalRecordsComponent
       next: (data) => {
         this.recordExists = true;
         console.log('Raw data from API:', data);
+        this.idToPass = data.id ?? null; // <-- Set the ID here
 
         // Prepare flattened arrays manually
         const allDiagnoses: Diagnosis[] = [];
@@ -171,6 +175,8 @@ export class MedicalRecordsComponent
         this.medicalRecordForm.patchValue({
           // Physical Information
           //bmi: data.bmi, // Note: case difference between backend and form
+          id: data.id,
+          idToPass: data.id,
           height: data.height,
           weight: data.weight,
           bmi: data.bmi,
@@ -198,6 +204,7 @@ export class MedicalRecordsComponent
         this.loading = false;
       },
       error: (err) => {
+        this.idToPass = null; // Reset on error
         // Check if it's a 404 (record doesn't exist yet)
         if (err.status === 404 || err.message?.includes('Error Code: 404')) {
           this.recordExists = false;

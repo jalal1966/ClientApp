@@ -31,8 +31,8 @@ export class PatientVisitService {
   }
 
   // Create a new visit
-  createVisit(visit: Visit): Observable<Visit> {
-    return this.http.post<Visit>(`${this.apiUrl}${this.baseUrl}`, visit);
+  createVisit(payload: { visit: Visit }): Observable<Visit> {
+    return this.http.post<Visit>(`${this.apiUrl}${this.baseUrl}`, payload);
   }
 
   // Update an existing visit

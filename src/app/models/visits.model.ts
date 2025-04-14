@@ -1,6 +1,7 @@
 export interface Visit {
   id: number;
   patientId: number;
+  medicalRecordId: number;
   visitDate: Date;
   providerName?: string;
   providerId?: number;
