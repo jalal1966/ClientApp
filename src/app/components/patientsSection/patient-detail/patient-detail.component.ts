@@ -1,4 +1,10 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
   NgIf,
@@ -21,8 +27,14 @@ import { PatientComponentBase } from '../../../shared/base/patient-component-bas
 import { AuthService } from '../../../services/auth/auth.service';
 import { Location } from '@angular/common';
 import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
-import { MedicalRecord } from '../../../models/medicalRecord.model';
+import {
+  Allergy,
+  Immunization,
+  LabResult,
+  MedicalRecord,
+} from '../../../models/medicalRecord.model';
 import { Observable } from 'rxjs';
+import { Diagnosis, Medication } from '../../../models/visits.model';
 
 @Component({
   selector: 'app-patient-detail',
@@ -43,69 +55,47 @@ export class PatientDetailComponent
   implements OnInit
 {
   patient: Patients | undefined;
-  isLoading = true;
+
   // Default tab
+  recordExists = false;
   activeTab = 'overview';
   loading = true;
   filteredPatients: Patients[] = [];
-  error = '';
-  noMedications: TemplateRef<NgIfContext<boolean>> | null = null;
+  /* noImmunizations: TemplateRef<NgIfContext<boolean>> | null = null;
   noAllergies: TemplateRef<NgIfContext<boolean>> | null = null;
   noVisits: TemplateRef<NgIfContext<boolean>> | null = null;
-  noLabResults: TemplateRef<NgIfContext<boolean>> | null = null;
+  noLabResults: TemplateRef<NgIfContext<boolean>> | null = null; */
+  @ViewChild('noMedications', { static: true })
+  noMedications!: TemplateRef<any>;
+  @ViewChild('noAllergies', { static: true }) noAllergies!: TemplateRef<any>;
+  @ViewChild('noVisits', { static: true }) noVisits!: TemplateRef<any>;
+  @ViewChild('noLabResults', { static: true }) noLabResults!: TemplateRef<any>;
 
+  idToPass: number | null = null;
   medicalRecord: any = null;
-  medicalRecordForm?: FormGroup;
+  medicalRecordForm: FormGroup;
   isEditingMedical = false;
+  error: string | null = null;
+  // UI state properties
+  showDiagnosis = false;
+  showMedications = false;
+  expandedVisitId: number | null = null;
+  visit: any;
 
   constructor(
-    private http: HttpClient,
+    private fb: FormBuilder,
     private route: ActivatedRoute,
+    private medicalRecordsService: MedicalRecordsService,
+    private patientService: PatientService,
     authService: AuthService,
     router: Router,
-    private location: Location,
-    private fb: FormBuilder,
-    private patientService: PatientService,
-    private medicalRecordsService: MedicalRecordsService
+    private location: Location
   ) {
     super(authService, router);
-  }
-
-  ngOnInit(): void {
-    this.route.params.subscribe((params) => {
-      const id = params['id'];
-      if (id) {
-        this.patientId = +id; // Convert string to number with + operator
-        this.loadPatient();
-        this.loadMedicalRecord(); // Add this line to load medical record
-        // Check for tab parameter in query params
-        this.route.queryParams.subscribe((queryParams) => {
-          if (
-            queryParams['tab'] &&
-            ['overview', 'medical', 'visits', 'labs'].includes(
-              queryParams['tab']
-            )
-          ) {
-            this.activeTab = queryParams['tab'];
-          }
-        });
-      } else {
-        this.error = 'Invalid patient ID';
-        this.loading = false;
-        this.isLoading = false;
-      }
-    });
-    this.initMedicalRecordForm();
-  }
-
-  hasItems(arr: any[] | null | undefined): boolean {
-    return !!arr && Array.isArray(arr) && arr.length > 0;
-  }
-
-  // Initialize the form in the constructor or in ngOnInit
-  initMedicalRecordForm() {
     this.medicalRecordForm = this.fb.group({
       // Physical Information
+      idToPass: [null], // Add this to your form group if missing
+      id: [''],
       height: ['', [Validators.required]],
       weight: ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
       bmi: [''],
@@ -123,35 +113,176 @@ export class PatientDetailComponent
       diagnosis: [''],
       treatment: [''],
       medications: [''],
+      immunizations: [''],
+      labResults: [''],
+
       notes: [''],
       isFollowUpRequired: [false],
       followUpDate: [null],
     });
   }
-  // Load medical record for the patient
-  loadMedicalRecord() {
-    this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
+
+  get formControls() {
+    return this.medicalRecordForm.controls;
+  }
+
+  ngOnInit(): void {
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (id) {
+        this.patientId = +id;
+        this.loadPatient(this.patientId); // Add this
+        this.loadMedicalRecord();
+      } else {
+        this.error = 'Patient ID is required';
+        this.loading = false;
+      }
+    });
+  }
+
+  loadPatient(value: number): void {
+    this.loading = true;
+    this.patientService.getPatient(value).subscribe({
       next: (data) => {
-        this.medicalRecord = data;
-        this.patchMedicalRecordForm();
+        this.patient = data;
+        console.log('this.patients', this.patient);
+        this.loading = false;
       },
       error: (err) => {
-        if (err.status === 404) {
-          // No medical record exists for this patient yet
+        this.error = 'Failed to load patients. Please try again.';
+        this.loading = false;
+      },
+    });
+  }
+
+  hasItems(arr: any[] | null | undefined): boolean {
+    return !!arr && Array.isArray(arr) && arr.length > 0;
+  }
+
+  getDetails(diagnosis: any[]): string {
+    if (!diagnosis || diagnosis.length === 0) return 'None';
+    return diagnosis
+      .map(
+        (d) =>
+          `Code: ${d.diagnosisCode}, Desc: ${d.description}, Date: ${new Date(
+            d.diagnosisDate
+          ).toLocaleDateString()}, Active: ${d.isActive}`
+      )
+      .join('\n');
+  }
+
+  // Load medical record for the patient
+  loadMedicalRecord() {
+    this.loading = true;
+    this.error = null;
+    this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
+      next: (data) => {
+        this.recordExists = true;
+        console.log('Raw data from API:', data);
+        console.log(this.medicalRecord?.labResults);
+        this.idToPass = data.id ?? null; // <-- Set the ID here
+
+        // Prepare flattened arrays manually
+        const allDiagnoses: Diagnosis[] = [];
+        const allTreatments: string[] = [];
+        const allMedications: Medication[] = [];
+        const allImmunizations: Immunization[] = [];
+        const allLabResults: LabResult[] = [];
+        const allAllergies: Allergy[] = [];
+        const allNotes: string[] = [];
+
+        data.recentVisits?.forEach((visit) => {
+          if (visit.diagnosis?.length) {
+            allDiagnoses.push(...visit.diagnosis);
+          }
+
+          if (visit.planTreatment) {
+            allTreatments.push(visit.planTreatment);
+          }
+
+          if (visit.medication?.length) {
+            allMedications.push(...visit.medication);
+          }
+
+          if (visit.notes) {
+            allNotes.push(visit.notes);
+          }
+        });
+
+        data.allergies?.forEach((allergie) => {
+          if (allergie) {
+            allAllergies.push(...[allergie]);
+          }
+        });
+
+        data.immunizations?.forEach((imm) => {
+          if (imm) {
+            allImmunizations.push(...[imm]);
+          }
+        });
+
+        data.labResults?.forEach((lap) => {
+          if (lap) {
+            allLabResults.push(...[lap]);
+          }
+        });
+
+        this.medicalRecord = data;
+        this.patchMedicalRecordForm();
+        this.loading = false;
+      },
+      error: (err) => {
+        this.idToPass = null; // Reset on error
+        if (err.status === 404 || err.message?.includes('Error Code: 404')) {
           this.medicalRecord = null;
+          this.recordExists = false;
+          this.loading = false;
         } else {
-          console.error('Error loading medical record:', err);
-          this.error = 'Failed to load medical record. Please try again.';
+          this.error =
+            err.message || 'An error occurred while loading medical record';
+          this.loading = false;
         }
       },
     });
   }
 
+  patchMedicalRecordForm() {
+    if (this.medicalRecord) {
+      this.medicalRecordForm?.patchValue({
+        // Physical Information
+        id: this.medicalRecord.id,
+        idToPass: this.medicalRecord.id,
+        height: this.medicalRecord.height,
+        weight: this.medicalRecord.weight,
+        bmi: this.medicalRecord.bmi,
+        bloodType: this.medicalRecord.bloodType,
+        userID: this.currentUser.userID,
+        patientId: this.patientId,
+        // Medical History
+        chronicConditions: this.medicalRecord.chronicConditions,
+        surgicalHistory: this.medicalRecord.surgicalHistory,
+        familyMedicalHistory: this.medicalRecord.familyMedicalHistory,
+        socialHistory: this.medicalRecord.socialHistory,
+
+        // Current Visit
+        recordDate: this.medicalRecord.recordDate,
+        diagnosis: this.medicalRecord.diagnosis,
+        treatment: this.medicalRecord.treatment,
+        medications: this.medicalRecord.medications,
+        notes: this.medicalRecord.notes,
+        isFollowUpRequired: this.medicalRecord.isFollowUpRequired,
+        followUpDate: this.medicalRecord.followUpDate
+          ? new Date(this.medicalRecord.followUpDate)
+              .toISOString()
+              .split('T')[0]
+          : null,
+      });
+    }
+  }
   // Toggle edit mode for medical record
   toggleEditMedical() {
     this.isEditingMedical = !this.isEditingMedical;
     if (this.isEditingMedical && !this.medicalRecordForm) {
-      this.initMedicalRecordForm();
       this.patchMedicalRecordForm();
     }
   }
@@ -205,81 +336,6 @@ export class PatientDetailComponent
   }
 
   // Update form with medical record data
-  patchMedicalRecordForm() {
-    if (this.medicalRecord) {
-      this.medicalRecordForm?.patchValue({
-        // Physical Information
-        height: this.medicalRecord.height,
-        weight: this.medicalRecord.weight,
-        bmi: this.medicalRecord.bmi,
-        bloodType: this.medicalRecord.bloodType,
-        userID: this.currentUser.userID,
-        patientId: this.patientId,
-        // Medical History
-        chronicConditions: this.medicalRecord.chronicConditions,
-        surgicalHistory: this.medicalRecord.surgicalHistory,
-        familyMedicalHistory: this.medicalRecord.familyMedicalHistory,
-        socialHistory: this.medicalRecord.socialHistory,
-
-        // Current Visit
-        recordDate: this.medicalRecord.recordDate,
-        diagnosis: this.medicalRecord.diagnosis,
-        treatment: this.medicalRecord.treatment,
-        medications: this.medicalRecord.medications,
-        notes: this.medicalRecord.notes,
-        isFollowUpRequired: this.medicalRecord.isFollowUpRequired,
-        followUpDate: this.medicalRecord.followUpDate
-          ? new Date(this.medicalRecord.followUpDate)
-              .toISOString()
-              .split('T')[0]
-          : null,
-      });
-    }
-  }
-
-  loadPatient(): void {
-    this.loading = true;
-    this.isLoading = true;
-    this.patientService.getPatient(this.patientId).subscribe({
-      next: (data) => {
-        this.patient = data;
-        // Ensure patientDetails exists to prevent undefined errors
-        if (this.patient && !this.patient.patientDetails) {
-          this.patient.patientDetails = this.createEmptyPatientDetails();
-        }
-
-        // Initialize arrays to prevent length errors
-        if (this.patient?.patientDetails) {
-          this.patient.patientDetails.medicalRecord.allergies =
-            this.patient.patientDetails.medicalRecord?.allergies || [];
-          //this.patient.patientDetails.medicalConditions =
-          //this.patient.patientDetails.medicalConditions || [];
-          this.patient.patientDetails.medicalRecord.recentVisits.flatMap(
-            (visit) => visit.medication || []
-          );
-          this.patient.patientDetails.medicalRecord.immunizations =
-            this.patient.patientDetails.medicalRecord.immunizations || [];
-          this.patient.patientDetails.medicalRecord.recentVisits =
-            this.patient.patientDetails.medicalRecord.recentVisits || [];
-          this.patient.patientDetails.medicalRecord.recentLabResults =
-            this.patient.patientDetails.medicalRecord.recentLabResults || [];
-        }
-        console.log(
-          'blod',
-          this.patient.patientDetails.medicalRecord.immunizations
-        );
-
-        this.loading = false;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading patient:', err);
-        this.error = 'Failed to load patient. Please try again.';
-        this.loading = false;
-        this.isLoading = false;
-      },
-    });
-  }
 
   // Create empty patient details to prevent undefined errors
   createEmptyPatientDetails() {
@@ -336,7 +392,7 @@ export class PatientDetailComponent
 
   viewVisitDetails(visitId: number): void {
     if (this.patient) {
-      this.router.navigate(['/patients', this.patientId, 'visits', visitId]);
+      this.router.navigate(['/visits/', this.patientId]);
     }
   }
 
@@ -402,7 +458,7 @@ export class PatientDetailComponent
     return this.hasItems(results);
   }
 
-  get hasCurrentMedications(): boolean {
+  get hasCurrentImmunization(): boolean {
     const visits =
       this.patient?.patientDetails?.medicalRecord?.recentVisits || [];
     const meds = visits.flatMap((v) => v.medication || []);

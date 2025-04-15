@@ -32,6 +32,7 @@ export interface MedicalRecord {
   allergies: Allergy[];
   recentLabResults: LabResult[];
   immunizations?: Immunization[];
+  labResults?: LabResult[];
 }
 
 export interface Allergy {
@@ -45,24 +46,24 @@ export interface Allergy {
 }
 
 export interface LabResult {
-  orderedBy: any;
-  tests: any;
-  date: string | number | Date;
-  id?: number;
+  id: number;
+  patientId: number;
   testDate?: Date;
   testName?: string;
   result?: string;
   referenceRange?: string;
   orderingProvider?: string;
   notes?: string;
-  patientId?: number;
+  medicalRecordId: number;
 }
 export interface Immunization {
   id: number;
   patientId: number;
+  medicalRecordId: number;
   vaccineName: string;
-  administrationDate: Date;
-  lotNumber: string;
-  administeringProvider: string;
-  manufacturer: string;
+  administrationDate: string;
+  lotNumber?: string;
+  administeringProvider?: string;
+  nextDoseDate: string;
+  manufacturer?: string;
 }

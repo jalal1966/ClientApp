@@ -40,7 +40,7 @@
                   'bg-info': !visit.followUpRequired
                 }"
               >
-                {{ visit.visitType || "Unknown" }}
+                {{ getVisitTypeLabel(visit.visitType) }}
               </span>
             </div>
             <p class="mb-1">{{ visit.reason }}</p>

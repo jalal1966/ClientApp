@@ -1,0 +1,75 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4>Immunization Records</h4>
+      <button class="btn btn-primary" (click)="openModal(modal)">Add Immunization</button>
+    </div>
+  
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Vaccine</th>
+          <th>Administered</th>
+          <th>Next Dose</th>
+          <th>Provider</th>
+          <th>Lot #</th>
+          <th>Manufacturer</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of immunizations">
+          <td>{{ i.vaccineName }}</td>
+          <td>{{ i.administrationDate | date }}</td>
+          <td>{{ i.nextDoseDate | date }}</td>
+          <td>{{ i.administeringProvider }}</td>
+          <td>{{ i.lotNumber }}</td>
+          <td>{{ i.manufacturer }}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-info me-2" (click)="openModal(modal, i)">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteImmunization(i.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <!-- Modal -->
+    <ng-template #modal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title">{{ selectedImmunization ? 'Edit' : 'Add' }} Immunization</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-2">
+            <label class="form-label">Vaccine Name</label>
+            <input class="form-control" [(ngModel)]="newImmunization.vaccineName" name="vaccineName" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Administration Date</label>
+            <input type="date" class="form-control" [(ngModel)]="newImmunization.administrationDate" name="administrationDate" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Next Dose Date</label>
+            <input type="date" class="form-control" [(ngModel)]="newImmunization.nextDoseDate" name="nextDoseDate" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Lot Number</label>
+            <input class="form-control" [(ngModel)]="newImmunization.lotNumber" name="lotNumber" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Administering Provider</label>
+            <input class="form-control" [(ngModel)]="newImmunization.administeringProvider" name="administeringProvider" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Manufacturer</label>
+            <input class="form-control" [(ngModel)]="newImmunization.manufacturer" name="manufacturer" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+        <button class="btn btn-success" (click)="saveImmunization(modal)">Save</button>
+      </div>
+    </ng-template>
+  </div>
+  

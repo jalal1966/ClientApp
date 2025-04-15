@@ -4,8 +4,8 @@
 </button>
 <div class="modal-header bg-primary text-white">
   <h4 class="modal-title">
-    <span *ngIf="isLoading">Loading Patient Data...</span>
-    <span *ngIf="!isLoading && patient">
+    <span *ngIf="loading && !patient">Loading Patient Data...</span>
+    <span *ngIf="patient">
       {{ patient.firstName }} {{ patient.lastName }} (ID: {{ patient.id }})
     </span>
   </h4>
@@ -19,7 +19,7 @@
 
 <div class="modal-body">
   <!-- Loading Spinner -->
-  <div *ngIf="isLoading" class="text-center py-5">
+  <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
@@ -31,7 +31,7 @@
   </div>
 
   <!-- Patient Data -->
-  <div *ngIf="!isLoading && patient">
+  <div *ngIf="!loading && patient">
     <!-- Navigation Tabs -->
     <ul class="nav nav-tabs mb-3">
       <li class="nav-item">
@@ -214,7 +214,13 @@
                     <tr>
                       <th>Allergies</th>
                       <td>
-                        <span>
+                        <span
+                          *ngIf="
+                            patient?.patientDetails?.medicalRecord?.allergies
+                              ?.length;
+                            else noAllergies
+                          "
+                        >
                           <span
                             *ngFor="
                               let allergy of patient?.patientDetails
@@ -239,18 +245,21 @@
                       <th>Surgical History</th>
                       <td>{{ medicalRecord.surgicalHistory }}</td>
                     </tr>
+
+                    <tr
+                      *ngIf="medicalRecord?.familyMedicalHistory"
+                      class="mt-3"
+                    >
+                      <th>Family Medical History</th>
+                      <td>{{ medicalRecord.familyMedicalHistory }}</td>
+                    </tr>
+
+                    <tr *ngIf="medicalRecord?.socialHistory" class="mt-3">
+                      <th>Social History</th>
+                      <td>{{ medicalRecord.socialHistory }}</td>
+                    </tr>
                   </tbody>
                 </table>
-
-                <div *ngIf="medicalRecord?.familyMedicalHistory" class="mt-3">
-                  <h6>Family Medical History</h6>
-                  <p>{{ medicalRecord.familyMedicalHistory }}</p>
-                </div>
-
-                <div *ngIf="medicalRecord?.socialHistory" class="mt-3">
-                  <h6>Social History</h6>
-                  <p>{{ medicalRecord.socialHistory }}</p>
-                </div>
               </div>
             </div>
           </div>
@@ -506,7 +515,7 @@
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  [disabled]="medicalRecordForm?.invalid"
+                  [disabled]="medicalRecordForm.invalid"
                 >
                   Save Medical Record
                 </button>
@@ -521,7 +530,10 @@
           <h5 class="mb-0">Immunization History</h5>
         </div>
         <div class="card-body">
-          <table class="table table-sm">
+          <table
+            class="table table-sm"
+            *ngIf="medicalRecord?.immunizations?.length"
+          >
             <thead>
               <tr>
                 <th>Vaccine</th>
@@ -532,12 +544,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr
-                *ngFor="
-                  let vaccine of patient.patientDetails.medicalRecord
-                    ?.immunizations
-                "
-              >
+              <tr *ngFor="let vaccine of medicalRecord?.immunizations || []">
                 <td>{{ vaccine.vaccineName }}</td>
                 <td>{{ vaccine.administrationDate | date }}</td>
                 <td>{{ vaccine.administeringProvider }}</td>
@@ -546,8 +553,9 @@
               </tr>
             </tbody>
           </table>
+          <ng-template #noImmunizations></ng-template>
           <p
-            *ngIf="hasCurrentMedications; else noMedications"
+            *ngIf="hasCurrentImmunization; else noImmunizations"
             class="text-muted"
           >
             No immunization records available
@@ -557,7 +565,11 @@
     </div>
 
     <!-- Recent Visits Tab -->
+    <!-- Recent Visits Tab -->
     <div *ngIf="activeTab === 'visits'">
+      <!-- Debugging output (optional) 
+      <pre>{{ medicalRecord?.visits | json }}</pre>-->
+
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Recent Medical Visits</h5>
         <button class="btn btn-sm btn-primary" (click)="scheduleNewVisit()">
@@ -565,81 +577,176 @@
         </button>
       </div>
 
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Provider</th>
-              <th>Diagnosis</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              *ngFor="
-                let visit of patient.patientDetails?.medicalRecord?.recentVisits
-              "
-            >
-              <td>{{ visit.visitDate | date }}</td>
-              <td>{{ visit.visitType }}</td>
-              <td>{{ visit.providerId }}</td>
-              <td>{{ visit.diagnosis }}</td>
-              <td>
-                <div class="btn-group btn-group-sm">
-                  <button
-                    class="btn btn-outline-info"
-                    (click)="viewVisitDetails(visit.id!)"
-                    title="View details"
-                  >
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button
-                    class="btn btn-outline-secondary"
-                    (click)="printVisitSummary(visit.id!)"
-                    title="Print summary"
-                  >
-                    <i class="bi bi-printer"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <ng-container *ngIf="medicalRecord?.visits?.length > 0; else noVisits">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Provider</th>
+                <th>Diagnosis</th>
+                <th>Medication</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let visit of medicalRecord.visits">
+                <td>{{ visit.visitDate | date : "mediumDate" }}</td>
+                <td>{{ visit.visitType }}</td>
+                <td>{{ visit.providerName || "N/A" }}</td>
+                <td>
+                  <div>
+                    <ng-container
+                      *ngIf="visit.diagnosis?.length > 0; else noDiagnosis"
+                    >
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        (click)="visit.showDiagnosis = !visit.showDiagnosis"
+                      >
+                        {{ visit.diagnosis.length }} diagnosis{{
+                          visit.diagnosis.length > 1 ? "es" : ""
+                        }}
+                        <i
+                          class="bi"
+                          [ngClass]="
+                            visit.showDiagnosis
+                              ? 'bi-chevron-up'
+                              : 'bi-chevron-down'
+                          "
+                        ></i>
+                      </button>
 
-      <div
-        *ngIf="
-          hasItems(patient.patientDetails?.medicalRecord?.recentVisits);
-          else noVisits
-        "
-        class="alert alert-info"
-      >
-        <i class="bi bi-info-circle me-2"></i> No recent visits recorded for
-        this patient.
-      </div>
+                      <div
+                        *ngIf="visit.showDiagnosis"
+                        class="mt-2 p-2 border rounded bg-light"
+                      >
+                        <ul class="list-unstyled mb-0">
+                          <li *ngFor="let diag of visit.diagnosis" class="mb-1">
+                            <strong>Code:</strong> {{ diag.diagnosisCode }}
+                            <br />
+                            <strong>Description:</strong>
+                            {{ diag.description }} <br />
+                            <strong>Date:</strong>
+                            {{ diag.diagnosisDate | date : "shortDate" }} <br />
+                            <strong>Status:</strong>
+                            <span
+                              [ngClass]="
+                                diag.isActive ? 'text-success' : 'text-danger'
+                              "
+                            >
+                              {{ diag.isActive ? "Active" : "Inactive" }}
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    </ng-container>
+                    <ng-template #noDiagnosis>None</ng-template>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    <ng-container
+                      *ngIf="visit.medication?.length > 0; else noMedications"
+                    >
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        (click)="visit.showMedication = !visit.showMedication"
+                      >
+                        {{ visit.medication.length }} medication{{
+                          visit.medication.length > 1 ? "s" : ""
+                        }}
+                        <i
+                          class="bi"
+                          [ngClass]="
+                            visit.showMedication
+                              ? 'bi-chevron-up'
+                              : 'bi-chevron-down'
+                          "
+                        ></i>
+                      </button>
+
+                      <div
+                        *ngIf="visit.showMedication"
+                        class="mt-2 p-2 border rounded bg-light"
+                      >
+                        <ul class="list-unstyled mb-0">
+                          <li *ngFor="let med of visit.medication" class="mb-1">
+                            <strong>Name:</strong> {{ med.name }} <br />
+                            <strong>Dosage:</strong> {{ med.dosage }} <br />
+                            <strong>Frequency:</strong> {{ med.frequency }}
+                            <br />
+                            <strong>Start Date:</strong>
+                            {{ med.startDate | date : "shortDate" }} <br />
+                            <strong>End Date:</strong>
+                            {{
+                              med.endDate
+                                ? (med.endDate | date : "shortDate")
+                                : "Ongoing"
+                            }}
+                            <br />
+                            <strong>Status:</strong>
+                            <span
+                              [ngClass]="
+                                med.isActive ? 'text-success' : 'text-danger'
+                              "
+                            >
+                              {{ med.isActive ? "Active" : "Discontinued" }}
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    </ng-container>
+                    <ng-template #noMedications>None</ng-template>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <button
+                      class="btn btn-outline-info"
+                      (click)="viewVisitDetails(visit.id!)"
+                      title="View details"
+                    >
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary"
+                      (click)="printVisitSummary(visit.id!)"
+                      title="Print summary"
+                    >
+                      <i class="bi bi-printer"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <ng-template #noVisits>
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          No recent visits recorded for this patient.
+        </div>
+      </ng-template>
     </div>
 
     <!-- Lab Results Tab -->
     <div *ngIf="activeTab === 'labs'">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Laboratory Results</h5>
+        <!--<pre>{{ medicalRecord?.labResults | json }}</pre>-->
         <button class="btn btn-sm btn-primary" (click)="orderNewLab()">
           <i class="bi bi-file-earmark-plus me-1"></i> Order New Lab
         </button>
       </div>
-
-      <div
-        class="accordion"
-        id="labResultsAccordion"
-        *ngIf="hasRecentLabResults; else noLabResults"
-      >
+      <div class="accordion" id="labResultsAccordion">
         <div
           class="accordion-item"
           *ngFor="
-            let labResult of patient.patientDetails?.medicalRecord
-              ?.recentLabResults || [];
+            let labResult of medicalRecord?.labResults || [];
             let i = index
           "
         >
@@ -671,6 +778,7 @@
                     <th>Result</th>
                     <th>Reference Range</th>
                     <th>Status</th>
+                    <th>Notes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -678,6 +786,7 @@
                     <td>{{ labResult.testName }}</td>
                     <td>{{ labResult.result }}</td>
                     <td>{{ labResult.referenceRange }}</td>
+                    <td>{{ labResult.notes }}</td>
                     <td>
                       <span
                         [ngClass]="{
@@ -719,11 +828,12 @@
         </div>
       </div>
 
-      <div *ngIf="hasRecentLabResults; else noLabResults">
-        class="alert alert-info" >
-        <i class="bi bi-info-circle me-2"></i> No lab results available for this
-        patient.
-      </div>
+      <ng-template #noLabResults>
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i> No lab results available for
+          this patient.
+        </div>
+      </ng-template>
     </div>
   </div>
 </div>

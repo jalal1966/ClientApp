@@ -14,7 +14,9 @@ export interface Visit {
   notes?: string;
   followUpRequired?: boolean;
   followUpDate?: Date;
-
+  // UI state properties
+  showDiagnosis?: boolean;
+  showMedications?: boolean;
   // status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
 }
 
@@ -36,20 +38,4 @@ export interface Medication {
   endDate?: Date;
   prescribingProvider: string;
   purpose: string;
-}
-
-export interface LabResult {
-  id: number;
-  patientId: number;
-  orderedBy: number;
-  orderedByName: string;
-  orderedDate: Date;
-  testType: string;
-  completedDate?: Date;
-  results?: string;
-  attachmentUrl?: string;
-  status: 'ordered' | 'in-progress' | 'completed' | 'cancelled';
-  normalRange?: string;
-  abnormal?: boolean;
-  notes?: string;
 }

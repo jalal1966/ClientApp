@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { MedicalRecord } from '../../../models/medicalRecord.model';
+import { Allergy, MedicalRecord } from '../../../models/medicalRecord.model';
 import {
   FormBuilder,
   FormGroup,
@@ -16,6 +16,8 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { User } from '../../../models/user';
 import { Location } from '@angular/common';
 import { Diagnosis, Medication, Visit } from '../../../models/visits.model';
+import { Immunization } from '../../../models/medicalRecord.model';
+import { LabResult } from '../../../models/medicalRecord.model';
 import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
 
 @Component({
@@ -34,6 +36,7 @@ export class MedicalRecordsComponent
   extends PatientComponentBase
   implements OnInit
 {
+  medicalRecord: any = null;
   medicalRecordForm: FormGroup;
   loading = true;
   saving = false;
@@ -54,6 +57,7 @@ export class MedicalRecordsComponent
   ) {
     super(authService, router);
     // Initialize the form with the fields from the updated MedicalRecord interface
+
     this.medicalRecordForm = this.fb.group({
       // Physical Information
       idToPass: [null], // Add this to your form group if missing
@@ -75,6 +79,9 @@ export class MedicalRecordsComponent
       diagnosis: [''],
       treatment: [''],
       medications: [''],
+      immunizations: [''],
+      labResults: [''],
+
       notes: [''],
       isFollowUpRequired: [false],
       followUpDate: [null],
@@ -151,6 +158,9 @@ export class MedicalRecordsComponent
         const allDiagnoses: Diagnosis[] = [];
         const allTreatments: string[] = [];
         const allMedications: Medication[] = [];
+        const allImmunizations: Immunization[] = [];
+        const allLabResults: LabResult[] = [];
+        const allAllergies: Allergy[] = [];
         const allNotes: string[] = [];
 
         data.recentVisits?.forEach((visit) => {
@@ -171,42 +181,34 @@ export class MedicalRecordsComponent
           }
         });
 
-        // Map the backend model to the form model
-        this.medicalRecordForm.patchValue({
-          // Physical Information
-          //bmi: data.bmi, // Note: case difference between backend and form
-          id: data.id,
-          idToPass: data.id,
-          height: data.height,
-          weight: data.weight,
-          bmi: data.bmi,
-          bloodType: data.bloodType,
-
-          // Medical History
-          chronicConditions: data.chronicConditions,
-          surgicalHistory: data.surgicalHistory,
-          familyMedicalHistory: data.familyMedicalHistory,
-          socialHistory: data.socialHistory,
-
-          // Current Visit info from flattened visits data
-          recordDate: data.recordDate ? new Date(data.recordDate) : new Date(),
-          diagnosis: allDiagnoses.join('\n\n'),
-          treatment: allTreatments.join('\n\n'),
-          medications: allMedications.join('\n\n'),
-          notes: allNotes.join('\n\n'),
-          isFollowUpRequired: data.isFollowUpRequired || false,
-          followUpDate: data.followUpDate
-            ? new Date(data.followUpDate).toISOString().split('T')[0]
-            : null,
+        data.allergies?.forEach((allergie) => {
+          if (allergie) {
+            allAllergies.push(...[allergie]);
+          }
         });
 
-        console.log('Form values after patch:', this.medicalRecordForm.value);
+        data.immunizations?.forEach((imm) => {
+          if (imm) {
+            allImmunizations.push(...[imm]);
+          }
+        });
+
+        data.labResults?.forEach((lap) => {
+          if (lap) {
+            allLabResults.push(...[lap]);
+          }
+        });
+
+        this.medicalRecord = data;
+        this.patchMedicalRecordForm();
+        // console.log('Form values after patch:', this.medicalRecord.value);
         this.loading = false;
       },
       error: (err) => {
         this.idToPass = null; // Reset on error
         // Check if it's a 404 (record doesn't exist yet)
         if (err.status === 404 || err.message?.includes('Error Code: 404')) {
+          this.medicalRecord = null;
           this.recordExists = false;
           this.loading = false;
         } else {
@@ -216,6 +218,40 @@ export class MedicalRecordsComponent
         }
       },
     });
+  }
+
+  patchMedicalRecordForm() {
+    if (this.medicalRecord) {
+      this.medicalRecordForm?.patchValue({
+        // Physical Information
+        id: this.medicalRecord.id,
+        idToPass: this.medicalRecord.id,
+        height: this.medicalRecord.height,
+        weight: this.medicalRecord.weight,
+        bmi: this.medicalRecord.bmi,
+        bloodType: this.medicalRecord.bloodType,
+        userID: this.currentUser.userID,
+        patientId: this.patientId,
+        // Medical History
+        chronicConditions: this.medicalRecord.chronicConditions,
+        surgicalHistory: this.medicalRecord.surgicalHistory,
+        familyMedicalHistory: this.medicalRecord.familyMedicalHistory,
+        socialHistory: this.medicalRecord.socialHistory,
+
+        // Current Visit
+        recordDate: this.medicalRecord.recordDate,
+        diagnosis: this.medicalRecord.diagnosis,
+        treatment: this.medicalRecord.treatment,
+        medications: this.medicalRecord.medications,
+        notes: this.medicalRecord.notes,
+        isFollowUpRequired: this.medicalRecord.isFollowUpRequired,
+        followUpDate: this.medicalRecord.followUpDate
+          ? new Date(this.medicalRecord.followUpDate)
+              .toISOString()
+              .split('T')[0]
+          : null,
+      });
+    }
   }
 
   updateBMI(): void {
