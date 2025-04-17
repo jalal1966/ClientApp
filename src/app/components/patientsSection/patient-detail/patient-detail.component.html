@@ -677,11 +677,11 @@
                             <strong>Frequency:</strong> {{ med.frequency }}
                             <br />
                             <strong>Start Date:</strong>
-                            {{ med.startDate | date : "shortDate" }} <br />
+                            {{ med.startDate | date : "dd/MM/yyy" }} <br />
                             <strong>End Date:</strong>
                             {{
                               med.endDate
-                                ? (med.endDate | date : "shortDate")
+                                ? (med.endDate | date : "dd/MM/yyy")
                                 : "Ongoing"
                             }}
                             <br />

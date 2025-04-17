@@ -185,6 +185,10 @@ export class ClinicDashboardComponent
     this.router.navigate(['/patients/', patientId, 'medical-records']);
   }
 
+  openVisits(patientId: number) {
+    this.router.navigate(['visits/', patientId]);
+  }
+
   loadAppointmentsDoctor(value: number | null): void {
     if (!value) return; // Prevent API call if no doctor is selected
 

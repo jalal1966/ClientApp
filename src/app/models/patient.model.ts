@@ -31,12 +31,7 @@ export interface PatientDetail {
   primaryDiagnosis: string;
   admissionDate: Date;
   profileImageUrl?: string;
-  // Medical history specific to the patient
-  //familyMedicalHistory: string;
-  //socialHistory: string;
 
-  // Related medical information
-  //  medicalConditions?: MedicalCondition[];
   medicalRecord: MedicalRecord;
 
   // to do

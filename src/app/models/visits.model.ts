@@ -11,6 +11,7 @@ export interface Visit {
   diagnosis: Diagnosis[];
   planTreatment?: string;
   medication: Medication[];
+  pressure: Pressure[];
   notes?: string;
   followUpRequired?: boolean;
   followUpDate?: Date;
@@ -20,6 +21,21 @@ export interface Visit {
   // status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
 }
 
+export interface Pressure {
+  id: number;
+  visitId: number;
+  patientId: number;
+
+  // Blood pressure properties
+  systolicPressure: number;
+  diastolicPressure: number;
+  bloodPressureRatio: number;
+  isBloodPressureNormal: boolean;
+  // Audit fields = DateTime.UtcNow;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Diagnosis {
   id: number;
   visitId: number;
@@ -27,10 +43,22 @@ export interface Diagnosis {
   description?: string;
   diagnosisDate: Date;
   isActive: boolean;
+
+  // Treatment related properties
+
+  treatmentPlan: string;
+  followUpNeeded: boolean;
+  followUpDate: Date;
+  treatmentNotes: string;
+
+  // Audit fields = DateTime.UtcNow;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Medication {
   id: number;
+  visitId: number;
   name: string;
   dosage: string;
   frequency: string;
@@ -38,4 +66,16 @@ export interface Medication {
   endDate?: Date;
   prescribingProvider: string;
   purpose: string;
+  isActive: boolean;
+
+  // Prescription related properties
+  diagnosisId: number;
+  refillable: boolean;
+  refillCount: number;
+  instructions: string;
+  prescriptionNotes: string;
+
+  // Audit fields = DateTime.UtcNow;
+  createdAt: Date;
+  updatedAt: Date;
 }

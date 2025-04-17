@@ -49,6 +49,7 @@ export const routes: Routes = [
   { path: 'patients/:id/medications', component: PatientMedicationsComponent },
   { path: 'patients/:id/lab-results', component: PatientLabResultsComponent },
   { path: 'visits/:id', component: PatientVisitComponent },
+  { path: 'visits', component: PatientVisitComponent },
   { path: 'patient-detail/:id', component: PatientDetailComponent },
   { path: 'patient/edit/:id', component: PatientDetailComponent },
   {

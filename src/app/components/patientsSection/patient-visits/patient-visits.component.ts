@@ -14,6 +14,9 @@ import { PatientVisitService } from '../../../services/patient-visits/patient-vi
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { AuthService } from '../../../services/auth/auth.service';
 import { AppointmentType } from '../../../models/enums.model';
+import { PatientService } from '../../../services/patient/patient.service';
+import { Patients } from '../../../models/patient.model';
+import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
 
 @Component({
   selector: 'app-patient-visit',
@@ -26,7 +29,7 @@ export class PatientVisitComponent
   extends PatientComponentBase
   implements OnInit
 {
-  @Input() medicalRecordId!: number;
+  @Input() medicalRecordId?: number;
   @Input() visits: Visit[] = [];
   selectedVisit: Visit | null = null;
   visitForm!: FormGroup; // Use definite assignment assertion
@@ -34,8 +37,11 @@ export class PatientVisitComponent
   viewMode = false;
   loading = false;
   isEditMode = false;
+
+  showNoRecordMessage = false;
   doctorName: string | undefined;
   visitStatuses = ['scheduled', 'in-progress', 'completed', 'cancelled'];
+  patient: Patients | null = null;
 
   appointmentTypeEnum = AppointmentType;
   appointmentTypes = Object.keys(AppointmentType)
@@ -48,6 +54,9 @@ export class PatientVisitComponent
   constructor(
     private patientVisitService: PatientVisitService,
     private route: ActivatedRoute,
+    private patientService: PatientService,
+    private medicalRecordsService: MedicalRecordsService,
+
     authService: AuthService,
     router: Router,
     private fb: FormBuilder
@@ -62,8 +71,61 @@ export class PatientVisitComponent
   ngOnInit(): void {
     this.patientId = Number(this.route.snapshot.paramMap.get('id'));
     if (this.patientId) {
-      this.loadPatientVisits();
+      //this.loadPatientVisits();
+      this.loadPatient(this.patientId);
+      this.checkMedicalRecord();
     }
+  }
+
+  openMedicalRecordForm(): void {
+    // You can either navigate to a medical record creation page
+    this.router.navigate(['/patients/', this.patientId, 'medical-records']);
+
+    // Or you could implement a modal form directly in this component
+    // this.showMedicalRecordForm = true;
+  }
+
+  loadPatient(value: number) {
+    this.loading = true;
+    this.patientService.getPatient(value).subscribe({
+      next: (data) => {
+        this.loading = false;
+        this.patient = data;
+      },
+      error: (error) => {
+        console.error('Error loading patient:', error);
+        this.loading = false;
+      },
+    });
+  }
+
+  // Add a new method to check if the medical record exists
+  checkMedicalRecord(): void {
+    this.loading = true;
+    this.medicalRecordId = 0; // Default to no record
+
+    // Use the MedicalRecordsService to check if record exists
+    this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
+      next: (data) => {
+        this.loading = false;
+        if (data && data.id) {
+          this.medicalRecordId = data.id;
+          this.showNoRecordMessage = false;
+          this.loadPatientVisits(); // Only load visits if record exists
+        } else {
+          this.showNoRecordMessage = true;
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        // Check if it's a 404 (record doesn't exist yet)
+        if (err.status === 404 || err.message?.includes('Error Code: 404')) {
+          this.showNoRecordMessage = true;
+        } else {
+          console.error('Error checking medical record:', err);
+        }
+      },
+    });
   }
 
   loadPatientVisits(): void {

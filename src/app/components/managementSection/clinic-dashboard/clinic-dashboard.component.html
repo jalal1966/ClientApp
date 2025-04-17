@@ -163,6 +163,7 @@
               <th>Gender</th>
               <th>Contact</th>
               <th>Last Visit</th>
+              <th>Doctor</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -175,7 +176,9 @@
               <td>
                 {{ patient.lastVisitDate | date }}
               </td>
-
+              <td>
+                {{ patient.patientDoctorName }}
+              </td>
               <td>
                 <button
                   class="btn btn-sm btn-info me-2"
@@ -194,6 +197,12 @@
                   (click)="openMedicalRecords(patient.id ?? 0)"
                 >
                   Patient Medical Record
+                </button>
+                <button
+                  class="btn btn-sm btn-success me-2"
+                  (click)="openVisits(patient.id ?? 0)"
+                >
+                  +Visit
                 </button>
                 <!--   <button
                   class="btn btn-sm btn-secondary me-2"

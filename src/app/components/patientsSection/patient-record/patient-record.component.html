@@ -12,7 +12,7 @@
       <div class="col-md-8">
         <h1>
           {{ patient.firstName }} {{ patient.lastName }}
-          <small class="text-muted">ID: {{ patient.id }}</small>
+          <small class="text-muted">ID: {{ patientId }}</small>
         </h1>
         <h5 class="text-muted">
           DOB: {{ patient.dateOfBirth | date : "MM/dd/yyyy" }} ({{
@@ -111,7 +111,7 @@
       <!-- Allergies -->
       <div *ngSwitchCase="'allergies'">
         <app-patient-allergies
-          [allergies]="patient.allergies || []"
+          [allergies]="patient.patientDetails.medicalRecord.allergies"
           [patientId]="patientId"
         ></app-patient-allergies>
       </div>
@@ -119,7 +119,7 @@
       <!-- Medications -->
       <div *ngSwitchCase="'medications'">
         <app-patient-allergies
-          [allergies]="patient.allergies || []"
+          [allergies]="patient.patientDetails.medicalRecord.allergies || []"
           [patientId]="patientId"
         ></app-patient-allergies>
       </div>
@@ -127,7 +127,7 @@
       <!-- Visits -->
       <div *ngSwitchCase="'visits'">
         <app-patient-visit
-          [visits]="patient.recentVisits || []"
+          [visits]="patient.patientDetails.medicalRecord.recentVisits || []"
           [patientId]="patientId"
         ></app-patient-visit>
       </div>
@@ -135,7 +135,9 @@
       <!-- Lab Results -->
       <div *ngSwitchCase="'labs'">
         <app-patient-lab-results
-          [labResults]="patient.recentLabResults || []"
+          [labResults]="
+            patient.patientDetails.medicalRecord.recentLabResults || []
+          "
           [patientId]="patientId"
         ></app-patient-lab-results>
       </div>
@@ -153,7 +155,7 @@
             <h6>Chronic Conditions</h6>
             <p>
               {{
-                patient.medicalRecord?.chronicConditions ||
+                patient.patientDetails.medicalRecord.chronicConditions ||
                   "No chronic conditions recorded"
               }}
             </p>
@@ -161,7 +163,7 @@
             <h6>Surgical History</h6>
             <p>
               {{
-                patient.medicalRecord?.surgicalHistory ||
+                patient.patientDetails.medicalRecord.surgicalHistory ||
                   "No surgical history recorded"
               }}
             </p>
@@ -169,13 +171,18 @@
             <h6>Family Medical History</h6>
             <p>
               {{
-                patient.familyMedicalHistory ||
+                patient.patientDetails.medicalRecord.familyMedicalHistory ||
                   "No family medical history recorded"
               }}
             </p>
 
             <h6>Social History</h6>
-            <p>{{ patient.socialHistory || "No social history recorded" }}</p>
+            <p>
+              {{
+                patient.patientDetails.medicalRecord.socialHistory ||
+                  "No social history recorded"
+              }}
+            </p>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PatientInfoComponent } from '../patient-info/patient-info.component';
 import { PatientAllergiesComponent } from '../patient-allergies/patient-allergies.component';
 import { PatientLabResultsComponent } from '../patient-lab-results/patient-lab-results.component';
-import { PatientDetail } from '../../../models/patient.model';
+import { PatientDetail, Patients } from '../../../models/patient.model';
 import { Allergy } from '../../../models/medicalRecord.model';
 import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
@@ -30,7 +30,7 @@ export class PatientRecordComponent
   extends PatientComponentBase
   implements OnInit
 {
-  patient: PatientDetail | null = null;
+  patient: Patients | null = null;
   loading = true;
   today: Date = new Date();
   activeTab: string = 'info';
@@ -48,13 +48,13 @@ export class PatientRecordComponent
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
       this.patientId = +params['id'];
-      this.loadPatientData();
+      this.loadPatientDetailsData();
     });
   }
 
-  loadPatientData(): void {
+  loadPatientDetailsData(): void {
     this.loading = true;
-    this.patientService.getPatientDetails(this.patientId).subscribe({
+    this.patientService.getPatient(this.patientId).subscribe({
       next: (data) => {
         this.patient = data;
         this.loading = false;

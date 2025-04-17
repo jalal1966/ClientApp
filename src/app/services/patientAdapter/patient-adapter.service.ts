@@ -50,6 +50,7 @@ export class PatientAdapterService {
             planTreatment:
               apiResponse.medicalRecord?.visit?.planTreatment || '',
             medication: apiResponse.medicalRecord?.visit?.medication || [],
+            pressure: apiResponse.medicalRecord?.visit?.pressure || [],
             notes: apiResponse.medicalRecord?.visit?.notes || '',
             followUpRequired:
               apiResponse.medicalRecord?.isFollowUpRequired || false,

@@ -15,7 +15,12 @@ import { PatientService } from '../../../services/patient/patient.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { User } from '../../../models/user';
 import { Location } from '@angular/common';
-import { Diagnosis, Medication, Visit } from '../../../models/visits.model';
+import {
+  Diagnosis,
+  Medication,
+  Pressure,
+  Visit,
+} from '../../../models/visits.model';
 import { Immunization } from '../../../models/medicalRecord.model';
 import { LabResult } from '../../../models/medicalRecord.model';
 import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
@@ -161,9 +166,14 @@ export class MedicalRecordsComponent
         const allImmunizations: Immunization[] = [];
         const allLabResults: LabResult[] = [];
         const allAllergies: Allergy[] = [];
+        const allPressers: Pressure[] = [];
         const allNotes: string[] = [];
 
         data.recentVisits?.forEach((visit) => {
+          if (visit.pressure?.length) {
+            allPressers.push(...visit.pressure);
+          }
+
           if (visit.diagnosis?.length) {
             allDiagnoses.push(...visit.diagnosis);
           }
@@ -254,6 +264,7 @@ export class MedicalRecordsComponent
     }
   }
 
+  // BMI stands for Body Mass Index
   updateBMI(): void {
     // Get the raw values
     const heightValue = this.medicalRecordForm.get('height')?.value;
@@ -321,15 +332,48 @@ export class MedicalRecordsComponent
         : undefined,
       diagnosis: [],
       medication: [],
+      pressure: [],
     };
+
+    if (formValues.pressure) {
+      const pressureEntry: Partial<Pressure> = {
+        id: 0, // Or generate a proper ID
+        visitId: newVisit.id, // Assuming newVisit has an id property
+        patientId: this.patientId,
+        // Required blood pressure fields
+        systolicPressure: 0, // Set appropriate default or get from form
+        diastolicPressure: 0, // Set appropriate default or get from form
+        bloodPressureRatio: 0, // Set appropriate default or get from form
+        isBloodPressureNormal: false, // Set appropriate default or get from form
+
+        // Audit fields
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      newVisit.pressure = [pressureEntry as Pressure];
+    }
 
     // If diagnosis is provided, create diagnosis entries
     if (formValues.diagnosis) {
       const diagnosisEntry: Partial<Diagnosis> = {
+        id: 0, // Or generate a proper ID
+        visitId: newVisit.id, // Assuming newVisit has an id property
         diagnosisDate: new Date(),
         description: formValues.diagnosis,
         isActive: true,
+
+        // Required treatment fields
+        treatmentPlan: '', // Set appropriate default or get from form
+        followUpNeeded: false, // Set appropriate default or get from form
+        followUpDate: new Date(), // Set appropriate default or get from form
+        treatmentNotes: '', // Set appropriate default or get from form
+
+        // Audit fields
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
+
       newVisit.diagnosis = [diagnosisEntry as Diagnosis];
     }
 
@@ -342,7 +386,16 @@ export class MedicalRecordsComponent
         startDate: new Date(),
         prescribingProvider: `${this.currentUser.firstName} ${this.currentUser.lastName}`,
         purpose: formValues.diagnosis || '',
+        diagnosisId: formValues.diagnosisId || 0, // make sure to provide this in the form
+        refillable: false, // or true, depending on form input
+        refillCount: 0, // default value or from form input
+        instructions: '',
+        prescriptionNotes: '',
+        isActive: true,
+        createdAt: this.getUtcNow(),
+        updatedAt: this.getUtcNow(),
       };
+
       newVisit.medication = [medicationEntry as Medication];
     }
 
@@ -410,5 +463,8 @@ export class MedicalRecordsComponent
   }
   backClicked() {
     this.location.back();
+  }
+  getUtcNow(): Date {
+    return new Date(new Date().toISOString());
   }
 }
