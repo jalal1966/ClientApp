@@ -28,6 +28,7 @@ export class PatientAllergiesComponent
   isEditing = false;
   currentAllergyId?: number;
   @Input() allergies: Allergy[] = [];
+  medicalRecordId: number | undefined;
 
   constructor(
     private http: HttpClient,
@@ -37,8 +38,9 @@ export class PatientAllergiesComponent
     private fb: FormBuilder
   ) {
     super(authService, router);
-    this.patientId = 0;
     this.allergyForm = this.fb.group({
+      patientId: [this.patientId],
+      medicalRecordId: [this.medicalRecordId],
       allergyType: ['', Validators.required],
       name: ['', Validators.required],
       reaction: ['', Validators.required],
@@ -52,10 +54,10 @@ export class PatientAllergiesComponent
       `PatientAllergiesComponent initialized with patientId: ${this.patientId}`
     );
     console.log(`Allergies count: ${this.allergies.length}`);
-    this.route.parent?.params.subscribe((params) => {
+    /*  this.route.parent?.params.subscribe((params) => {
       this.patientId = +params['id'];
       this.loadAllergies();
-    });
+    }); */
   }
 
   loadAllergies(): void {
@@ -78,6 +80,7 @@ export class PatientAllergiesComponent
 
     const allergyData: Allergy = {
       patientId: this.patientId,
+      medicalRecordId: this.medicalRecordId,
       allergyType: this.allergyForm.value.allergyType,
       name: this.allergyForm.value.name,
       reaction: this.allergyForm.value.reaction,

@@ -216,15 +216,13 @@
                       <td>
                         <span
                           *ngIf="
-                            patient?.patientDetails?.medicalRecord?.allergies
-                              ?.length;
+                            patient?.medicalRecord?.allergies?.length;
                             else noAllergies
                           "
                         >
                           <span
                             *ngFor="
-                              let allergy of patient?.patientDetails
-                                ?.medicalRecord?.allergies;
+                              let allergy of patient?.medicalRecord?.allergies;
                               let last = last
                             "
                           >

@@ -1,5 +1,5 @@
 <div class="container mt-4">
-  <div class="row align-items-center">
+  <div class="row align-items-center" *ngIf="master">
     <div class="col-auto">
       <button (click)="backClicked()" class="btn btn-success">
         <span class="bi bi-arrow-left-square"></span>
@@ -21,23 +21,69 @@
       </div>
     </div>
   </div>
+
   <form
     [formGroup]="medicalRecordForm"
     (ngSubmit)="onSubmit()"
     *ngIf="!loading"
   >
-    <!-- Two column layout -->
-    <div class="row">
-      <!-- Column 1: Physical Information and Medical History -->
-      <div class="col-md-6">
-        <!-- Physical Information Card -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <h3 class="mb-0">Physical Information</h3>
-          </div>
-          <div class="card-body">
+    <div class="card mt-3">
+      <div class="card-header">
+        <ul
+          class="nav nav-tabs card-header-tabs"
+          id="medicalRecordTabs"
+          role="tablist"
+        >
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              id="physical-tab"
+              data-bs-toggle="tab"
+              href="#physical"
+              role="tab"
+              aria-controls="physical"
+              aria-selected="true"
+              >Physical Info</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="history-tab"
+              data-bs-toggle="tab"
+              href="#history"
+              role="tab"
+              aria-controls="history"
+              aria-selected="false"
+              >Medical History</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="visits-tab"
+              data-bs-toggle="tab"
+              href="#visits"
+              role="tab"
+              aria-controls="visits"
+              aria-selected="false"
+              >Patient Visits</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-body">
+        <div class="tab-content" id="medicalRecordTabsContent">
+          <!-- Physical Information Tab -->
+          <div
+            class="tab-pane fade show active"
+            id="physical"
+            role="tabpanel"
+            aria-labelledby="physical-tab"
+          >
             <div class="row">
-              <div class="col-md-4 mb-1">
+              <div class="col-md-4 mb-3">
                 <label for="height">Height (cm)</label>
                 <input
                   type="number"
@@ -57,7 +103,7 @@
                 </div>
               </div>
 
-              <div class="col-md-4 mb-1">
+              <div class="col-md-4 mb-3">
                 <label for="weight">Weight (kg)</label>
                 <input
                   type="number"
@@ -77,7 +123,7 @@
                 </div>
               </div>
 
-              <div class="col-md-4 mb-1">
+              <div class="col-md-4 mb-3">
                 <label for="bmi">BMI</label>
                 <input
                   type="number"
@@ -92,7 +138,7 @@
               </div>
             </div>
 
-            <div class="mb-0">
+            <div class="mb-3">
               <label for="bloodType">Blood Type</label>
               <select
                 class="form-control"
@@ -111,15 +157,15 @@
               </select>
             </div>
           </div>
-        </div>
 
-        <!-- Medical History Card -->
-        <div class="card mb-0">
-          <div class="card-header">
-            <h3 class="mb-0">Medical History</h3>
-          </div>
-          <div class="card-body">
-            <div class="mb-0">
+          <!-- Medical History Tab -->
+          <div
+            class="tab-pane fade"
+            id="history"
+            role="tabpanel"
+            aria-labelledby="history-tab"
+          >
+            <div class="mb-3">
               <label for="chronicConditions">Chronic Conditions</label>
               <textarea
                 class="form-control"
@@ -129,7 +175,7 @@
               ></textarea>
             </div>
 
-            <div class="mb-0">
+            <div class="mb-3">
               <label for="surgicalHistory">Surgical History</label>
               <textarea
                 class="form-control"
@@ -139,7 +185,7 @@
               ></textarea>
             </div>
 
-            <div class="mb-0">
+            <div class="mb-3">
               <label for="familyMedicalHistory">Family Medical History</label>
               <textarea
                 class="form-control"
@@ -149,7 +195,7 @@
               ></textarea>
             </div>
 
-            <div class="mb-0">
+            <div class="mb-3">
               <label for="socialHistory">Social History</label>
               <textarea
                 class="form-control"
@@ -159,31 +205,39 @@
               ></textarea>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Column 2: Patient Visit -->
-      <div class="col-md-6">
-        <div *ngIf="!idToPass" class="alert alert-info">
-          Please input a medical record first.
+          <!-- Patient Visits Tab -->
+          <div
+            class="tab-pane fade"
+            id="visits"
+            role="tabpanel"
+            aria-labelledby="visits-tab"
+          >
+            <div *ngIf="!medicalRecordId" class="alert alert-info">
+              Please input a medical record first.
+            </div>
+            <app-patient-visit
+              *ngIf="medicalRecordId"
+              [medicalRecordId]="medicalRecordId"
+            ></app-patient-visit>
+          </div>
         </div>
-        <app-patient-visit
-          *ngIf="idToPass"
-          [medicalRecordId]="idToPass"
-        ></app-patient-visit>
+
+        <!-- Submit Button at the bottom of the card -->
+        <div class="mt-3">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="medicalRecordForm.invalid || saving"
+          >
+            {{ recordExists ? "Update" : "Create" }} Medical Record
+          </button>
+          <div *ngIf="saving" class="mt-2 d-inline-block ms-3">Saving...</div>
+          <div *ngIf="saveSuccess" class="alert alert-success mt-3">
+            Medical record saved successfully!
+          </div>
+        </div>
       </div>
-    </div>
-    <!-- Submit Button and Feedback -->
-    <button
-      type="submit"
-      class="btn btn-primary"
-      [disabled]="medicalRecordForm.invalid || saving"
-    >
-      {{ recordExists ? "Update" : "Create" }} Medical Record
-    </button>
-    <div *ngIf="saving" class="mt-2">Saving...</div>
-    <div *ngIf="saveSuccess" class="alert alert-success mt-3">
-      Medical record saved successfully!
     </div>
   </form>
 </div>

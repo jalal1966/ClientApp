@@ -1,8 +1,13 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, Input, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule } from '@angular/forms';
 import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { Immunization } from '../../../models/medicalRecord.model';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../../services/auth/auth.service';
+import { PatientLabResultsService } from '../../../services/patient-lab-results/patient-lab-results.service';
 
 @Component({
   selector: 'app-immunizations',
@@ -11,14 +16,16 @@ import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './immunizations.component.html',
   styleUrls: ['./immunizations.component.scss'],
 })
-export class ImmunizationsComponent implements OnInit {
+export class ImmunizationsComponent
+  extends PatientComponentBase
+  implements OnInit
+{
   private http = inject(HttpClient);
   private modalService = inject(NgbModal);
 
-  patientId = 5; // Can be dynamic
-  immunizations: any[] = [];
-  selectedImmunization: any = null;
+  @Input() immunizations: Immunization[] = [];
 
+  selectedImmunization: any = null;
   newImmunization = {
     vaccineName: '',
     administrationDate: '',
@@ -27,7 +34,15 @@ export class ImmunizationsComponent implements OnInit {
     nextDoseDate: '',
     manufacturer: '',
   };
-
+  constructor(
+    private route: ActivatedRoute,
+    authService: AuthService,
+    router: Router,
+    private labResultsService: PatientLabResultsService,
+    private fb: FormBuilder
+  ) {
+    super(authService, router);
+  }
   ngOnInit(): void {
     this.getImmunizations();
   }

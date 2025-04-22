@@ -11,6 +11,9 @@ import { LabResult } from '../../../models/medicalRecord.model';
 import { PatientLabResultsService } from '../../../services/patient-lab-results/patient-lab-results.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { AuthService } from '../../../services/auth/auth.service';
+import { Patients } from '../../../models/patient.model';
+import { PatientService } from '../../../services/patient/patient.service';
+import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
 
 @Component({
   selector: 'app-patient-lab-results',
@@ -27,40 +30,94 @@ export class PatientLabResultsComponent
   isEditing = false;
   currentEditId?: number;
   @Input() labResults: LabResult[] = [];
+  @Input() loading = false;
+  @Input() medicalRecordId?: number;
+  showNoRecordMessage = false;
+  patient: Patients | undefined;
+  error: string | null = null;
+  // Add error handling and loading state
+
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
 
   constructor(
+    private fb: FormBuilder,
     private route: ActivatedRoute,
+    private patientService: PatientService,
+    private medicalRecordsService: MedicalRecordsService,
     authService: AuthService,
     router: Router,
-    private labResultsService: PatientLabResultsService,
-
-    private fb: FormBuilder
+    private labResultsService: PatientLabResultsService
   ) {
     super(authService, router);
   }
 
   ngOnInit(): void {
-    // Use consistent approach for getting patient ID - prefer the parent route approach
-    this.route.parent?.params.subscribe((params) => {
-      if (params['id']) {
-        this.patientId = +params['id'];
-      } else {
-        // Fallback to direct route params if no parent
-        this.patientId = +this.route.snapshot.params['id'];
-      }
+    /*  // Try parent route first
+    this.route.parent?.paramMap.subscribe((params) => {
+      if (params.has('id')) {
+        this.patientId = +params.get('id')!;
+        this.medicalRecordId = params.has('medicalRecordId')
+        ? +params.get('medicalRecordId')!
+        : undefined;
+        this.initForm();
+        this.loadLabResults();
+        } else {
+          // Fallback to direct route params
+        const directParams = this.route.snapshot.paramMap;
+        this.patientId = directParams.has('id') ? +directParams.get('id')! : 0;
+        this.medicalRecordId = directParams.has('medicalRecordId')
+        ? +directParams.get('medicalRecordId')!
+        : undefined;
+        this.initForm();
+        this.loadLabResults();
+        }
+        }); */
 
-      console.log(
-        `${this.getPatientIdString()} - Initializing lab results component`
-      );
+    // Use consistent approach for getting patient ID - prefer the parent route approach
+    this.route.parent?.params.subscribe((parentParams) => {
+      const currentParams = this.route.snapshot.params;
+      this.patientId = +(parentParams['id'] ?? currentParams['id'] ?? 0);
+      /* this.route.queryParamMap.subscribe((params) => {
+            if (params.has('medicalRecordId')) {
+              this.medicalRecordId = +params.get('medicalRecordId')!;
+              }
+              }); */
+
+      console.log('medicalRecordId', this.medicalRecordId);
       this.initForm();
+      //this.checkMedicalRecord();
       this.loadLabResults();
     });
   }
+  // Add a new method to check if the medical record exists
+  checkMedicalRecord(): void {
+    this.loading = true;
 
-  // Add error handling and loading state
-  loading = false;
-  errorMessage: string | null = null;
-  successMessage: string | null = null;
+    // Use the MedicalRecordsService to check if record exists
+    this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
+      next: (data) => {
+        this.loading = false;
+        if (data && data.id) {
+          this.medicalRecordId = data.id;
+          this.showNoRecordMessage = false;
+          this.initForm(); // Now medicalRecordId has a value
+          this.loadLabResults(); // Only load visits if record exists
+        } else {
+          this.showNoRecordMessage = true;
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        // Check if it's a 404 (record doesn't exist yet)
+        if (err.status === 404 || err.message?.includes('Error Code: 404')) {
+          this.showNoRecordMessage = true;
+        } else {
+          console.error('Error checking medical record:', err);
+        }
+      },
+    });
+  }
 
   loadLabResults(): void {
     this.loading = true;
@@ -136,6 +193,8 @@ export class PatientLabResultsComponent
 
   initForm(labResult?: LabResult): void {
     this.labResultForm = this.fb.group({
+      patientId: [null],
+      medicalRecordId: [null],
       testDate: [
         labResult?.testDate
           ? new Date(labResult.testDate).toISOString().split('T')[0]
@@ -172,6 +231,40 @@ export class PatientLabResultsComponent
         },
         error: (error) => {
           console.error('Failed to delete lab result', error);
+        },
+      });
+    }
+  }
+
+  downloadLabResults(labId: number): void {
+    if (this.patient) {
+      this.patientService.downloadLabResults(labId).subscribe({
+        next: (pdfBlob) => {
+          const url = window.URL.createObjectURL(pdfBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `lab-results-${labId}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+        error: (err) => {
+          console.error('Error downloading lab results:', err);
+          this.error = 'Failed to download lab results.';
+        },
+      });
+    }
+  }
+
+  emailLabResults(labId: number): void {
+    if (this.patient && this.patient.email) {
+      this.patientService.emailLabResults(labId, this.patient.email).subscribe({
+        next: () => {
+          alert('Lab results were successfully emailed to the patient.');
+        },
+        error: (err) => {
+          console.error('Error emailing lab results:', err);
+          this.error = 'Failed to email lab results.';
         },
       });
     }

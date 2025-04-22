@@ -28,6 +28,9 @@ import { PatientLabResultsComponent } from './components/patientsSection/patient
 import { PatientMedicationsComponent } from './components/patientsSection/patient-medications/patient-medications.component';
 import { PatientVisitComponent } from './components/patientsSection/patient-visits/patient-visits.component';
 import { PatientDetailComponent } from './components/patientsSection/patient-detail/patient-detail.component';
+import { BloodPressureComponent } from './components/patientsSection/blood-pressure/blood-pressure.component';
+import { PatientRecordComponent } from './components/patientsSection/patient-record/patient-record.component';
+import { MergedPatientComponent } from './components/patientsSection/mergedPatient/merged-patient.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -43,7 +46,7 @@ export const routes: Routes = [
   { path: 'doctor-schedule', component: MapComponent },
 
   { path: 'patients', component: PatientListComponent }, // List of patients
-  { path: 'patients/:id/info', component: PatientInfoComponent }, // Patient details page
+  { path: 'patients/:id', component: PatientInfoComponent }, // Patient details page
   { path: 'patients/:id/medical-records', component: MedicalRecordsComponent },
   { path: 'patients/:id/allergies', component: PatientAllergiesComponent },
   { path: 'patients/:id/medications', component: PatientMedicationsComponent },
@@ -52,6 +55,9 @@ export const routes: Routes = [
   { path: 'visits', component: PatientVisitComponent },
   { path: 'patient-detail/:id', component: PatientDetailComponent },
   { path: 'patient/edit/:id', component: PatientDetailComponent },
+  { path: 'pressur/:id', component: BloodPressureComponent },
+  { path: 'patientRecord/:id', component: PatientRecordComponent },
+  { path: 'merge/:id', component: MergedPatientComponent },
   {
     path: 'admin',
     component: AdministratorComponent,

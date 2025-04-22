@@ -1,4 +1,3 @@
-import { Patients } from './patient.model';
 import { User } from './user';
 import { Visit } from './visits.model';
 
@@ -6,6 +5,7 @@ import { Visit } from './visits.model';
 export interface MedicalRecord {
   followUpDate: any;
   isFollowUpRequired: boolean;
+
   // Record identifiers
   id?: number;
   patientId: number;
@@ -30,14 +30,27 @@ export interface MedicalRecord {
 
   user?: User;
   allergies: Allergy[];
-  recentLabResults: LabResult[];
+
   immunizations?: Immunization[];
   labResults?: LabResult[];
+  pressure?: Pressure[];
 }
 
+export interface Pressure {
+  id?: number;
+  patientId: number;
+  medicalRecordId: number;
+  systolicPressure: number | null;
+  diastolicPressure: number | null;
+  bloodPressureRatio: number | null;
+  isBloodPressureNormal: boolean;
+  createdAt?: Date;
+  updatedAt?: Date | null;
+}
 export interface Allergy {
   id?: number;
   patientId: number;
+  medicalRecordId?: number;
   allergyType: string;
   name: string;
   reaction: string;
@@ -46,16 +59,17 @@ export interface Allergy {
 }
 
 export interface LabResult {
-  id: number;
+  id?: number;
   patientId: number;
+  medicalRecordId?: number;
   testDate?: Date;
   testName?: string;
   result?: string;
   referenceRange?: string;
   orderingProvider?: string;
   notes?: string;
-  medicalRecordId: number;
 }
+
 export interface Immunization {
   id: number;
   patientId: number;

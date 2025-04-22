@@ -189,6 +189,9 @@ export class ClinicDashboardComponent
     this.router.navigate(['visits/', patientId]);
   }
 
+  openPressure(patientId: number) {
+    this.router.navigate(['pressur/', patientId]);
+  }
   loadAppointmentsDoctor(value: number | null): void {
     if (!value) return; // Prevent API call if no doctor is selected
 
@@ -254,9 +257,22 @@ export class ClinicDashboardComponent
     );
   }
 
-  openPatientRecord(appointment: Appointment): void {
+  openPatientRecord(id: number): void {
     console.log('Opening patient record for');
+
     // In a real application, this would navigate to the patient's record
+    if (id) {
+      this.router.navigate(['/patientRecord', id]);
+    }
+  }
+
+  openMerge(id: number): void {
+    console.log('Opening patient record for');
+
+    // In a real application, this would navigate to the patient's record
+    if (id) {
+      this.router.navigate(['/merge', id]);
+    }
   }
 
   viewPatientDetailsInfo(id: number | undefined): void {
@@ -264,7 +280,7 @@ export class ClinicDashboardComponent
     console.log('Opening patient record for');
 
     if (id) {
-      this.router.navigate(['/patients', id, 'info']);
+      this.router.navigate(['/patients', id]);
     }
   }
   editPatientDetails(id: number | undefined): void {

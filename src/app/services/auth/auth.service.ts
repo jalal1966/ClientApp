@@ -7,6 +7,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { RegisterModel } from '../../models/register.model';
+import { MedicalRecord } from '../../models/medicalRecord.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +15,10 @@ import { RegisterModel } from '../../models/register.model';
 export class AuthService {
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
+
+  private currentMedicalRecordSubject: BehaviorSubject<MedicalRecord | null>;
+  public currentMedicalRecord: Observable<MedicalRecord | null>;
+
   private apiUrl = environment.apiUrl;
   private readonly baseUrl = '/api/Auth';
 
@@ -24,6 +29,21 @@ export class AuthService {
       storedUser ? JSON.parse(storedUser) : null
     );
     this.currentUser = this.currentUserSubject.asObservable();
+
+    const storedMedicalRecord = localStorage.getItem('currentMedicalRecord');
+    this.currentMedicalRecordSubject =
+      new BehaviorSubject<MedicalRecord | null>(
+        storedMedicalRecord ? JSON.parse(storedMedicalRecord) : null
+      );
+    this.currentMedicalRecord = this.currentMedicalRecordSubject.asObservable();
+  }
+
+  public get currentUserValue(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  public get currentMedicalRecordValue(): MedicalRecord | null {
+    return this.currentMedicalRecordSubject.value;
   }
 
   getDoctorsWithFullName(): Observable<any[]> {
@@ -36,10 +56,6 @@ export class AuthService {
           })) || []
       )
     );
-  }
-
-  public get currentUserValue(): User | null {
-    return this.currentUserSubject.value;
   }
 
   login(username: string, password: string): Observable<User> {

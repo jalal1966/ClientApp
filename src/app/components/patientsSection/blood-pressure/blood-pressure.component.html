@@ -1,0 +1,218 @@
+<!-- blood-pressure.component.html -->
+<div class="blood-pressure-container">
+  <!-- Alert Messages -->
+  <div
+    *ngIf="errorMessage"
+    class="alert alert-danger alert-dismissible fade show"
+    role="alert"
+  >
+    {{ errorMessage }}
+    <button
+      type="button"
+      class="btn-close"
+      (click)="errorMessage = null"
+    ></button>
+  </div>
+
+  <div
+    *ngIf="successMessage"
+    class="alert alert-success alert-dismissible fade show"
+    role="alert"
+  >
+    {{ successMessage }}
+    <button
+      type="button"
+      class="btn-close"
+      (click)="successMessage = null"
+    ></button>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">
+        {{
+          selectedRecord
+            ? "Edit Blood Pressure Record"
+            : "Add New Blood Pressure Reading"
+        }}
+        for {{ patient?.firstName }} {{ patient?.lastName }}
+      </h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="bloodPressureForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="systolicPressure" class="form-label"
+              >Systolic Pressure (mmHg)</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="systolicPressure"
+              formControlName="systolicPressure"
+              [ngClass]="{
+                'is-invalid':
+                  bloodPressureForm.get('systolicPressure')?.invalid &&
+                  bloodPressureForm.get('systolicPressure')?.touched
+              }"
+            />
+            <div
+              class="invalid-feedback"
+              *ngIf="bloodPressureForm.get('systolicPressure')?.errors?.['required']"
+            >
+              Systolic pressure is required.
+            </div>
+            <div
+              class="invalid-feedback"
+              *ngIf="bloodPressureForm.get('systolicPressure')?.errors?.['min'] || bloodPressureForm.get('systolicPressure')?.errors?.['max']"
+            >
+              Systolic pressure must be between 60 and 250 mmHg.
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="diastolicPressure" class="form-label"
+              >Diastolic Pressure (mmHg)</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="diastolicPressure"
+              formControlName="diastolicPressure"
+              [ngClass]="{
+                'is-invalid':
+                  bloodPressureForm.get('diastolicPressure')?.invalid &&
+                  bloodPressureForm.get('diastolicPressure')?.touched
+              }"
+            />
+            <div
+              class="invalid-feedback"
+              *ngIf="bloodPressureForm.get('diastolicPressure')?.errors?.['required']"
+            >
+              Diastolic pressure is required.
+            </div>
+            <div
+              class="invalid-feedback"
+              *ngIf="bloodPressureForm.get('diastolicPressure')?.errors?.['min'] || bloodPressureForm.get('diastolicPressure')?.errors?.['max']"
+            >
+              Diastolic pressure must be between 40 and 150 mmHg.
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            *ngIf="selectedRecord"
+            (click)="resetForm()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isSubmitting"
+          >
+            <span
+              *ngIf="isSubmitting"
+              class="spinner-border spinner-border-sm me-1"
+              role="status"
+            ></span>
+            {{ selectedRecord ? "Update" : "Save" }} Blood Pressure
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Records List -->
+  <div class="card">
+    <div
+      class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+    >
+      <h5 class="mb-0">Blood Pressure History</h5>
+      <button
+        class="btn btn-sm btn-light"
+        (click)="loadPressureRecords()"
+        [disabled]="isLoading"
+      >
+        <span
+          *ngIf="isLoading"
+          class="spinner-border spinner-border-sm me-1"
+          role="status"
+        ></span>
+        Refresh
+      </button>
+    </div>
+    <div class="card-body">
+      <div *ngIf="isLoading" class="text-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading records...</p>
+      </div>
+
+      <div
+        *ngIf="!isLoading && pressureRecords.length === 0"
+        class="text-center p-4"
+      >
+        <p class="text-muted">No blood pressure records found.</p>
+      </div>
+
+      <div
+        class="table-responsive"
+        *ngIf="!isLoading && pressureRecords.length > 0"
+      >
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Systolic</th>
+              <th>Diastolic</th>
+              <th>Ratio</th>
+              <th>Category</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of pressureRecords">
+              <td>{{ formatDate(record.createdAt) }}</td>
+              <td>{{ record.systolicPressure }} mmHg</td>
+              <td>{{ record.diastolicPressure }} mmHg</td>
+              <td>{{ record.bloodPressureRatio | number : "1.2-2" }}</td>
+              <td>
+                <span
+                  [ngClass]="
+                    getBPCategoryClass(getBloodPressureCategory(record))
+                  "
+                >
+                  {{ getBloodPressureCategory(record) }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button
+                    class="btn btn-outline-primary"
+                    (click)="editRecord(record)"
+                    ngbTooltip="Edit"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
+                    class="btn btn-outline-danger"
+                    (click)="deleteRecord(record.id!)"
+                    ngbTooltip="Delete"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,18 +9,20 @@ import {
 } from '@angular/forms';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
+
+import { CommonModule } from '@angular/common';
 import {
   ContactInfoUpdate,
   InsuranceUpdate,
+  PatientDetail,
   PatientInfo,
-} from '../../../models/patientInfo';
-import { PatientInfoService } from '../../../services/patientinfo/patient-info.service';
-import { CommonModule } from '@angular/common';
-import { PatientDetail, Patients } from '../../../models/patient.model';
+  Patients,
+} from '../../../models/patient.model';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { Location } from '@angular/common';
 import { User } from '../../../models/user';
 import { AuthService } from '../../../services/auth/auth.service';
+import { PatientService } from '../../../services/patient/patient.service';
 
 @Component({
   selector: 'app-patient-info',
@@ -45,10 +47,11 @@ export class PatientInfoComponent
 
   doctors: { firstName: string; lastName: string; fullName: string }[] = [];
   @Input() patient: Patients | null = null;
+  @Input() master: boolean = true;
 
   constructor(
     private route: ActivatedRoute,
-    private patientInfoService: PatientInfoService,
+    private patientInfoService: PatientService,
     private location: Location,
     private doctorsService: AuthService,
     authService: AuthService,
@@ -110,7 +113,7 @@ export class PatientInfoComponent
     this.errorMessage = null;
 
     this.patientInfoService
-      .getPatientInfo(this.patientId)
+      .getPatient(this.patientId)
       .pipe(
         catchError((err) => {
           this.errorMessage = `Error loading patient information: ${

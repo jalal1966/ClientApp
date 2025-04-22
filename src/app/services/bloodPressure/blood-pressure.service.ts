@@ -1,10 +1,83 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+import { Pressure } from '../../models/medicalRecord.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BloodPressureService {
-  constructor() {}
+  private apiUrl = `${environment.apiUrl}/api/pressures`;
+
+  constructor(private http: HttpClient) {}
+
+  /**
+   * Get all pressure readings
+   */
+  getAllPressures(): Observable<Pressure[]> {
+    return this.http.get<Pressure[]>(this.apiUrl);
+  }
+
+  /**
+   * Get a specific pressure reading by ID
+   * @param id The pressure reading ID
+   */
+  getPressureById(id: number): Observable<Pressure[]> {
+    return this.http.get<Pressure[]>(`${this.apiUrl}/Patient/${id}`);
+  }
+
+  /**
+   * Get all pressure readings for a specific medical record
+   * @param medicalRecordId The medical record ID
+   */
+  getPressuresByMedicalRecord(medicalRecordId: number): Observable<Pressure[]> {
+    return this.http.get<Pressure[]>(
+      `${this.apiUrl}/medical-record/${medicalRecordId}`
+    );
+  }
+
+  /**
+   * Create a new pressure reading
+   * @param pressure The pressure data to create
+   */
+  createPressure(pressure: Pressure): Observable<Pressure> {
+    // Pre-calculate values before sending to API
+    if (pressure.systolicPressure && pressure.diastolicPressure) {
+      pressure.bloodPressureRatio = this.calculateBloodPressureRatio(
+        pressure.systolicPressure,
+        pressure.diastolicPressure
+      );
+    }
+
+    return this.http.post<Pressure>(this.apiUrl, pressure);
+  }
+
+  /**
+   * Update an existing pressure reading
+   * @param id The pressure reading ID
+   * @param pressure The updated pressure data
+   */
+  updatePressure(id: number, pressure: Pressure): Observable<void> {
+    // Pre-calculate values before sending to API
+    if (pressure.systolicPressure && pressure.diastolicPressure) {
+      pressure.bloodPressureRatio = this.calculateBloodPressureRatio(
+        pressure.systolicPressure,
+        pressure.diastolicPressure
+      );
+    }
+
+    return this.http.put<void>(`${this.apiUrl}/${id}`, pressure);
+  }
+
+  /**
+   * Delete a pressure reading
+   * @param id The pressure reading ID to delete
+   */
+  deletePressure(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 
   /**
    * Calculates blood pressure ratio (systolic/diastolic)
@@ -115,5 +188,56 @@ export class BloodPressureService {
     } else {
       return 'Hypertensive Crisis';
     }
+  }
+
+  /**
+   * Creates a pressure record with comprehensive evaluation
+   * @param medicalRecordId The medical record ID
+   * @param systolicPressure The systolic blood pressure
+   * @param diastolicPressure The diastolic blood pressure
+   * @param age Patient's age
+   * @param weight Patient's weight in kg
+   * @param gender Patient's gender ('male' or 'female')
+   */
+  createComprehensivePressureRecord(
+    patientId: number,
+    systolicPressure: number | null,
+    diastolicPressure: number | null,
+    medicalRecordId: number,
+    age: number,
+    weight: number,
+    gender: string
+  ): Observable<Pressure> {
+    const pressure: Pressure = {
+      patientId: patientId,
+      medicalRecordId: medicalRecordId,
+      systolicPressure: systolicPressure,
+      diastolicPressure: diastolicPressure,
+      bloodPressureRatio: this.calculateBloodPressureRatio(
+        systolicPressure,
+        diastolicPressure
+      ),
+      isBloodPressureNormal: this.evaluateBloodPressure(
+        systolicPressure,
+        diastolicPressure,
+        age,
+        weight,
+        gender
+      ),
+    };
+
+    return this.createPressure(pressure);
+  }
+
+  /**
+   * Get the most recent pressure reading for a medical record
+   * @param medicalRecordId The medical record ID
+   */
+  getLatestPressureForMedicalRecord(
+    medicalRecordId: number
+  ): Observable<Pressure | null> {
+    return this.getPressuresByMedicalRecord(medicalRecordId).pipe(
+      map((pressures) => (pressures.length > 0 ? pressures[0] : null))
+    );
   }
 }

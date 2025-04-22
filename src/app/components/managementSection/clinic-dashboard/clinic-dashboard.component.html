@@ -188,22 +188,41 @@
                 </button>
                 <button
                   class="btn btn-sm btn-info me-2"
-                  (click)="openMap(patient.id ?? 0)"
+                  (click)="openMap(patient.id)"
                 >
                   View Patient Detail
                 </button>
                 <button
                   class="btn btn-sm btn-success me-2"
-                  (click)="openMedicalRecords(patient.id ?? 0)"
+                  (click)="openMedicalRecords(patient.id)"
                 >
                   Patient Medical Record
                 </button>
                 <button
                   class="btn btn-sm btn-success me-2"
-                  (click)="openVisits(patient.id ?? 0)"
+                  (click)="openVisits(patient.id)"
                 >
                   +Visit
                 </button>
+                <button
+                  class="btn btn-sm btn-success me-2"
+                  (click)="openPressure(patient.id)"
+                >
+                  +Pressure
+                </button>
+                <button
+                  class="btn btn-sm btn-success me-2"
+                  (click)="openPatientRecord(patient.id)"
+                >
+                  openPatientRecord
+                </button>
+                <button
+                  class="btn btn-sm btn-success me-2"
+                  (click)="openMerge(patient.id)"
+                >
+                  Merge
+                </button>
+
                 <!--   <button
                   class="btn btn-sm btn-secondary me-2"
                   (click)="scheduleAppointment(patient.id)"

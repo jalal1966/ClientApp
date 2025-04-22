@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { PatientDetail, Patients } from '../../models/patient.model';
 import { Visit } from '../../models/visits.model';
+import { MedicalRecord } from '../../models/medicalRecord.model';
+import { MedicalRecordsService } from '../medical-records/medical-records.service';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -8,138 +11,171 @@ export class PatientAdapterService {
   /**
    * Transforms the API response to match the Patients interface
    */
-
   adaptApiResponseToPatient(apiResponse: any): Patients {
-    // Create PatientDetail object
+    console.log('Raw API response:', apiResponse);
+
+    const patientId = apiResponse.id ?? 0;
+
+    // Get the first medical record from the array (if it exists)
+    const medicalRecordData =
+      Array.isArray(apiResponse.medicalRecords) &&
+      apiResponse.medicalRecords.length > 0
+        ? apiResponse.medicalRecords[0]
+        : {};
+
+    const medicalRecordId = medicalRecordData.id ?? 0;
+
+    // Create patient detail
     const patientDetail: PatientDetail = {
-      roomNumber: apiResponse.roomNumber || '',
-      bedNumber: apiResponse.bedNumber || '',
+      roomNumber: apiResponse.roomNumber ?? '',
+      bedNumber: apiResponse.bedNumber ?? '',
       dateOfBirth: new Date(apiResponse.dateOfBirth),
-      primaryDiagnosis: apiResponse.primaryDiagnosis || '',
+      primaryDiagnosis: apiResponse.primaryDiagnosis ?? '',
       admissionDate: apiResponse.registrationDate
         ? new Date(apiResponse.registrationDate)
         : new Date(),
-      //familyMedicalHistory: apiResponse.familyMedicalHistory || '',
-      // socialHistory: apiResponse.socialHistory || '',
-      createdAt: new Date(apiResponse.registrationDate),
+      createdAt: new Date(apiResponse.registrationDate ?? Date.now()),
       updatedAt: new Date(),
-      // Transform medical record to match the interface
-      medicalRecord: {
-        id: apiResponse.medicalRecord?.id,
-        patientId: apiResponse.id,
-        userID: apiResponse.medicalRecord?.userID || 0,
-        recordDate: apiResponse.medicalRecord?.recordDate
-          ? new Date(apiResponse.medicalRecord.recordDate)
-          : undefined,
-        recentVisits: [
-          {
-            id: apiResponse.medicalRecord?.visit?.id || 0,
+    };
 
-            patientId: apiResponse.id,
-            medicalRecordId: apiResponse.medicalRecordId,
-            visitDate: apiResponse.lastVisitDate
-              ? new Date(apiResponse.lastVisitDate)
-              : new Date(),
-            providerName: apiResponse.patientDoctorName,
-            providerId: apiResponse.patientDoctorID,
-            visitType:
-              apiResponse.medicalRecord?.visit?.visitType || 'Check-up',
-            reason: apiResponse.medicalRecord?.visit?.reason || '',
-            assessment: apiResponse.medicalRecord?.visit?.assessment || '',
-            diagnosis: apiResponse.medicalRecord?.visit?.diagnosis || [],
-            planTreatment:
-              apiResponse.medicalRecord?.visit?.planTreatment || '',
-            medication: apiResponse.medicalRecord?.visit?.medication || [],
-            pressure: apiResponse.medicalRecord?.visit?.pressure || [],
-            notes: apiResponse.medicalRecord?.visit?.notes || '',
-            followUpRequired:
-              apiResponse.medicalRecord?.isFollowUpRequired || false,
-            followUpDate: apiResponse.medicalRecord?.followUpDate
-              ? new Date(apiResponse.medicalRecord.followUpDate)
+    // Create medical record using data from the first medical record in the array
+    const medicalRecord: MedicalRecord = {
+      id: medicalRecordId,
+      patientId,
+      userID: medicalRecordData.userID ?? 0,
+      recordDate: medicalRecordData.recordDate
+        ? new Date(medicalRecordData.recordDate)
+        : undefined,
+      recentVisits: Array.isArray(medicalRecordData.visits)
+        ? medicalRecordData.visits.map((visit: any) => ({
+            id: visit.id ?? 0,
+            patientId,
+            medicalRecordId,
+            visitDate: visit.visitDate ? new Date(visit.visitDate) : new Date(),
+            providerName: apiResponse.patientDoctorName ?? '',
+            providerId: apiResponse.patientDoctorID ?? 0,
+            visitType: visit.visitType ?? 'Check-up',
+            reason: visit.reason ?? '',
+            assessment: visit.assessment ?? '',
+            diagnosis: Array.isArray(visit.diagnosis) ? visit.diagnosis : [],
+            planTreatment: visit.planTreatment ?? '',
+            medication: Array.isArray(visit.medication) ? visit.medication : [],
+            notes: visit.notes ?? '',
+            followUpRequired: visit.followUpRequired ?? false,
+            followUpDate: visit.followUpDate
+              ? new Date(visit.followUpDate)
               : undefined,
-          },
-        ],
-        height: apiResponse.height || 0,
-        weight: apiResponse.weight || 0,
-        bmi: apiResponse.bmi || 0,
-        bloodType: apiResponse.bloodType || 'Unknown',
-        chronicConditions: apiResponse.chronicConditions || '',
-        surgicalHistory: apiResponse.surgicalHistory || '',
-        socialHistory: apiResponse.socialHistory || '',
-        familyMedicalHistory: apiResponse.familyMedicalHistory || '',
-        allergies:
-          apiResponse.allergies?.map((allergy: any) => ({
-            id: allergy.id,
-            patientId: apiResponse.id,
-            allergyType: allergy.allergyType,
-            name: allergy.name || allergy.allergyType,
-            reaction: allergy.reaction,
-            severity: allergy.severity,
+          }))
+        : [],
+
+      height: medicalRecordData.height ?? 0,
+      weight: medicalRecordData.weight ?? 0,
+      bmi: medicalRecordData.bmi ?? 0,
+      bloodType: medicalRecordData.bloodType ?? 'Unknown',
+      chronicConditions: medicalRecordData.chronicConditions ?? '',
+      surgicalHistory: medicalRecordData.surgicalHistory ?? '',
+      socialHistory: medicalRecordData.socialHistory ?? '',
+      familyMedicalHistory: medicalRecordData.familyMedicalHistory ?? '',
+
+      allergies: Array.isArray(medicalRecordData.allergies)
+        ? medicalRecordData.allergies.map((allergy: any) => ({
+            id: allergy.id ?? 0,
+            patientId,
+            allergyType: allergy.allergyType ?? '',
+            name: allergy.name ?? allergy.allergyType ?? '',
+            reaction: allergy.reaction ?? '',
+            severity: allergy.severity ?? 'Unknown',
             dateIdentified: allergy.dateIdentified
               ? new Date(allergy.dateIdentified)
               : new Date(),
-          })) || [],
-        recentLabResults:
-          apiResponse.recentLabResults?.map((lab: any) => ({
-            id: lab.id,
-            patientId: lab.patientId || apiResponse.id,
-            testDate: new Date(lab.testDate),
-            testName: lab.testName,
-            result: lab.result,
-            referenceRange: lab.referenceRange,
-            orderingProvider: apiResponse.patientDoctorName || 'Unknown',
-            notes: lab.notes || '',
-            orderedBy: lab.orderedBy || apiResponse.patientDoctorID,
-            tests: lab.tests || [],
-            date: lab.testDate ? new Date(lab.testDate) : new Date(),
-          })) || [],
-        immunizations:
-          apiResponse.immunizations?.map((imm: any) => ({
-            id: imm.id,
-            patientId: imm.patientId || apiResponse.id,
-            vaccineName: imm.vaccineName,
-            administrationDate: new Date(imm.administrationDate),
-            lotNumber: imm.lotNumber,
-            administeringProvider: imm.administeringProvider,
-            manufacturer: imm.manufacturer,
-          })) || [],
-        followUpDate: undefined,
-        isFollowUpRequired: false,
-      },
-      // Optional fields
-      /* medicalConditions:
-        apiResponse.medicalConditions?.map((condition: any) => ({
-          id: condition.id,
-          name: condition.name,
-          diagnosedDate: new Date(condition.diagnosedDate),
-          notes: condition.notes || '',
-          status: condition.status || 'active',
-        })) || undefined, */
+          }))
+        : [],
+
+      labResults: Array.isArray(medicalRecordData.labResults)
+        ? medicalRecordData.labResults.map((lab: any) => ({
+            id: lab.id ?? 0,
+            patientId,
+            testDate: lab.testDate ? new Date(lab.testDate) : new Date(),
+            testName: lab.testName ?? '',
+            result: lab.result ?? '',
+            referenceRange: lab.referenceRange ?? '',
+            orderingProvider:
+              lab.orderingProvider ??
+              apiResponse.patientDoctorName ??
+              'Unknown',
+            notes: lab.notes ?? '',
+            medicalRecordId,
+          }))
+        : [],
+
+      immunizations: Array.isArray(medicalRecordData.immunizations)
+        ? medicalRecordData.immunizations.map((imm: any) => ({
+            id: imm.id ?? 0,
+            patientId,
+            medicalRecordId,
+            vaccineName: imm.vaccineName ?? '',
+            administrationDate: imm.administrationDate
+              ? new Date(imm.administrationDate)
+              : new Date(),
+            lotNumber: imm.lotNumber ?? '',
+            administeringProvider: imm.administeringProvider ?? '',
+            manufacturer: imm.manufacturer ?? '',
+            nextDoseDate: imm.nextDoseDate ?? '',
+          }))
+        : [],
+
+      pressure: Array.isArray(medicalRecordData.pressure)
+        ? medicalRecordData.pressure.map((pres: any) => ({
+            id: pres.id ?? 0,
+            patientId,
+            medicalRecordId,
+            systolicPressure: pres.systolicPressure ?? null,
+            diastolicPressure: pres.diastolicPressure ?? null,
+            bloodPressureRatio: pres.bloodPressureRatio ?? null,
+            isBloodPressureNormal: pres.isBloodPressureNormal ?? false,
+            createdAt: pres.createdAt ? new Date(pres.createdAt) : new Date(),
+            updatedAt: pres.updatedAt ? new Date(pres.updatedAt) : null,
+          }))
+        : [],
+
+      followUpDate: medicalRecordData.followUpDate
+        ? new Date(medicalRecordData.followUpDate)
+        : undefined,
+      isFollowUpRequired: medicalRecordData.isFollowUpRequired ?? false,
     };
 
-    // Create patient object with patientDetails
-    return {
-      id: apiResponse.id,
-      firstName: apiResponse.firstName,
-      lastName: apiResponse.lastName,
+    // Log the medical record to verify it has data
+    console.log('Created medical record:', medicalRecord);
+
+    // Create the patient object
+    const patient: Patients = {
+      id: patientId,
+      firstName: apiResponse.firstName ?? '',
+      lastName: apiResponse.lastName ?? '',
       dateOfBirth: new Date(apiResponse.dateOfBirth),
-      genderID: apiResponse.genderID,
-      contactNumber: apiResponse.contactNumber,
-      email: apiResponse.email,
-      emergencyContactName: apiResponse.emergencyContactName,
-      emergencyContactNumber: apiResponse.emergencyContactNumber,
-      insuranceProvider: apiResponse.insuranceProvider,
-      insuranceNumber: apiResponse.insuranceNumber,
-      address: apiResponse.address,
-      nursID: apiResponse.nursID,
-      nursName: apiResponse.nursName,
-      patientDoctorID: apiResponse.patientDoctorID,
-      patientDoctorName: apiResponse.patientDoctorName,
-      registrationDate: new Date(apiResponse.registrationDate),
+      genderID: apiResponse.genderID ?? 0,
+      contactNumber: apiResponse.contactNumber ?? '',
+      email: apiResponse.email ?? '',
+      emergencyContactName: apiResponse.emergencyContactName ?? '',
+      emergencyContactNumber: apiResponse.emergencyContactNumber ?? '',
+      insuranceProvider: apiResponse.insuranceProvider ?? '',
+      insuranceNumber: apiResponse.insuranceNumber ?? '',
+      address: apiResponse.address ?? '',
+      nursID: apiResponse.nursID ?? 0,
+      nursName: apiResponse.nursName ?? '',
+      patientDoctorID: apiResponse.patientDoctorID ?? 0,
+      patientDoctorName: apiResponse.patientDoctorName ?? '',
+      registrationDate: new Date(apiResponse.registrationDate ?? Date.now()),
       lastVisitDate: apiResponse.lastVisitDate
         ? new Date(apiResponse.lastVisitDate)
         : null,
       patientDetails: patientDetail,
+      medicalRecord: medicalRecord, // Assign the created medical record
     };
+
+    // Log final result
+    console.log('Final patient object:', patient);
+
+    return patient;
   }
 }

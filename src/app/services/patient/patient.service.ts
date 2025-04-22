@@ -4,7 +4,11 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { catchError, map } from 'rxjs/operators';
-import { PatientDetail, Patients } from '../../models/patient.model';
+import {
+  PatientBasicInfoUpdate,
+  PatientDetail,
+  Patients,
+} from '../../models/patient.model';
 import { MedicalRecord } from '../../models/medicalRecord.model';
 import { User } from '../../models/user';
 import { differenceInYears } from 'date-fns/differenceInYears';
@@ -52,6 +56,7 @@ export class PatientService {
       catchError(this.handleError)
     );
   }
+
   createPatient(patient: Patients): Observable<Patients> {
     return this.http
       .post<Patients>(`${this.apiUrl}${this.baseUrl}`, patient)
@@ -78,6 +83,34 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}${this.baseUrl}/${id}`).pipe(
       map((patient) => this.patientAdapter.adaptApiResponseToPatient(patient)),
       catchError(this.handleError)
+    );
+  }
+
+  /* getPatientInfo(id: number): Observable<Patients> {
+    return this.http.get<Patients>(`${this.apiUrl}${this.baseUrl}/${id}`);
+  } */
+
+  updatePatientInfo(
+    id: number,
+    patientInfo: PatientBasicInfoUpdate
+  ): Observable<any> {
+    return this.http.put(
+      `${this.apiUrl}${this.baseUrl}/${id}/info`,
+      patientInfo
+    );
+  }
+
+  updateContactInfo(id: number, contactInfo: any): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrl}${this.baseUrl}/${id}/info/contact`,
+      contactInfo
+    );
+  }
+
+  updateInsuranceInfo(id: number, insuranceInfo: any): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrl}${this.baseUrl}/${id}/info/insurance`,
+      insuranceInfo
     );
   }
 

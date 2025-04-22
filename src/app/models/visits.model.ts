@@ -11,7 +11,7 @@ export interface Visit {
   diagnosis: Diagnosis[];
   planTreatment?: string;
   medication: Medication[];
-  pressure: Pressure[];
+
   notes?: string;
   followUpRequired?: boolean;
   followUpDate?: Date;
@@ -19,21 +19,6 @@ export interface Visit {
   showDiagnosis?: boolean;
   showMedications?: boolean;
   // status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
-}
-
-export interface Pressure {
-  id: number;
-  visitId: number;
-  patientId: number;
-
-  // Blood pressure properties
-  systolicPressure: number;
-  diastolicPressure: number;
-  bloodPressureRatio: number;
-  isBloodPressureNormal: boolean;
-  // Audit fields = DateTime.UtcNow;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface Diagnosis {

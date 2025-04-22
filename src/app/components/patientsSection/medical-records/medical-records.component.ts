@@ -1,7 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { Allergy, MedicalRecord } from '../../../models/medicalRecord.model';
+import {
+  Allergy,
+  MedicalRecord,
+  Pressure,
+} from '../../../models/medicalRecord.model';
 import {
   FormBuilder,
   FormGroup,
@@ -13,17 +17,12 @@ import { PatientComponentBase } from '../../../shared/base/patient-component-bas
 import { Patients } from '../../../models/patient.model';
 import { PatientService } from '../../../services/patient/patient.service';
 import { AuthService } from '../../../services/auth/auth.service';
-import { User } from '../../../models/user';
 import { Location } from '@angular/common';
-import {
-  Diagnosis,
-  Medication,
-  Pressure,
-  Visit,
-} from '../../../models/visits.model';
+import { Diagnosis, Medication, Visit } from '../../../models/visits.model';
 import { Immunization } from '../../../models/medicalRecord.model';
 import { LabResult } from '../../../models/medicalRecord.model';
 import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
+import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
 
 @Component({
   selector: 'app-medical-records',
@@ -41,6 +40,9 @@ export class MedicalRecordsComponent
   extends PatientComponentBase
   implements OnInit
 {
+  @Input() medicalRecords: MedicalRecord[] = [];
+  @Input() master: boolean = true;
+  medicalRecordId?: number;
   medicalRecord: any = null;
   medicalRecordForm: FormGroup;
   loading = true;
@@ -49,7 +51,6 @@ export class MedicalRecordsComponent
   error: string | null = null;
   recordExists = false;
   patient: Patients | undefined;
-  idToPass: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -65,7 +66,7 @@ export class MedicalRecordsComponent
 
     this.medicalRecordForm = this.fb.group({
       // Physical Information
-      idToPass: [null], // Add this to your form group if missing
+      medicalRecordId: [null], // Add this to your form group if missing
       id: [''],
       height: ['', [Validators.required]],
       weight: ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
@@ -86,6 +87,7 @@ export class MedicalRecordsComponent
       medications: [''],
       immunizations: [''],
       labResults: [''],
+      pressure: [''],
 
       notes: [''],
       isFollowUpRequired: [false],
@@ -157,7 +159,7 @@ export class MedicalRecordsComponent
       next: (data) => {
         this.recordExists = true;
         console.log('Raw data from API:', data);
-        this.idToPass = data.id ?? null; // <-- Set the ID here
+        this.medicalRecordId = data.id; // <-- Set the ID here
 
         // Prepare flattened arrays manually
         const allDiagnoses: Diagnosis[] = [];
@@ -170,10 +172,6 @@ export class MedicalRecordsComponent
         const allNotes: string[] = [];
 
         data.recentVisits?.forEach((visit) => {
-          if (visit.pressure?.length) {
-            allPressers.push(...visit.pressure);
-          }
-
           if (visit.diagnosis?.length) {
             allDiagnoses.push(...visit.diagnosis);
           }
@@ -208,6 +206,11 @@ export class MedicalRecordsComponent
             allLabResults.push(...[lap]);
           }
         });
+        data.pressure?.forEach((lap) => {
+          if (lap) {
+            allPressers.push(...[lap]);
+          }
+        });
 
         this.medicalRecord = data;
         this.patchMedicalRecordForm();
@@ -215,7 +218,7 @@ export class MedicalRecordsComponent
         this.loading = false;
       },
       error: (err) => {
-        this.idToPass = null; // Reset on error
+        this.medicalRecordId = 0; // Reset on error
         // Check if it's a 404 (record doesn't exist yet)
         if (err.status === 404 || err.message?.includes('Error Code: 404')) {
           this.medicalRecord = null;
@@ -235,7 +238,7 @@ export class MedicalRecordsComponent
       this.medicalRecordForm?.patchValue({
         // Physical Information
         id: this.medicalRecord.id,
-        idToPass: this.medicalRecord.id,
+        medicalRecordId: this.medicalRecord.id,
         height: this.medicalRecord.height,
         weight: this.medicalRecord.weight,
         bmi: this.medicalRecord.bmi,
@@ -332,13 +335,11 @@ export class MedicalRecordsComponent
         : undefined,
       diagnosis: [],
       medication: [],
-      pressure: [],
     };
 
     if (formValues.pressure) {
       const pressureEntry: Partial<Pressure> = {
         id: 0, // Or generate a proper ID
-        visitId: newVisit.id, // Assuming newVisit has an id property
         patientId: this.patientId,
         // Required blood pressure fields
         systolicPressure: 0, // Set appropriate default or get from form
@@ -350,8 +351,6 @@ export class MedicalRecordsComponent
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-
-      newVisit.pressure = [pressureEntry as Pressure];
     }
 
     // If diagnosis is provided, create diagnosis entries
@@ -418,8 +417,9 @@ export class MedicalRecordsComponent
       // Arrays - empty by default, to be populated by backend
       recentVisits: [newVisit as Visit],
       allergies: [],
-      recentLabResults: [],
+      labResults: [],
       immunizations: [],
+      pressure: [],
     };
 
     console.log('Record to submit:', record);

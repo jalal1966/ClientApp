@@ -18,7 +18,10 @@ export class MedicalRecordsService {
    * @param patientId The ID of the patient
    * @returns Observable of MedicalRecord
    */
-  getMedicalRecord(patientId: number): Observable<MedicalRecord> {
+  getMedicalRecord(
+    // record: MedicalRecord,
+    patientId: number
+  ): Observable<MedicalRecord> {
     return this.http
       .get<MedicalRecord>(
         `${this.apiUrl}${this.baseUrl}/${patientId}/medical-record`

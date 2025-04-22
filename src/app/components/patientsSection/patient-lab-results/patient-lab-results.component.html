@@ -1,180 +1,206 @@
-<div class="container">
-  <h2>Patient Lab Results</h2>
-  <!-- Error and Success Messages -->
-  <div *ngIf="errorMessage" class="alert alert-danger mb-3">
-    {{ errorMessage }}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">Patient Lab Results</h5>
   </div>
-  <div *ngIf="successMessage" class="alert alert-success mb-3">
-    {{ successMessage }}
-  </div>
-  <!-- Loading Indicator -->
-  <div *ngIf="loading" class="d-flex justify-content-center mb-3">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
+  <div class="card-body" *ngIf="!showNoRecordMessage">
+    <!-- Error and Success Messages -->
+    <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+      {{ errorMessage }}
     </div>
-  </div>
+    <div *ngIf="successMessage" class="alert alert-success mb-3">
+      {{ successMessage }}
+    </div>
+    <div
+      class="invalid-feedback"
+      *ngIf="
+        labResultForm &&
+        labResultForm.get('testDate')?.invalid &&
+        labResultForm.get('testDate')?.touched
+      "
+    >
+      Test date is required
+    </div>
+    <!-- Loading Indicator -->
+    <div *ngIf="!loading" class="d-flex justify-content-center mb-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
 
-  <!-- Lab Results List -->
-  <div class="mb-3">
-    <h3>Lab History</h3>
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Test</th>
-            <th>Result</th>
-            <th>Reference Range</th>
-            <th>Provider</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let result of labResults">
-            <td>{{ result.testDate | date : "MM/dd/yyyy" }}</td>
-            <td>{{ result.testName }}</td>
-            <td>{{ result.result }}</td>
-            <td>{{ result.referenceRange }}</td>
-            <td>{{ result.orderingProvider }}</td>
-            <td>
-              <button
-                class="btn btn-sm btn-info me-2"
-                (click)="editLabResult(result)"
-              >
-                Edit
-              </button>
-              <button
-                class="btn btn-sm btn-danger"
-                (click)="deleteLabResult(result.id)"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-          <tr *ngIf="labResults.length === 0">
-            <td colspan="6" class="text-center">No lab results available</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Lab Results List -->
+    <div class="mb-4">
+      <h6 class="fw-bold">Lab History</h6>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Test</th>
+              <th>Result</th>
+              <th>Reference Range</th>
+              <th>Provider</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let result of labResults">
+              <td>{{ result.testDate | date : "MM/dd/yyyy" }}</td>
+              <td>{{ result.testName }}</td>
+              <td>{{ result.result }}</td>
+              <td>{{ result.referenceRange }}</td>
+              <td>{{ result.orderingProvider }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-info me-1"
+                  (click)="editLabResult(result)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-danger me-1"
+                  (click)="deleteLabResult(result.id)"
+                >
+                  Delete
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary me-1"
+                  (click)="downloadLabResults(result.id!)"
+                >
+                  <i class="bi bi-file-earmark-arrow-down me-1"></i> PDF
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-info"
+                  (click)="emailLabResults(result.id!)"
+                >
+                  <i class="bi bi-envelope me-1"></i> Email
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="labResults.length === 0">
+              <td colspan="6" class="text-center">No lab results available</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <!-- Add/Edit Form -->
-  <div class="card mb-4">
-    <div class="card-header">
-      {{ isEditing ? "Edit Lab Result" : "Add New Lab Result" }}
-    </div>
-    <div class="card-body">
-      <form [formGroup]="labResultForm" (ngSubmit)="submitForm()">
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="testDate" class="form-label">Test Date</label>
-            <input
-              type="date"
-              class="form-control"
-              id="testDate"
-              formControlName="testDate"
-            />
-            <div
-              class="invalid-feedback"
-              *ngIf="
-                labResultForm.get('testDate')?.invalid &&
-                labResultForm.get('testDate')?.touched
-              "
-            >
-              Test date is required
+    <!-- Add/Edit Form -->
+    <div class="card">
+      <div class="card-header bg-light" style="color: black">
+        {{ isEditing ? "Edit Lab Result" : "Add New Lab Result" }}
+      </div>
+      <div class="card-body">
+        <form [formGroup]="labResultForm" (ngSubmit)="submitForm()">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="testDate" class="form-label">Test Date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="testDate"
+                formControlName="testDate"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  labResultForm.get('testDate')?.invalid &&
+                  labResultForm.get('testDate')?.touched
+                "
+              >
+                Test date is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="testName" class="form-label">Test Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="testName"
+                formControlName="testName"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  labResultForm.get('testName')?.invalid &&
+                  labResultForm.get('testName')?.touched
+                "
+              >
+                Test name is required
+              </div>
             </div>
           </div>
-          <div class="col-md-6">
-            <label for="testName" class="form-label">Test Name</label>
-            <input
-              type="text"
-              class="form-control"
-              id="testName"
-              formControlName="testName"
-            />
-            <div
-              class="invalid-feedback"
-              *ngIf="
-                labResultForm.get('testName')?.invalid &&
-                labResultForm.get('testName')?.touched
-              "
-            >
-              Test name is required
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="result" class="form-label">Result</label>
+              <input
+                type="text"
+                class="form-control"
+                id="result"
+                formControlName="result"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  labResultForm.get('result')?.invalid &&
+                  labResultForm.get('result')?.touched
+                "
+              >
+                Result is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="referenceRange" class="form-label"
+                >Reference Range</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="referenceRange"
+                formControlName="referenceRange"
+              />
             </div>
           </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="result" class="form-label">Result</label>
-            <input
-              type="text"
-              class="form-control"
-              id="result"
-              formControlName="result"
-            />
-            <div
-              class="invalid-feedback"
-              *ngIf="
-                labResultForm.get('result')?.invalid &&
-                labResultForm.get('result')?.touched
-              "
-            >
-              Result is required
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="orderingProvider" class="form-label"
+                >Ordering Provider</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="orderingProvider"
+                formControlName="orderingProvider"
+              />
+            </div>
+            <div class="col-md-6">
+              <label for="notes" class="form-label">Notes</label>
+              <textarea
+                class="form-control"
+                id="notes"
+                formControlName="notes"
+                rows="3"
+              ></textarea>
             </div>
           </div>
-          <div class="col-md-6">
-            <label for="referenceRange" class="form-label"
-              >Reference Range</label
+          <div class="d-flex justify-content-between">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="labResultForm.invalid"
             >
-            <input
-              type="text"
-              class="form-control"
-              id="referenceRange"
-              formControlName="referenceRange"
-            />
-          </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="orderingProvider" class="form-label"
-              >Ordering Provider</label
+              {{ isEditing ? "Update" : "Add" }} Lab Result
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              *ngIf="isEditing"
+              (click)="cancelEdit()"
             >
-            <input
-              type="text"
-              class="form-control"
-              id="orderingProvider"
-              formControlName="orderingProvider"
-            />
+              Cancel
+            </button>
           </div>
-          <div class="col-md-6">
-            <label for="notes" class="form-label">Notes</label>
-            <textarea
-              class="form-control"
-              id="notes"
-              formControlName="notes"
-              rows="3"
-            ></textarea>
-          </div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="labResultForm.invalid"
-          >
-            {{ isEditing ? "Update" : "Add" }} Lab Result
-          </button>
-          <button
-            type="button"
-            class="btn btn-secondary"
-            *ngIf="isEditing"
-            (click)="cancelEdit()"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 </div>

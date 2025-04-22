@@ -7,10 +7,17 @@ import { PatientInfoComponent } from '../patient-info/patient-info.component';
 import { PatientAllergiesComponent } from '../patient-allergies/patient-allergies.component';
 import { PatientLabResultsComponent } from '../patient-lab-results/patient-lab-results.component';
 import { PatientDetail, Patients } from '../../../models/patient.model';
-import { Allergy } from '../../../models/medicalRecord.model';
+import {
+  Allergy,
+  Immunization,
+  LabResult,
+} from '../../../models/medicalRecord.model';
 import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { AuthService } from '../../../services/auth/auth.service';
+import { ImmunizationsComponent } from '../immunzations/immunizations.component';
+import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
+import { MedicalRecordsComponent } from '../medical-records/medical-records.component';
 
 @Component({
   selector: 'app-patient-record',
@@ -21,7 +28,9 @@ import { AuthService } from '../../../services/auth/auth.service';
     PatientInfoComponent,
     PatientLabResultsComponent,
     PatientAllergiesComponent,
-    PatientVisitComponent,
+    ImmunizationsComponent,
+    BloodPressureComponent,
+    MedicalRecordsComponent,
   ],
   templateUrl: './patient-record.component.html',
   styleUrl: './patient-record.component.scss',
@@ -35,6 +44,8 @@ export class PatientRecordComponent
   today: Date = new Date();
   activeTab: string = 'info';
   allergies: Allergy[] = []; // <-- Ensure this is present
+  labResults: LabResult[] = [];
+  immunizations: Immunization[] = [];
 
   constructor(
     private route: ActivatedRoute,

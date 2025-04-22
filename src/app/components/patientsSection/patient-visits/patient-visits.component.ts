@@ -29,8 +29,9 @@ export class PatientVisitComponent
   extends PatientComponentBase
   implements OnInit
 {
-  @Input() medicalRecordId?: number;
   @Input() visits: Visit[] = [];
+  @Input() medicalRecordId: number | undefined;
+  //@Input() medicalRecordId: number | undefined;
   selectedVisit: Visit | null = null;
   visitForm!: FormGroup; // Use definite assignment assertion
   showForm = false;
@@ -50,6 +51,7 @@ export class PatientVisitComponent
       key,
       value: AppointmentType[key as keyof typeof AppointmentType],
     }));
+  error: string | undefined;
 
   constructor(
     private patientVisitService: PatientVisitService,
@@ -69,12 +71,17 @@ export class PatientVisitComponent
   }
 
   ngOnInit(): void {
-    this.patientId = Number(this.route.snapshot.paramMap.get('id'));
-    if (this.patientId) {
-      //this.loadPatientVisits();
-      this.loadPatient(this.patientId);
-      this.checkMedicalRecord();
-    }
+    this.route.parent?.params.subscribe((parentParams) => {
+      const currentParams = this.route.snapshot.params;
+
+      this.patientId = +(parentParams['id'] ?? currentParams['id'] ?? 0);
+
+      if (this.patientId) {
+        //this.loadPatientVisits();
+        this.loadPatient(this.patientId);
+        this.checkMedicalRecord();
+      }
+    });
   }
 
   openMedicalRecordForm(): void {
@@ -102,7 +109,7 @@ export class PatientVisitComponent
   // Add a new method to check if the medical record exists
   checkMedicalRecord(): void {
     this.loading = true;
-    this.medicalRecordId = 0; // Default to no record
+    // this.medicalRecordId = 0; // Default to no record
 
     // Use the MedicalRecordsService to check if record exists
     this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
@@ -149,7 +156,7 @@ export class PatientVisitComponent
 
   createVisitForm(): FormGroup {
     const form = this.fb.group({
-      id: [0],
+      //id: [0],
       patientId: [this.patientId],
       medicalRecordId: [this.medicalRecordId],
       visitDate: [this.getCurrentDateTimeLocal(), Validators.required],

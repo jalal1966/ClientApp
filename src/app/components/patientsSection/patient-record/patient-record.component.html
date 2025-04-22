@@ -107,40 +107,49 @@
       <div *ngSwitchCase="'info'">
         <app-patient-info [patient]="patient"></app-patient-info>
       </div>
-
+      <!-- Basic MedicalRecord -->
+      <div *ngSwitchCase="'MedicalRecord'">
+        <app-medical-records></app-medical-records>
+      </div>
       <!-- Allergies -->
       <div *ngSwitchCase="'allergies'">
         <app-patient-allergies
-          [allergies]="patient.patientDetails.medicalRecord.allergies"
+          [allergies]="patient.medicalRecord.allergies"
           [patientId]="patientId"
         ></app-patient-allergies>
-      </div>
-
-      <!-- Medications -->
-      <div *ngSwitchCase="'medications'">
-        <app-patient-allergies
-          [allergies]="patient.patientDetails.medicalRecord.allergies || []"
-          [patientId]="patientId"
-        ></app-patient-allergies>
-      </div>
-
-      <!-- Visits -->
-      <div *ngSwitchCase="'visits'">
-        <app-patient-visit
-          [visits]="patient.patientDetails.medicalRecord.recentVisits || []"
-          [patientId]="patientId"
-        ></app-patient-visit>
       </div>
 
       <!-- Lab Results -->
       <div *ngSwitchCase="'labs'">
         <app-patient-lab-results
-          [labResults]="
-            patient.patientDetails.medicalRecord.recentLabResults || []
-          "
+          [labResults]="patient.medicalRecord.labResults || []"
           [patientId]="patientId"
         ></app-patient-lab-results>
       </div>
+
+      <!-- immunizations -->
+      <div *ngSwitchCase="'immunizations'">
+        <app-immunizations
+          [immunizations]="patient.medicalRecord.immunizations || []"
+          [patientId]="patientId"
+        ></app-immunizations>
+      </div>
+
+      <!-- immunizations -->
+      <div *ngSwitchCase="'pressuer'">
+        <app-blood-pressure
+          [pressure]="patient.medicalRecord.pressure || []"
+          [patientId]="patientId"
+        ></app-blood-pressure>
+      </div>
+      <a routerLink="/immunizations">Go to Immunizations</a>
+      <!-- Visits 
+      <div *ngSwitchCase="'visits'">
+        <app-patient-visit
+          [visits]="patient.medicalRecord.recentVisits || []"
+          [patientId]="patientId"
+        ></app-patient-visit>
+      </div>-->
 
       <!-- Medical History -->
       <div *ngSwitchCase="'history'">
@@ -155,7 +164,7 @@
             <h6>Chronic Conditions</h6>
             <p>
               {{
-                patient.patientDetails.medicalRecord.chronicConditions ||
+                patient.medicalRecord.chronicConditions ||
                   "No chronic conditions recorded"
               }}
             </p>
@@ -163,7 +172,7 @@
             <h6>Surgical History</h6>
             <p>
               {{
-                patient.patientDetails.medicalRecord.surgicalHistory ||
+                patient.medicalRecord.surgicalHistory ||
                   "No surgical history recorded"
               }}
             </p>
@@ -171,7 +180,7 @@
             <h6>Family Medical History</h6>
             <p>
               {{
-                patient.patientDetails.medicalRecord.familyMedicalHistory ||
+                patient.medicalRecord.familyMedicalHistory ||
                   "No family medical history recorded"
               }}
             </p>
@@ -179,7 +188,7 @@
             <h6>Social History</h6>
             <p>
               {{
-                patient.patientDetails.medicalRecord.socialHistory ||
+                patient.medicalRecord.socialHistory ||
                   "No social history recorded"
               }}
             </p>
