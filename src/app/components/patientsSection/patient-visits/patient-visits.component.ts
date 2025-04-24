@@ -30,7 +30,7 @@ export class PatientVisitComponent
   implements OnInit
 {
   @Input() visits: Visit[] = [];
-  @Input() medicalRecordId: number | undefined;
+  //@Input() medicalRecordId: number | undefined;
   //@Input() medicalRecordId: number | undefined;
   selectedVisit: Visit | null = null;
   visitForm!: FormGroup; // Use definite assignment assertion

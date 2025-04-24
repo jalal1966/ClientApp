@@ -21,7 +21,6 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { MapComponent } from '../../commonSection/map/map.component';
 import { WaitingListComponent } from '../../commonSection/waiting-list/waiting-list.component';
 import { AppointmentComponent } from '../../commonSection/appointment/appointment.component';
-import { UsersService } from '../../../services/usersService/users.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { PatientDetailComponent } from '../../patientsSection/patient-detail/patient-detail.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -29,6 +28,7 @@ import {
   AppointmentStatus,
   AppointmentType,
 } from '../../../models/enums.model';
+import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
 
 @Component({
   selector: 'app-clinic-dashboard',
@@ -88,6 +88,7 @@ export class ClinicDashboardComponent
     private patientService: PatientService,
     private doctorsService: AuthService,
     private appointmentService: AppointmentService,
+    private medicalRecordsService: MedicalRecordsService,
     authService: AuthService,
     router: Router,
     private modalService: NgbModal,
@@ -100,6 +101,7 @@ export class ClinicDashboardComponent
     this.Initializing();
     this.loadPatients();
     this.loadDoctors();
+
     // Refresh every minute to update wait times
     this.refreshInterval = setInterval(() => {
       this.Initializing();
@@ -166,13 +168,6 @@ export class ClinicDashboardComponent
     });
   }
 
-  /* openMap(patientId: number): void {
-    if (patientId) {
-      this.router.navigate(['/patient-info', patientId]);
-    } else {
-      this.router.navigate(['/patient-info']);
-    }
-  } */
   openMap(patientId: number): void {
     this.router.navigate(['/patient-detail', patientId]);
   }
@@ -266,19 +261,48 @@ export class ClinicDashboardComponent
     }
   }
 
-  openMerge(id: number): void {
-    console.log('Opening patient record for');
+  openMerge(patientId: number): void {
+    // Set loading state if needed
+    this.loading = true;
 
     // In a real application, this would navigate to the patient's record
-    if (id) {
-      this.router.navigate(['/merge', id]);
-    }
+    // Directly get the medical record ID from the patient service
+    this.medicalRecordsService.getMedicalRecord(patientId).subscribe({
+      next: (data) => {
+        this.loading = false;
+
+        if (data && data.id) {
+          // Navigate to the merge page with both IDs
+          this.router.navigate(['/merge', patientId], {
+            queryParams: { medicalRecordId: data.id },
+          });
+        } else {
+          // Handle case where medical record doesn't exist
+          console.error('No medical record found for patient ID:', patientId);
+          // Optionally show an alert or notification to the user
+          alert(
+            'No medical record found for this patient. Please create a medical record first.'
+          );
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error fetching medical record:', err);
+
+        // Handle error case - maybe navigate without the medical record ID
+        // or show an error message
+        if (err.status === 404) {
+          alert(
+            'No medical record found for this patient. Please create a medical record first.'
+          );
+        } else {
+          alert('Error accessing medical records. Please try again later.');
+        }
+      },
+    });
   }
 
   viewPatientDetailsInfo(id: number | undefined): void {
-    console.log('Viewing details for patient ID', id);
-    console.log('Opening patient record for');
-
     if (id) {
       this.router.navigate(['/patients', id]);
     }
@@ -333,9 +357,6 @@ export class ClinicDashboardComponent
   // Then update your scheduleNewAppointment method
 
   showErrorAlert(message: string): void {
-    // Example using Angular Material snackbar
-    // this.snackBar.open(message, 'Close', { duration: 5000 });
-
     // Or using a custom alert method
     alert(message);
   }

@@ -41,8 +41,8 @@ export class MedicalRecordsComponent
   implements OnInit
 {
   @Input() medicalRecords: MedicalRecord[] = [];
-  @Input() master: boolean = true;
-  medicalRecordId?: number;
+  @Input() main: boolean = true;
+  //medicalRecordId?: number;
   medicalRecord: any = null;
   medicalRecordForm: FormGroup;
   loading = true;

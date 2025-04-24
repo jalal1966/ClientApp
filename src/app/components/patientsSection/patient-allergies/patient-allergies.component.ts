@@ -28,7 +28,7 @@ export class PatientAllergiesComponent
   isEditing = false;
   currentAllergyId?: number;
   @Input() allergies: Allergy[] = [];
-  medicalRecordId: number | undefined;
+  //medicalRecordId: number | undefined;
 
   constructor(
     private http: HttpClient,

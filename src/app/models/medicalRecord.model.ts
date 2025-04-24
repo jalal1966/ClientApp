@@ -77,7 +77,7 @@ export interface Immunization {
   vaccineName: string;
   administrationDate: string;
   lotNumber?: string;
-  administeringProvider?: string;
+  administeringProvider: string;
   nextDoseDate: string;
   manufacturer?: string;
 }

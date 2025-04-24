@@ -7,16 +7,7 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import {
-  NgIf,
-  NgFor,
-  DatePipe,
-  CommonModule,
-  NgIfContext,
-  NgClass,
-  Location,
-} from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Patients, PatientDetail } from '../../../models/patient.model';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
@@ -24,7 +15,6 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
-  FormsModule,
 } from '@angular/forms';
 import { PatientService } from '../../../services/patient/patient.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
@@ -41,7 +31,6 @@ import { Diagnosis, Medication } from '../../../models/visits.model';
 import { PatientInfoComponent } from '../patient-info/patient-info.component';
 import { PatientAllergiesComponent } from '../patient-allergies/patient-allergies.component';
 import { PatientLabResultsComponent } from '../patient-lab-results/patient-lab-results.component';
-import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
 import { ImmunizationsComponent } from '../immunzations/immunizations.component';
 import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
 import { MedicalRecordsComponent } from '../medical-records/medical-records.component';
@@ -74,15 +63,10 @@ export class MergedPatientComponent
   allergies: Allergy[] = []; // <-- Ensure this is present
   labResults: LabResult[] = [];
   immunizations: Immunization[] = [];
-  // medicalRecordId: any;
-  /////////////////////////////////////////
-  // Default tab
+
   recordExists = false;
   filteredPatients: Patients[] = [];
-  /* noImmunizations: TemplateRef<NgIfContext<boolean>> | null = null;
-  noAllergies: TemplateRef<NgIfContext<boolean>> | null = null;
-  noVisits: TemplateRef<NgIfContext<boolean>> | null = null;
-  noLabResults: TemplateRef<NgIfContext<boolean>> | null = null; */
+
   @ViewChild('noMedications', { static: true })
   noMedications!: TemplateRef<any>;
   @ViewChild('noAllergies', { static: true }) noAllergies!: TemplateRef<any>;
@@ -102,7 +86,7 @@ export class MergedPatientComponent
   visit: any;
   bpSystolic: any;
   bpDiastolic: any;
-  medicalRecordId?: number;
+
   /////////////////////////////////////////
 
   constructor(
@@ -117,7 +101,7 @@ export class MergedPatientComponent
     super(authService, router);
     this.medicalRecordForm = this.fb.group({
       // Physical Information
-      idToPass: [null],
+      idToPass: [this.medicalRecordId],
       id: [''],
       height: ['', [Validators.required]],
       weight: ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
@@ -146,56 +130,33 @@ export class MergedPatientComponent
   }
 
   ngOnInit(): void {
+    // Get patient ID from route parameters
     const parentParams = this.route.parent?.snapshot.paramMap;
     const currentParams = this.route.snapshot.paramMap;
-
     const id = parentParams?.get('id') ?? currentParams.get('id');
 
     if (id) {
       this.patientId = +id;
-      // this.medicalRecordId = medicalRecordId ? +medicalRecordId : 0;
-      this.checkMedicalRecord();
-      this.loadPatientDetailsData();
-      this.loadMedicalRecord();
 
-      this.route.queryParams.subscribe((queryParams) => {
-        if (queryParams['tab']) {
-          this.activeTab = queryParams['tab'];
+      // Get medical record ID directly from query parameters
+      this.route.queryParams.subscribe((params) => {
+        if (params['medicalRecordId']) {
+          this.medicalRecordId = +params['medicalRecordId'];
+          this.loadPatientDetailsData();
+          this.loadMedicalRecord();
+        } else {
+          console.warn('No medical record ID provided in query parameters');
+          // Handle the case when no medicalRecordId is provided
         }
       });
     } else {
       this.error = 'Patient ID is required';
       this.loading = false;
     }
+
+    console.log('medicalRecordId', this.medicalRecordId);
   }
 
-  // Add a new method to check if the medical record exists
-  checkMedicalRecord(): void {
-    this.loading = true;
-    //this.medicalRecordId = 0; // Default to no record
-
-    // Use the MedicalRecordsService to check if record exists
-    this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
-      next: (data) => {
-        this.loading = false;
-        if (data && data.id) {
-          this.medicalRecordId = data.id;
-          this.showNoRecordMessage = false;
-        } else {
-          this.showNoRecordMessage = true;
-        }
-      },
-      error: (err) => {
-        this.loading = false;
-        // Check if it's a 404 (record doesn't exist yet)
-        if (err.status === 404 || err.message?.includes('Error Code: 404')) {
-          this.showNoRecordMessage = true;
-        } else {
-          console.error('Error checking medical record:', err);
-        }
-      },
-    });
-  }
   getBloodPressureStatus(bp: string | undefined) {
     if (!bp) return { class: '', label: '-' };
 
@@ -227,9 +188,6 @@ export class MergedPatientComponent
   openMedicalRecordForm(): void {
     // You can either navigate to a medical record creation page
     this.router.navigate(['/patients/', this.patientId, 'medical-records']);
-
-    // Or you could implement a modal form directly in this component
-    // this.showMedicalRecordForm = true;
   }
 
   // Merged loading method
@@ -449,16 +407,14 @@ export class MergedPatientComponent
     };
   }
 
-  /* setActiveTab(tab: string): void {
-    this.activeTab = tab;
-    if (tab === 'visits') {
-      this.viewVisitDetails(this.patientId);
-    }
-    if (tab === 'info') {
-     
-    }
+  setMedicalRecordIdInUrl(id: number): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { medicalRecordId: id },
+      queryParamsHandling: 'merge',
+    });
   }
- */
+
   // Tab handling
   setActiveTab(tab: string): void {
     this.activeTab = tab;
@@ -473,7 +429,7 @@ export class MergedPatientComponent
   // Methods for Recent Visits tab
   scheduleNewVisit(): void {
     if (this.patient) {
-      this.router.navigate(['/schedule-visit', this.patientId]);
+      this.router.navigate(['visits/', this.patientId]);
     }
   }
 
@@ -500,8 +456,9 @@ export class MergedPatientComponent
 
   // Methods for Lab Results tab
   orderNewLab(): void {
-    if (this.patient) {
-      this.router.navigate(['/order-lab', this.patientId]);
+    if (this.patientId) {
+      // Changed from this.patient to this.patientId
+      this.router.navigate(['/patients', this.patientId, 'lab-results']); // Fixed path segments
     }
   }
 

@@ -29,9 +29,10 @@ export class PatientLabResultsComponent
   labResultForm!: FormGroup;
   isEditing = false;
   currentEditId?: number;
+
   @Input() labResults: LabResult[] = [];
   @Input() loading = false;
-  @Input() medicalRecordId?: number;
+  // @Input() medicalRecordId?: number;
   showNoRecordMessage = false;
   patient: Patients | undefined;
   error: string | null = null;
@@ -53,41 +54,15 @@ export class PatientLabResultsComponent
   }
 
   ngOnInit(): void {
-    /*  // Try parent route first
-    this.route.parent?.paramMap.subscribe((params) => {
-      if (params.has('id')) {
-        this.patientId = +params.get('id')!;
-        this.medicalRecordId = params.has('medicalRecordId')
-        ? +params.get('medicalRecordId')!
-        : undefined;
-        this.initForm();
-        this.loadLabResults();
-        } else {
-          // Fallback to direct route params
-        const directParams = this.route.snapshot.paramMap;
-        this.patientId = directParams.has('id') ? +directParams.get('id')! : 0;
-        this.medicalRecordId = directParams.has('medicalRecordId')
-        ? +directParams.get('medicalRecordId')!
-        : undefined;
-        this.initForm();
-        this.loadLabResults();
-        }
-        }); */
-
     // Use consistent approach for getting patient ID - prefer the parent route approach
     this.route.parent?.params.subscribe((parentParams) => {
       const currentParams = this.route.snapshot.params;
       this.patientId = +(parentParams['id'] ?? currentParams['id'] ?? 0);
-      /* this.route.queryParamMap.subscribe((params) => {
-            if (params.has('medicalRecordId')) {
-              this.medicalRecordId = +params.get('medicalRecordId')!;
-              }
-              }); */
 
       console.log('medicalRecordId', this.medicalRecordId);
-      this.initForm();
-      //this.checkMedicalRecord();
-      this.loadLabResults();
+      //this.initForm();
+      this.checkMedicalRecord();
+      //this.loadLabResults();
     });
   }
   // Add a new method to check if the medical record exists

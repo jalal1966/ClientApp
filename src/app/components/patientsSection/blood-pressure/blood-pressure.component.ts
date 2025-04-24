@@ -36,7 +36,7 @@ export class BloodPressureComponent
   implements OnInit
 {
   @Input() pressure: Pressure[] = [];
-  @Input() medicalRecordId: number | undefined;
+  // @Input() medicalRecordId: number | undefined;
   bloodPressureForm!: FormGroup;
   pressureRecords: Pressure[] = [];
   isLoading: boolean = false;

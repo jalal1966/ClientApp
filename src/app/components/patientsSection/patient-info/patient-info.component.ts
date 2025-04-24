@@ -14,13 +14,11 @@ import { CommonModule } from '@angular/common';
 import {
   ContactInfoUpdate,
   InsuranceUpdate,
-  PatientDetail,
   PatientInfo,
   Patients,
 } from '../../../models/patient.model';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { Location } from '@angular/common';
-import { User } from '../../../models/user';
 import { AuthService } from '../../../services/auth/auth.service';
 import { PatientService } from '../../../services/patient/patient.service';
 
@@ -87,11 +85,29 @@ export class PatientInfoComponent
   }
 
   ngOnInit(): void {
-    this.route.params.subscribe((params) => {
-      this.patientId = +params['id'];
-      this.loadPatientInfo();
-      this.loadDoctors();
-    });
+    // Get patient ID from route parameters
+    const parentParams = this.route.parent?.snapshot.paramMap;
+    const currentParams = this.route.snapshot.paramMap;
+    const id = parentParams?.get('id') ?? currentParams.get('id');
+
+    if (id) {
+      this.patientId = +id;
+
+      // Get medical record ID directly from query parameters
+      this.route.queryParams.subscribe((params) => {
+        if (params['medicalRecordId']) {
+          this.medicalRecordId = +params['medicalRecordId'];
+          this.loadPatientInfo();
+          this.loadDoctors();
+        } else {
+          console.warn('No medical record ID provided in query parameters');
+          // Handle the case when no medicalRecordId is provided
+        }
+      });
+    } else {
+      this.error = 'Patient ID is required';
+      this.loading = false;
+    }
   }
 
   loadDoctors(): void {
@@ -130,17 +146,37 @@ export class PatientInfoComponent
         }
       });
   }
+  // Updated function to handle date formatting correctly
+  formatDateToLocalYMD(dateInput: Date | string): string {
+    // If it's already a Date object
+    if (dateInput instanceof Date) {
+      const year = dateInput.getFullYear();
+      const month = String(dateInput.getMonth() + 1).padStart(2, '0');
+      const day = String(dateInput.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // If it's a string
+    if (typeof dateInput === 'string') {
+      // Try to parse the date string
+      const date = new Date(dateInput);
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+    }
+
+    // Return empty string if neither condition is met
+    return '';
+  }
 
   populatePatientForm(info: PatientInfo): void {
-    //  Convert the value of dataeOfBirth before patching
-    const formattedDate = info.dateOfBirth
-      ? new Date(info.dateOfBirth).toISOString().substring(0, 10)
-      : '';
-
     this.patientForm.patchValue({
       firstName: info.firstName,
       lastName: info.lastName,
-      dateOfBirth: formattedDate,
+      dateOfBirth: this.formatDateToLocalYMD(info.dateOfBirth),
       genderID: info.genderID,
       nursID: info.nursID,
       nursName: info.nursName,

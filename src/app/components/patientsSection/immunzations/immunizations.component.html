@@ -1,75 +1,217 @@
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4>Immunization Records</h4>
-      <button class="btn btn-primary" (click)="openModal(modal)">Add Immunization</button>
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h4>Immunization Records</h4>
+  </div>
+  <div class="card-body" *ngIf="!showNoRecordMessage">
+    <!-- Error and Success Messages -->
+    <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+      {{ errorMessage }}
     </div>
-  
-    <table class="table table-bordered table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>Vaccine</th>
-          <th>Administered</th>
-          <th>Next Dose</th>
-          <th>Provider</th>
-          <th>Lot #</th>
-          <th>Manufacturer</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let i of immunizations">
-          <td>{{ i.vaccineName }}</td>
-          <td>{{ i.administrationDate | date }}</td>
-          <td>{{ i.nextDoseDate | date }}</td>
-          <td>{{ i.administeringProvider }}</td>
-          <td>{{ i.lotNumber }}</td>
-          <td>{{ i.manufacturer }}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-info me-2" (click)="openModal(modal, i)">Edit</button>
-            <button class="btn btn-sm btn-outline-danger" (click)="deleteImmunization(i.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  
-    <!-- Modal -->
-    <ng-template #modal let-modal>
-      <div class="modal-header">
-        <h5 class="modal-title">{{ selectedImmunization ? 'Edit' : 'Add' }} Immunization</h5>
-        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    <div *ngIf="successMessage" class="alert alert-success mb-3">
+      {{ successMessage }}
+    </div>
+    <button class="btn btn-sm btn-outline-secondary me-1" (click)="openForm()">
+      <i class="bi bi-file-earmark-arrow-down me-1"></i> Add Immunization
+    </button>
+
+    <!-- Add/Edit Form - Only shown when showForm is true -->
+    <div class="card mt-3" *ngIf="showForm">
+      <div class="card-header bg-light" style="color: black">
+        {{ isEditing ? "Edit immunization" : "Add New immunization" }}
       </div>
-      <div class="modal-body">
-        <form>
-          <div class="mb-2">
-            <label class="form-label">Vaccine Name</label>
-            <input class="form-control" [(ngModel)]="newImmunization.vaccineName" name="vaccineName" />
+      <div class="card-body">
+        <form [formGroup]="immunizationForm" (ngSubmit)="submitForm()">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="administrationDate" class="form-label"
+                >Administration Date</label
+              >
+              <input
+                type="date"
+                class="form-control"
+                id="administrationDate"
+                formControlName="administrationDate"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  immunizationForm.get('administrationDate')?.invalid &&
+                  immunizationForm.get('administrationDate')?.touched
+                "
+              >
+                Administration Date is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="nextDoseDate" class="form-label">NextDose Date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="nextDoseDate"
+                formControlName="nextDoseDate"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  immunizationForm.get('nextDoseDate')?.invalid &&
+                  immunizationForm.get('nextDoseDate')?.touched
+                "
+              >
+                NextDose Date is required
+              </div>
+            </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label">Administration Date</label>
-            <input type="date" class="form-control" [(ngModel)]="newImmunization.administrationDate" name="administrationDate" />
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="vaccineName" class="form-label">Vaccine Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="vaccineName"
+                formControlName="vaccineName"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  immunizationForm.get('vaccineName')?.invalid &&
+                  immunizationForm.get('vaccineName')?.touched
+                "
+              >
+                Vaccine Name is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="administeringProvider" class="form-label"
+                >Administering Provider</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="administeringProvider"
+                formControlName="administeringProvider"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  immunizationForm.get('administeringProvider')?.invalid &&
+                  immunizationForm.get('administeringProvider')?.touched
+                "
+              >
+                Administering Provider is required
+              </div>
+            </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label">Next Dose Date</label>
-            <input type="date" class="form-control" [(ngModel)]="newImmunization.nextDoseDate" name="nextDoseDate" />
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="lotNumber" class="form-label">Lot Number</label>
+              <input
+                type="text"
+                class="form-control"
+                id="lotNumber"
+                formControlName="lotNumber"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  immunizationForm.get('lotNumber')?.invalid &&
+                  immunizationForm.get('lotNumber')?.touched
+                "
+              >
+                Lot Number is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="manufacturer" class="form-label">Manufacturer</label>
+              <input
+                type="text"
+                class="form-control"
+                id="manufacturer"
+                formControlName="manufacturer"
+              />
+            </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label">Lot Number</label>
-            <input class="form-control" [(ngModel)]="newImmunization.lotNumber" name="lotNumber" />
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Administering Provider</label>
-            <input class="form-control" [(ngModel)]="newImmunization.administeringProvider" name="administeringProvider" />
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Manufacturer</label>
-            <input class="form-control" [(ngModel)]="newImmunization.manufacturer" name="manufacturer" />
+
+          <div class="d-flex justify-content-between">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="immunizationForm.invalid"
+            >
+              {{ isEditing ? "Update" : "Add" }} Immunization
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="cancelEdit()"
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-        <button class="btn btn-success" (click)="saveImmunization(modal)">Save</button>
+    </div>
+
+    <!-- Loading Indicator - Fixed condition -->
+    <div *ngIf="loading" class="d-flex justify-content-center mb-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
-    </ng-template>
+    </div>
+
+    <!-- Immunization Table -->
+    <div class="mb-4 mt-3">
+      <h6 class="fw-bold">Immunization History</h6>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Vaccine</th>
+              <th>Administered</th>
+              <th>Next Dose</th>
+              <th>Provider</th>
+              <th>Lot #</th>
+              <th>Manufacturer</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let immuniz of immunizations">
+              <td>{{ immuniz.vaccineName }}</td>
+              <td>{{ immuniz.administrationDate | date }}</td>
+              <td>{{ immuniz.nextDoseDate | date }}</td>
+              <td>{{ immuniz.administeringProvider }}</td>
+              <td>{{ immuniz.lotNumber }}</td>
+              <td>{{ immuniz.manufacturer }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-info me-2"
+                  (click)="editImmunization(immuniz)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-danger me-2"
+                  (click)="deleteImmunization(immuniz.id)"
+                >
+                  Delete
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary me-2"
+                  (click)="downloadImmunization(immuniz.id!)"
+                >
+                  <i class="bi bi-file-earmark-arrow-down me-2"></i> PDF
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-info me-2"
+                  (click)="emailImmunizationResults(immuniz.id!)"
+                >
+                  <i class="bi bi-envelope me-1"></i> Email
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-  
+</div>

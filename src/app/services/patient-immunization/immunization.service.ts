@@ -23,6 +23,10 @@ export class ImmunizationService {
     );
   }
 
+  /* getImmunizations(patientId: number) {
+    let url = `/api/patients/${patientId}/immunizations`;
+    return this.http.get<Immunization[]>(url);
+  } */
   /**
    * Gets a specific immunization by ID for a patient
    * @param patientId The ID of the patient

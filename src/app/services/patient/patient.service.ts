@@ -194,6 +194,17 @@ export class PatientService {
     );
   }
 
+  /**
+   * Downloads immunizations results as a PDF for a specific lab
+   */
+  downloadImmunizationsResults(immzId: number): Observable<Blob> {
+    return this.http.get(
+      `${this.apiUrl}${this.baseUrl}/immunization/${immzId}/results`,
+      {
+        responseType: 'blob',
+      }
+    );
+  }
   //////////////////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////
@@ -205,6 +216,18 @@ export class PatientService {
     return this.http.post(`${this.apiUrl}${this.baseUrl}/labs/${labId}/email`, {
       email,
     });
+  }
+
+  /**
+   * Emails lab results to a patient
+   */
+  emailImmunizationsResults(labId: number, email: string): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}${this.baseUrl}/immunization/${labId}/email`,
+      {
+        email,
+      }
+    );
   }
   /**
    * Gets visit history for a specific patient

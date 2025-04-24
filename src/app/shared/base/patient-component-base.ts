@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth/auth.service';
 @Directive()
 export abstract class PatientComponentBase extends BaseComponent {
   @Input() patientId: number = 0;
-  //@Input() medicalRecordId?: number; // Remove default value to allow undefined
+  @Input() medicalRecordId?: number; // Added back with optional type
 
   constructor(authService: AuthService, router: Router) {
     super(authService, router);
@@ -16,9 +16,9 @@ export abstract class PatientComponentBase extends BaseComponent {
     return `Patient ID: ${this.patientId}`;
   }
 
-  /*  protected getMedicalRecordIdString(): string {
+  protected getMedicalRecordIdString(): string {
     return this.medicalRecordId
-      ? `MedicalRecord ID: ${this.medicalRecordId}`
+      ? `Medical Record ID: ${this.medicalRecordId}`
       : 'No Medical Record ID';
-  } */
+  }
 }

@@ -21,18 +21,9 @@
     {{ error }}
   </div>
 
-  <!-- Back Button -->
-  <div class="row mb-3 mt-3">
-    <div class="col">
-      <button class="btn btn-outline-secondary" (click)="backClicked()">
-        <i class="bi bi-arrow-left"></i> Back
-      </button>
-    </div>
-  </div>
-
   <!-- Patient Header -->
-  <div *ngIf="patient && !loading" class="row mb-4">
-    <div class="col-md-8">
+  <div *ngIf="patient && !loading" class="row mb-1">
+    <div class="row mb-4 col-md-8">
       <div class="d-flex align-items-center">
         <div class="patient-avatar me-3">
           <div class="avatar-placeholder">
@@ -44,7 +35,9 @@
           <div class="patient-meta">
             <span class="badge bg-secondary me-2">ID: {{ patient.id }}</span>
             <span class="badge bg-info me-2">{{ patientAge }} years</span>
-            <span class="badge bg-primary me-2">{{ patient.genderID }}</span>
+            <span class="badge bg-primary me-2">{{
+              patient.genderID === 1 ? "Male" : "Female"
+            }}</span>
             <span *ngIf="patient.insuranceProvider" class="badge bg-success">{{
               patient.insuranceProvider
             }}</span>
@@ -56,8 +49,11 @@
       <button class="btn btn-primary me-2" (click)="scheduleNewVisit()">
         Schedule Visit
       </button>
-      <button class="btn btn-outline-primary" (click)="orderNewLab()">
+      <button class="btn btn-outline-primary me-2" (click)="orderNewLab()">
         Order Lab
+      </button>
+      <button class="btn btn-outline-danger me-2" (click)="backClicked()">
+        <i class="bi bi-arrow-left"></i> Back
       </button>
     </div>
   </div>
@@ -150,7 +146,7 @@
       </div>
       <!-- Basic MedicalRecord -->
       <div *ngSwitchCase="'MedicalRecord'">
-        <app-medical-records [master]="false"></app-medical-records>
+        <app-medical-records [main]="false"></app-medical-records>
       </div>
       <!-- Allergies -->
       <div *ngSwitchCase="'allergies'">
@@ -197,7 +193,7 @@
       <!-- Recent Visits Tab -->
       <div *ngIf="activeTab === 'visits'">
         <!-- Debugging output (optional) 
-  <pre>{{ medicalRecord?.visits | json }}</pre>-->
+                   <pre>{{ medicalRecord?.visits | json }}</pre>-->
 
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">Recent Medical Visits</h5>
@@ -368,6 +364,7 @@
           </div>
         </ng-template>
       </div>
+
       <!-- Medical History -->
       <div *ngSwitchCase="'history'">
         <div class="card">
