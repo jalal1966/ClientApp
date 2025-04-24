@@ -201,9 +201,9 @@ export class BloodPressureService {
    */
   createComprehensivePressureRecord(
     patientId: number,
+    medicalRecordId: number,
     systolicPressure: number | null,
     diastolicPressure: number | null,
-    medicalRecordId: number,
     age: number,
     weight: number,
     gender: string

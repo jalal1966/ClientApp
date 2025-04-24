@@ -1,6 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Route, Router, RouterModule } from '@angular/router';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Route,
+  Router,
+  RouterModule,
+} from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -14,6 +20,10 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { Patients } from '../../../models/patient.model';
 import { PatientService } from '../../../services/patient/patient.service';
 import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
+import { LabTestName } from '../../../models/enums.model';
+import { Location } from '@angular/common';
+import { MedicalRecordUtilityService } from '../../../services/medicalRecordUtility/medical-record-utility.service';
+import { filter, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'app-patient-lab-results',
@@ -30,13 +40,19 @@ export class PatientLabResultsComponent
   isEditing = false;
   currentEditId?: number;
 
+  testNames = Object.values(LabTestName);
+  private destroy$ = new Subject<void>();
   @Input() labResults: LabResult[] = [];
   @Input() loading = false;
+  @Input() isMainForm: boolean = true;
+
   // @Input() medicalRecordId?: number;
   showNoRecordMessage = false;
   patient: Patients | undefined;
   error: string | null = null;
   // Add error handling and loading state
+
+  showForm: boolean = false;
 
   errorMessage: string | null = null;
   successMessage: string | null = null;
@@ -45,54 +61,84 @@ export class PatientLabResultsComponent
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private patientService: PatientService,
+    private medicalRecordUtility: MedicalRecordUtilityService,
+    private labResultsService: PatientLabResultsService,
     private medicalRecordsService: MedicalRecordsService,
     authService: AuthService,
     router: Router,
-    private labResultsService: PatientLabResultsService
+    private location: Location
   ) {
     super(authService, router);
   }
 
   ngOnInit(): void {
-    // Use consistent approach for getting patient ID - prefer the parent route approach
-    this.route.parent?.params.subscribe((parentParams) => {
-      const currentParams = this.route.snapshot.params;
-      this.patientId = +(parentParams['id'] ?? currentParams['id'] ?? 0);
+    // Get patient ID from route parameters
+    const parentParams = this.route.parent?.snapshot.paramMap;
+    const currentParams = this.route.snapshot.paramMap;
+    const id = parentParams?.get('id') ?? currentParams.get('id');
 
-      console.log('medicalRecordId', this.medicalRecordId);
-      //this.initForm();
-      this.checkMedicalRecord();
-      //this.loadLabResults();
-    });
+    if (id) {
+      this.patientId = +id;
+      this.route.queryParams
+        .pipe(
+          take(1), // Only take the first emission to avoid multiple subscriptions
+          switchMap((params) => {
+            if (params['medicalRecordId']) {
+              this.medicalRecordId = +params['medicalRecordId'];
+              return of(this.medicalRecordId);
+            } else {
+              return this.medicalRecordUtility
+                .checkMedicalRecord(this.patientId)
+                .pipe(
+                  tap((recordId) => {
+                    this.medicalRecordId = recordId;
+                  })
+                );
+            }
+          })
+        )
+        .subscribe({
+          next: () => {
+            this.loading = false;
+            this.errorMessage = null;
+            this.successMessage = 'Download Patient Info successfully';
+            setTimeout(() => (this.successMessage = null), 3000);
+            this.initForm();
+            this.loadLabResults();
+          },
+          error: (error) => {
+            this.loading = false;
+            this.successMessage = null;
+            this.errorMessage =
+              'Failed to retrieve medical record information' +
+              (error.message || 'Unknown error');
+            setTimeout(() => (this.errorMessage = null), 3000);
+          },
+          complete: () => {
+            // Handle the case when no medicalRecordId is available
+            if (!this.medicalRecordId) {
+              this.errorMessage = 'No medical record ID found';
+              setTimeout(() => (this.errorMessage = null), 3000);
+            }
+          },
+        });
+    } else {
+      this.loading = false;
+      this.errorMessage = 'Patient ID is required';
+      setTimeout(() => (this.errorMessage = null), 3000);
+      this.successMessage = null;
+    }
+
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.showForm = false; // Hide form when tab changes
+      });
   }
   // Add a new method to check if the medical record exists
-  checkMedicalRecord(): void {
-    this.loading = true;
-
-    // Use the MedicalRecordsService to check if record exists
-    this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
-      next: (data) => {
-        this.loading = false;
-        if (data && data.id) {
-          this.medicalRecordId = data.id;
-          this.showNoRecordMessage = false;
-          this.initForm(); // Now medicalRecordId has a value
-          this.loadLabResults(); // Only load visits if record exists
-        } else {
-          this.showNoRecordMessage = true;
-        }
-      },
-      error: (err) => {
-        this.loading = false;
-        // Check if it's a 404 (record doesn't exist yet)
-        if (err.status === 404 || err.message?.includes('Error Code: 404')) {
-          this.showNoRecordMessage = true;
-        } else {
-          console.error('Error checking medical record:', err);
-        }
-      },
-    });
-  }
 
   loadLabResults(): void {
     this.loading = true;
@@ -102,9 +148,27 @@ export class PatientLabResultsComponent
         this.labResults = results;
       },
       error: (error) => {
-        console.error('Failed to load lab results', error);
+        this.errorMessage =
+          'Failed to load lab results' + (error.message || 'Unknown error');
+        setTimeout(() => (this.errorMessage = null), 3000);
+        this.loading = false;
       },
     });
+  }
+
+  openForm() {
+    this.showForm = true;
+    // Reset the form if needed
+    if (this.isEditing) {
+      this.cancelEdit();
+    }
+  }
+
+  cancelEdit(): void {
+    this.isEditing = false;
+    this.currentEditId = undefined;
+    this.initForm();
+    this.showForm = false;
   }
 
   submitForm(): void {
@@ -136,13 +200,13 @@ export class PatientLabResultsComponent
             this.cancelEdit();
             this.successMessage = 'Lab result updated successfully';
             setTimeout(() => (this.successMessage = null), 3000);
+            this.showForm = false;
           },
           error: (error) => {
             this.errorMessage =
               'Failed to update lab result: ' +
               (error.message || 'Unknown error');
             this.loading = false;
-            console.error('Failed to update lab result', error);
           },
         });
     } else {
@@ -154,15 +218,16 @@ export class PatientLabResultsComponent
             this.labResultForm.reset();
             this.successMessage = 'New lab result added successfully';
             setTimeout(() => (this.successMessage = null), 3000);
+            this.showForm = false;
           },
           error: (error) => {
             this.errorMessage =
               'Failed to create lab result: ' +
               (error.message || 'Unknown error');
             this.loading = false;
-            console.error('Failed to create lab result', error);
           },
         });
+      this.showForm = false;
     }
   }
 
@@ -185,15 +250,10 @@ export class PatientLabResultsComponent
   }
 
   editLabResult(labResult: LabResult): void {
+    this.showForm = true;
     this.isEditing = true;
     this.currentEditId = labResult.id;
     this.initForm(labResult);
-  }
-
-  cancelEdit(): void {
-    this.isEditing = false;
-    this.currentEditId = undefined;
-    this.initForm();
   }
 
   deleteLabResult(id?: number): void {
@@ -205,7 +265,9 @@ export class PatientLabResultsComponent
           this.loadLabResults();
         },
         error: (error) => {
-          console.error('Failed to delete lab result', error);
+          this.errorMessage =
+            'Failed to delete lab result' + (error.message || 'Unknown error');
+          setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
     }
@@ -223,9 +285,11 @@ export class PatientLabResultsComponent
           link.click();
           document.body.removeChild(link);
         },
-        error: (err) => {
-          console.error('Error downloading lab results:', err);
-          this.error = 'Failed to download lab results.';
+        error: (error) => {
+          this.errorMessage =
+            'Error downloading lab results:' +
+            (error.message || 'Unknown error');
+          setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
     }
@@ -237,11 +301,16 @@ export class PatientLabResultsComponent
         next: () => {
           alert('Lab results were successfully emailed to the patient.');
         },
-        error: (err) => {
-          console.error('Error emailing lab results:', err);
-          this.error = 'Failed to email lab results.';
+        error: (error) => {
+          this.errorMessage =
+            'Error emailing lab results:' + (error.message || 'Unknown error');
+          setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
     }
+  }
+
+  backClicked() {
+    this.location.back();
   }
 }

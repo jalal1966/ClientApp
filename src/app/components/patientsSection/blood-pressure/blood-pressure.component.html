@@ -1,6 +1,11 @@
-<!-- blood-pressure.component.html -->
-<div class="blood-pressure-container">
-  <!-- Alert Messages -->
+<!-- blood-pressure-tab.component.html -->
+<div
+  class="tab-pane fade show active"
+  id="bp-tab"
+  role="tabpanel"
+  aria-labelledby="bp-tab-btn"
+>
+  <!-- ─── Alert Messages ─────────────────────────────── -->
   <div
     *ngIf="errorMessage"
     class="alert alert-danger alert-dismissible fade show"
@@ -13,7 +18,16 @@
       (click)="errorMessage = null"
     ></button>
   </div>
-
+  <div
+    class="d-flex align-items-center justify-content-between mb-3"
+    *ngIf="isMainForm"
+  >
+    <!-- Back Button (left) -->
+    <button (click)="backClicked()" class="btn btn-success">
+      <span class="bi bi-arrow-left-square"></span>
+      Go Back
+    </button>
+  </div>
   <div
     *ngIf="successMessage"
     class="alert alert-success alert-dismissible fade show"
@@ -27,22 +41,24 @@
     ></button>
   </div>
 
-  <!-- Form Card -->
-  <div class="card mb-4">
+  <!-- ─── Form Card ──────────────────────────────────── -->
+  <div class="card card-flat mb-4">
     <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">
+      <h6 class="mb-0 fw-semibold">
         {{
           selectedRecord
-            ? "Edit Blood Pressure Record"
-            : "Add New Blood Pressure Reading"
+            ? "Edit Blood‑Pressure Record"
+            : "Add Blood‑Pressure Reading"
         }}
-        for {{ patient?.firstName }} {{ patient?.lastName }}
-      </h5>
+        • {{ patient?.firstName }} {{ patient?.lastName }}
+      </h6>
     </div>
+
     <div class="card-body">
       <form [formGroup]="bloodPressureForm" (ngSubmit)="onSubmit()">
-        <div class="row">
-          <div class="col-md-6 mb-3">
+        <div class="row g-3 align-items-end">
+          <!-- Systolic -->
+          <div class="col-12 col-md-4">
             <label for="systolicPressure" class="form-label"
               >Systolic Pressure (mmHg)</label
             >
@@ -59,19 +75,25 @@
             />
             <div
               class="invalid-feedback"
-              *ngIf="bloodPressureForm.get('systolicPressure')?.errors?.['required']"
+              *ngIf="
+                bloodPressureForm.get('systolicPressure')?.errors?.['required']
+              "
             >
-              Systolic pressure is required.
+              Required.
             </div>
             <div
               class="invalid-feedback"
-              *ngIf="bloodPressureForm.get('systolicPressure')?.errors?.['min'] || bloodPressureForm.get('systolicPressure')?.errors?.['max']"
+              *ngIf="
+                bloodPressureForm.get('systolicPressure')?.errors?.['min'] ||
+                bloodPressureForm.get('systolicPressure')?.errors?.['max']
+              "
             >
-              Systolic pressure must be between 60 and 250 mmHg.
+              60 – 250 mmHg.
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <!-- Diastolic -->
+          <div class="col-12 col-md-4">
             <label for="diastolicPressure" class="form-label"
               >Diastolic Pressure (mmHg)</label
             >
@@ -88,51 +110,49 @@
             />
             <div
               class="invalid-feedback"
-              *ngIf="bloodPressureForm.get('diastolicPressure')?.errors?.['required']"
+              *ngIf="
+                bloodPressureForm.get('diastolicPressure')?.errors?.['required']
+              "
             >
-              Diastolic pressure is required.
+              Required.
             </div>
             <div
               class="invalid-feedback"
-              *ngIf="bloodPressureForm.get('diastolicPressure')?.errors?.['min'] || bloodPressureForm.get('diastolicPressure')?.errors?.['max']"
+              *ngIf="
+                bloodPressureForm.get('diastolicPressure')?.errors?.['min'] ||
+                bloodPressureForm.get('diastolicPressure')?.errors?.['max']
+              "
             >
-              Diastolic pressure must be between 40 and 150 mmHg.
+              40 – 150 mmHg.
             </div>
           </div>
-        </div>
 
-        <div class="d-flex justify-content-between mt-3">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            *ngIf="selectedRecord"
-            (click)="resetForm()"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="isSubmitting"
-          >
-            <span
-              *ngIf="isSubmitting"
-              class="spinner-border spinner-border-sm me-1"
-              role="status"
-            ></span>
-            {{ selectedRecord ? "Update" : "Save" }} Blood Pressure
-          </button>
+          <!-- Save / Update Button -->
+          <div class="col-12 col-md-4 d-flex justify-content-md-end">
+            <button
+              type="submit"
+              class="btn btn-success w-100 w-md-auto"
+              [disabled]="isSubmitting"
+            >
+              <span
+                *ngIf="isSubmitting"
+                class="spinner-border spinner-border-sm me-1"
+              ></span>
+              {{ selectedRecord ? "Update" : "Save" }} Blood Pressure
+            </button>
+          </div>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Records List -->
-  <div class="card">
+  <!-- ─── History Card ───────────────────────────────── -->
+  <div class="card card-flat">
     <div
       class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
     >
-      <h5 class="mb-0">Blood Pressure History</h5>
+      <h6 class="mb-0 fw-semibold">Blood‑Pressure History</h6>
+
       <button
         class="btn btn-sm btn-light"
         (click)="loadPressureRecords()"
@@ -141,31 +161,32 @@
         <span
           *ngIf="isLoading"
           class="spinner-border spinner-border-sm me-1"
-          role="status"
         ></span>
         Refresh
       </button>
     </div>
+
     <div class="card-body">
+      <!-- Loading state -->
       <div *ngIf="isLoading" class="text-center p-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2">Loading records...</p>
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Loading records…</p>
       </div>
 
+      <!-- Empty state -->
       <div
         *ngIf="!isLoading && pressureRecords.length === 0"
-        class="text-center p-4"
+        class="p-4 text-center"
       >
-        <p class="text-muted">No blood pressure records found.</p>
+        <p class="text-muted mb-0">No blood‑pressure records found.</p>
       </div>
 
+      <!-- Table -->
       <div
         class="table-responsive"
         *ngIf="!isLoading && pressureRecords.length > 0"
       >
-        <table class="table table-hover">
+        <table class="table table-hover align-middle">
           <thead>
             <tr>
               <th>Date</th>
@@ -173,14 +194,14 @@
               <th>Diastolic</th>
               <th>Ratio</th>
               <th>Category</th>
-              <th>Actions</th>
+              <th class="text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let record of pressureRecords">
               <td>{{ formatDate(record.createdAt) }}</td>
-              <td>{{ record.systolicPressure }} mmHg</td>
-              <td>{{ record.diastolicPressure }} mmHg</td>
+              <td>{{ record.systolicPressure }} mmHg</td>
+              <td>{{ record.diastolicPressure }} mmHg</td>
               <td>{{ record.bloodPressureRatio | number : "1.2-2" }}</td>
               <td>
                 <span
@@ -191,7 +212,7 @@
                   {{ getBloodPressureCategory(record) }}
                 </span>
               </td>
-              <td>
+              <td class="text-center">
                 <div class="btn-group btn-group-sm">
                   <button
                     class="btn btn-outline-primary"

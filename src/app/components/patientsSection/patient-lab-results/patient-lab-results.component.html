@@ -11,6 +11,23 @@
       {{ successMessage }}
     </div>
     <div
+      class="d-flex align-items-center justify-content-between mb-3"
+      *ngIf="isMainForm"
+    >
+      <!-- Back Button (left) -->
+      <button (click)="backClicked()" class="btn btn-success">
+        <span class="bi bi-arrow-left-square"></span>
+        Go Back
+      </button>
+    </div>
+    <button
+      class="btn btn-sm btn-outline-secondary me-1"
+      (click)="openForm()"
+      (dblclick)="cancelEdit()"
+    >
+      <i class="bi bi-file-earmark-arrow-down me-1"></i> Add New Lab Result
+    </button>
+    <div
       class="invalid-feedback"
       *ngIf="
         labResultForm &&
@@ -26,66 +43,8 @@
         <span class="visually-hidden">Loading...</span>
       </div>
     </div>
-
-    <!-- Lab Results List -->
-    <div class="mb-4">
-      <h6 class="fw-bold">Lab History</h6>
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead class="table-light">
-            <tr>
-              <th>Date</th>
-              <th>Test</th>
-              <th>Result</th>
-              <th>Reference Range</th>
-              <th>Provider</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let result of labResults">
-              <td>{{ result.testDate | date : "MM/dd/yyyy" }}</td>
-              <td>{{ result.testName }}</td>
-              <td>{{ result.result }}</td>
-              <td>{{ result.referenceRange }}</td>
-              <td>{{ result.orderingProvider }}</td>
-              <td>
-                <button
-                  class="btn btn-sm btn-info me-1"
-                  (click)="editLabResult(result)"
-                >
-                  Edit
-                </button>
-                <button
-                  class="btn btn-sm btn-danger me-1"
-                  (click)="deleteLabResult(result.id)"
-                >
-                  Delete
-                </button>
-                <button
-                  class="btn btn-sm btn-outline-secondary me-1"
-                  (click)="downloadLabResults(result.id!)"
-                >
-                  <i class="bi bi-file-earmark-arrow-down me-1"></i> PDF
-                </button>
-                <button
-                  class="btn btn-sm btn-outline-info"
-                  (click)="emailLabResults(result.id!)"
-                >
-                  <i class="bi bi-envelope me-1"></i> Email
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="labResults.length === 0">
-              <td colspan="6" class="text-center">No lab results available</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- Add/Edit Form -->
-    <div class="card">
+    <div class="card" *ngIf="showForm">
       <div class="card-header bg-light" style="color: black">
         {{ isEditing ? "Edit Lab Result" : "Add New Lab Result" }}
       </div>
@@ -112,12 +71,16 @@
             </div>
             <div class="col-md-6">
               <label for="testName" class="form-label">Test Name</label>
-              <input
-                type="text"
-                class="form-control"
+              <select
+                class="form-select"
                 id="testName"
                 formControlName="testName"
-              />
+              >
+                <option value="" disabled>Select a test</option>
+                <option *ngFor="let test of testNames" [value]="test">
+                  {{ test }}
+                </option>
+              </select>
               <div
                 class="invalid-feedback"
                 *ngIf="
@@ -200,6 +163,62 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+    <!-- Lab Results List -->
+    <div class="mb-4">
+      <h6 class="fw-bold">Lab History</h6>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Test</th>
+              <th>Result</th>
+              <th>Reference Range</th>
+              <th>Provider</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let result of labResults">
+              <td>{{ result.testDate | date : "MM/dd/yyyy" }}</td>
+              <td>{{ result.testName }}</td>
+              <td>{{ result.result }}</td>
+              <td>{{ result.referenceRange }}</td>
+              <td>{{ result.orderingProvider }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-info me-1"
+                  (click)="editLabResult(result)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-danger me-1"
+                  (click)="deleteLabResult(result.id)"
+                >
+                  Delete
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary me-1"
+                  (click)="downloadLabResults(result.id!)"
+                >
+                  <i class="bi bi-file-earmark-arrow-down me-1"></i> PDF
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-info"
+                  (click)="emailLabResults(result.id!)"
+                >
+                  <i class="bi bi-envelope me-1"></i> Email
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="labResults.length === 0">
+              <td colspan="6" class="text-center">No lab results available</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

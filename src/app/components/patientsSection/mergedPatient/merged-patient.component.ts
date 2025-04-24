@@ -34,6 +34,7 @@ import { PatientLabResultsComponent } from '../patient-lab-results/patient-lab-r
 import { ImmunizationsComponent } from '../immunzations/immunizations.component';
 import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
 import { MedicalRecordsComponent } from '../medical-records/medical-records.component';
+import { AppointmentType } from '../../../models/enums.model';
 
 @Component({
   selector: 'app-merged-patient',
@@ -72,6 +73,7 @@ export class MergedPatientComponent
   @ViewChild('noAllergies', { static: true }) noAllergies!: TemplateRef<any>;
   @ViewChild('noVisits', { static: true }) noVisits!: TemplateRef<any>;
   @ViewChild('noLabResults', { static: true }) noLabResults!: TemplateRef<any>;
+  @Input() isMainForm: boolean = true;
 
   showNoRecordMessage = false;
   idToPass: number | null = null;
@@ -86,6 +88,8 @@ export class MergedPatientComponent
   visit: any;
   bpSystolic: any;
   bpDiastolic: any;
+
+  appointmentTypeEnum = AppointmentType;
 
   /////////////////////////////////////////
 
@@ -155,6 +159,11 @@ export class MergedPatientComponent
     }
 
     console.log('medicalRecordId', this.medicalRecordId);
+  }
+
+  getVisitTypeLabel(type: string | number | undefined): string {
+    const typeId = Number(type);
+    return this.appointmentTypeEnum[typeId] ?? 'Unknown';
   }
 
   getBloodPressureStatus(bp: string | undefined) {
@@ -429,6 +438,7 @@ export class MergedPatientComponent
   // Methods for Recent Visits tab
   scheduleNewVisit(): void {
     if (this.patient) {
+      this.isMainForm = true;
       this.router.navigate(['visits/', this.patientId]);
     }
   }

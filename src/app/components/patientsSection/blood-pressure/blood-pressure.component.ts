@@ -17,6 +17,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PatientService } from '../../../services/patient/patient.service';
 import { Patients } from '../../../models/patient.model';
 import { differenceInYears } from 'date-fns/differenceInYears';
+import { MedicalRecordUtilityService } from '../../../services/medicalRecordUtility/medical-record-utility.service';
+import { Location } from '@angular/common';
+import { filter, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'app-blood-pressure',
@@ -36,46 +39,95 @@ export class BloodPressureComponent
   implements OnInit
 {
   @Input() pressure: Pressure[] = [];
+  @Input() loading = false;
+  @Input() isMainForm: boolean = true;
+
   // @Input() medicalRecordId: number | undefined;
   bloodPressureForm!: FormGroup;
   pressureRecords: Pressure[] = [];
   isLoading: boolean = false;
   isSubmitting: boolean = false;
   selectedRecord: Pressure | null = null;
+
   errorMessage: string | null = null;
   successMessage: string | null = null;
-  // medicalRecordId: any;
 
   patientAge: any;
   patientWeight: any;
   patientGender!: string;
-  loading = true;
+
   patient: Patients | undefined;
   error: string | null = null;
 
   constructor(
-    authService: AuthService,
-    router: Router,
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private patientService: PatientService,
-    private bloodPressureService: BloodPressureService
+    private medicalRecordUtility: MedicalRecordUtilityService,
+    private bloodPressureService: BloodPressureService,
+    authService: AuthService,
+    router: Router,
+    private location: Location
   ) {
     super(authService, router);
   }
 
   ngOnInit(): void {
-    this.route.parent?.params.subscribe((parentParams) => {
-      const currentParams = this.route.snapshot.params;
+    // Get patient ID from route parameters
+    const parentParams = this.route.parent?.snapshot.paramMap;
+    const currentParams = this.route.snapshot.paramMap;
+    const id = parentParams?.get('id') ?? currentParams.get('id');
 
-      this.patientId = +(parentParams['id'] ?? currentParams['id'] ?? 0);
-
-      if (this.patientId) {
-        this.loadPatient(this.patientId);
-        this.initForm();
-        this.loadPressureRecords();
-      }
-    });
+    if (id) {
+      this.patientId = +id;
+      this.route.queryParams
+        .pipe(
+          take(1), // Only take the first emission to avoid multiple subscriptions
+          switchMap((params) => {
+            if (params['medicalRecordId']) {
+              this.medicalRecordId = +params['medicalRecordId'];
+              return of(this.medicalRecordId);
+            } else {
+              return this.medicalRecordUtility
+                .checkMedicalRecord(this.patientId)
+                .pipe(
+                  tap((recordId) => {
+                    this.medicalRecordId = recordId;
+                  })
+                );
+            }
+          })
+        )
+        .subscribe({
+          next: () => {
+            this.loading = false;
+            this.errorMessage = null;
+            this.successMessage = 'Download Patient Info successfully';
+            setTimeout(() => (this.successMessage = null), 3000);
+            this.loadPatient(this.patientId);
+            this.initForm();
+            this.loadPressureRecords();
+          },
+          error: () => {
+            this.loading = false;
+            this.successMessage = null;
+            this.errorMessage = 'Failed to retrieve medical record information';
+            setTimeout(() => (this.errorMessage = null), 3000);
+          },
+          complete: () => {
+            // Handle the case when no medicalRecordId is available
+            if (!this.medicalRecordId) {
+              this.errorMessage = 'No medical record ID found';
+              setTimeout(() => (this.errorMessage = null), 3000);
+            }
+          },
+        });
+    } else {
+      this.loading = false;
+      this.errorMessage = 'Patient ID is required';
+      setTimeout(() => (this.errorMessage = null), 3000);
+      this.successMessage = null;
+    }
   }
 
   loadPatient(value: number): void {
@@ -83,10 +135,6 @@ export class BloodPressureComponent
     this.patientService.getPatient(value).subscribe({
       next: (data) => {
         this.patient = data;
-        console.log('this.patients', this.patient);
-        //this.medicalRecordId = this.patient.medicalRecord.id;
-        // In your component.ts
-        // Calculate age directly without using the pipe in the component logic
         this.patientAge = differenceInYears(
           new Date(),
           new Date(this.patient.dateOfBirth)
@@ -95,8 +143,9 @@ export class BloodPressureComponent
         this.patientWeight = this.patient.medicalRecord.weight;
         this.loading = false;
       },
-      error: (err) => {
-        this.error = 'Failed to load patients. Please try again.';
+      error: () => {
+        this.errorMessage = 'Failed to load patients. Please try again.';
+        setTimeout(() => (this.errorMessage = null), 3000);
         this.loading = false;
       },
     });
@@ -122,9 +171,9 @@ export class BloodPressureComponent
         this.pressureRecords = records;
         this.isLoading = false;
       },
-      error: (error) => {
+      error: () => {
         this.errorMessage = 'Failed to load blood pressure records.';
-        console.error('Error loading records:', error);
+        setTimeout(() => (this.errorMessage = null), 3000);
         this.isLoading = false;
       },
     });
@@ -165,7 +214,7 @@ export class BloodPressureComponent
       this.bloodPressureService
         .createComprehensivePressureRecord(
           this.patientId,
-          this.medicalRecordId ?? null,
+          this.medicalRecordId ?? 0,
           systolicPressure,
           diastolicPressure,
           this.patientAge,
@@ -198,9 +247,9 @@ export class BloodPressureComponent
 
   private handleSubmissionError(error: any): void {
     this.errorMessage = 'Failed to save blood pressure record.';
+    setTimeout(() => (this.errorMessage = null), 3000);
     this.successMessage = null;
     this.isSubmitting = false;
-    console.error('Error saving record:', error);
   }
 
   editRecord(record: Pressure): void {
@@ -218,16 +267,12 @@ export class BloodPressureComponent
       this.bloodPressureService.deletePressure(id).subscribe({
         next: () => {
           this.successMessage = 'Record deleted successfully';
+          setTimeout(() => (this.successMessage = null), 3000);
           this.loadPressureRecords();
-
-          // Clear success message after 3 seconds
-          setTimeout(() => {
-            this.successMessage = null;
-          }, 3000);
         },
-        error: (error) => {
+        error: () => {
           this.errorMessage = 'Failed to delete record';
-          console.error('Error deleting record:', error);
+          setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
     }
@@ -267,5 +312,9 @@ export class BloodPressureComponent
   formatDate(date: Date | string | undefined): string {
     if (!date) return 'N/A';
     return new Date(date).toLocaleString();
+  }
+
+  backClicked() {
+    this.location.back();
   }
 }

@@ -10,7 +10,21 @@
     <div *ngIf="successMessage" class="alert alert-success mb-3">
       {{ successMessage }}
     </div>
-    <button class="btn btn-sm btn-outline-secondary me-1" (click)="openForm()">
+    <div
+      class="d-flex align-items-center justify-content-between mb-3"
+      *ngIf="isMainForm"
+    >
+      <!-- Back Button (left) -->
+      <button (click)="backClicked()" class="btn btn-success">
+        <span class="bi bi-arrow-left-square"></span>
+        Go Back
+      </button>
+    </div>
+    <button
+      class="btn btn-sm btn-outline-secondary me-1"
+      (click)="openForm()"
+      (dblclick)="cancelEdit()"
+    >
       <i class="bi bi-file-earmark-arrow-down me-1"></i> Add Immunization
     </button>
 
@@ -22,7 +36,7 @@
       <div class="card-body">
         <form [formGroup]="immunizationForm" (ngSubmit)="submitForm()">
           <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label for="administrationDate" class="form-label"
                 >Administration Date</label
               >
@@ -42,7 +56,8 @@
                 Administration Date is required
               </div>
             </div>
-            <div class="col-md-6">
+
+            <div class="col-md-4">
               <label for="nextDoseDate" class="form-label">NextDose Date</label>
               <input
                 type="date"
@@ -60,27 +75,8 @@
                 NextDose Date is required
               </div>
             </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="vaccineName" class="form-label">Vaccine Name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="vaccineName"
-                formControlName="vaccineName"
-              />
-              <div
-                class="invalid-feedback"
-                *ngIf="
-                  immunizationForm.get('vaccineName')?.invalid &&
-                  immunizationForm.get('vaccineName')?.touched
-                "
-              >
-                Vaccine Name is required
-              </div>
-            </div>
-            <div class="col-md-6">
+
+            <div class="col-md-4">
               <label for="administeringProvider" class="form-label"
                 >Administering Provider</label
               >
@@ -101,15 +97,46 @@
               </div>
             </div>
           </div>
+
           <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
+              <label for="vaccineName" class="form-label">Vaccine Name</label>
+              <select
+                class="form-select"
+                id="vaccineName"
+                formControlName="vaccineName"
+              >
+                <option value="" disabled>Select a vaccine</option>
+                <option *ngFor="let vaccine of vaccineNames" [value]="vaccine">
+                  {{ vaccine }}
+                </option>
+              </select>
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  immunizationForm.get('vaccineName')?.invalid &&
+                  immunizationForm.get('vaccineName')?.touched
+                "
+              >
+                Vaccine Name is required
+              </div>
+            </div>
+
+            <div class="col-md-4">
               <label for="lotNumber" class="form-label">Lot Number</label>
-              <input
-                type="text"
-                class="form-control"
+              <select
+                class="form-select"
                 id="lotNumber"
                 formControlName="lotNumber"
-              />
+              >
+                <option value="" disabled>Select a lot number</option>
+                <option
+                  *ngFor="let lotNumber of vaccineLotNumbers"
+                  [value]="lotNumber"
+                >
+                  {{ lotNumber }}
+                </option>
+              </select>
               <div
                 class="invalid-feedback"
                 *ngIf="
@@ -120,14 +147,31 @@
                 Lot Number is required
               </div>
             </div>
-            <div class="col-md-6">
+
+            <div class="col-md-4">
               <label for="manufacturer" class="form-label">Manufacturer</label>
-              <input
-                type="text"
-                class="form-control"
+              <select
+                class="form-select"
                 id="manufacturer"
                 formControlName="manufacturer"
-              />
+              >
+                <option value="" disabled>Select a manufacturer</option>
+                <option
+                  *ngFor="let manufacturer of vaccineManufacturers"
+                  [value]="manufacturer"
+                >
+                  {{ manufacturer }}
+                </option>
+              </select>
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  immunizationForm.get('manufacturer')?.invalid &&
+                  immunizationForm.get('manufacturer')?.touched
+                "
+              >
+                Manufacturer is required
+              </div>
             </div>
           </div>
 
@@ -142,6 +186,7 @@
             <button
               type="button"
               class="btn btn-secondary"
+              *ngIf="isEditing"
               (click)="cancelEdit()"
             >
               Cancel

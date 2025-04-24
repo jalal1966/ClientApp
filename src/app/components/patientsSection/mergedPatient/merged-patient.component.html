@@ -141,12 +141,12 @@
       <div *ngSwitchCase="'info'">
         <app-patient-info
           [patient]="patient"
-          [master]="false"
+          [isMainForm]="false"
         ></app-patient-info>
       </div>
       <!-- Basic MedicalRecord -->
       <div *ngSwitchCase="'MedicalRecord'">
-        <app-medical-records [main]="false"></app-medical-records>
+        <app-medical-records [isMainForm]="false"></app-medical-records>
       </div>
       <!-- Allergies -->
       <div *ngSwitchCase="'allergies'">
@@ -162,6 +162,7 @@
           [labResults]="patient.medicalRecord.labResults || []"
           [patientId]="patientId"
           [medicalRecordId]="medicalRecordId"
+          [isMainForm]="false"
           [loading]="true"
         ></app-patient-lab-results>
       </div>
@@ -170,6 +171,7 @@
       <!-- immunizations -->
       <div *ngSwitchCase="'immunizations'">
         <app-immunizations
+          [isMainForm]="false"
           [immunizations]="patient.medicalRecord.immunizations || []"
           [patientId]="patientId"
         ></app-immunizations>
@@ -178,32 +180,27 @@
       <!-- Blood Pressure -->
       <div *ngSwitchCase="'pressuer'">
         <app-blood-pressure
+          [isMainForm]="false"
           [pressure]="patient.medicalRecord.pressure || []"
           [patientId]="patientId"
         ></app-blood-pressure>
       </div>
-      <!-- <a routerLink="/immunizations">Go to Immunizations</a>
-    Visits 
-      <div *ngSwitchCase="'visits'">
-        <app-patient-visit
-          [visits]="patient.medicalRecord.recentVisits || []"
-          [patientId]="patientId"
-        ></app-patient-visit>
-      </div>-->
-      <!-- Recent Visits Tab -->
-      <div *ngIf="activeTab === 'visits'">
+
+      <div *ngIf="activeTab === 'visits'" class="card border-0 shadow-sm">
         <!-- Debugging output (optional) 
                    <pre>{{ medicalRecord?.visits | json }}</pre>-->
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div
+          class="card-header bg-primary text-white d-flex justify-content-between align-items-center mb-3"
+        >
           <h5 class="mb-0">Recent Medical Visits</h5>
-          <button class="btn btn-sm btn-primary" (click)="scheduleNewVisit()">
+          <button class="btn btn-sm btn-success" (click)="scheduleNewVisit()">
             <i class="bi bi-calendar-plus me-1"></i> Schedule Visit
           </button>
         </div>
 
         <ng-container *ngIf="medicalRecord?.visits?.length > 0; else noVisits">
-          <div class="table-responsive">
+          <div class="table-responsive card-body">
             <table class="table table-hover">
               <thead>
                 <tr>
@@ -218,7 +215,7 @@
               <tbody>
                 <tr *ngFor="let visit of medicalRecord.visits">
                   <td>{{ visit.visitDate | date : "mediumDate" }}</td>
-                  <td>{{ visit.visitType }}</td>
+                  <td>{{ getVisitTypeLabel(visit.visitType) }}</td>
                   <td>{{ visit.providerName || "N/A" }}</td>
                   <td>
                     <div>

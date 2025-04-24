@@ -7,7 +7,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { catchError, finalize } from 'rxjs/operators';
+import { catchError, finalize, switchMap, take, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 import { CommonModule } from '@angular/common';
@@ -21,6 +21,7 @@ import { PatientComponentBase } from '../../../shared/base/patient-component-bas
 import { Location } from '@angular/common';
 import { AuthService } from '../../../services/auth/auth.service';
 import { PatientService } from '../../../services/patient/patient.service';
+import { MedicalRecordUtilityService } from '../../../services/medicalRecordUtility/medical-record-utility.service';
 
 @Component({
   selector: 'app-patient-info',
@@ -38,23 +39,27 @@ export class PatientInfoComponent
   contactForm: FormGroup;
   insuranceForm: FormGroup;
   loading = false;
-  errorMessage: string | null = null;
-  updateSuccess = false;
   currentUserID: any;
   error: string | null = null;
 
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+  showNoRecordMessage = false;
+
+  @Input() isMainForm: boolean = true;
+
   doctors: { firstName: string; lastName: string; fullName: string }[] = [];
   @Input() patient: Patients | null = null;
-  @Input() master: boolean = true;
 
   constructor(
+    private fb: FormBuilder,
     private route: ActivatedRoute,
     private patientInfoService: PatientService,
-    private location: Location,
     private doctorsService: AuthService,
+    private medicalRecordUtility: MedicalRecordUtilityService,
     authService: AuthService,
     router: Router,
-    private fb: FormBuilder
+    private location: Location
   ) {
     super(authService, router);
 
@@ -92,21 +97,53 @@ export class PatientInfoComponent
 
     if (id) {
       this.patientId = +id;
-
-      // Get medical record ID directly from query parameters
-      this.route.queryParams.subscribe((params) => {
-        if (params['medicalRecordId']) {
-          this.medicalRecordId = +params['medicalRecordId'];
-          this.loadPatientInfo();
-          this.loadDoctors();
-        } else {
-          console.warn('No medical record ID provided in query parameters');
-          // Handle the case when no medicalRecordId is provided
-        }
-      });
+      this.route.queryParams
+        .pipe(
+          take(1), // Only take the first emission to avoid multiple subscriptions
+          switchMap((params) => {
+            if (params['medicalRecordId']) {
+              this.medicalRecordId = +params['medicalRecordId'];
+              return of(this.medicalRecordId);
+            } else {
+              return this.medicalRecordUtility
+                .checkMedicalRecord(this.patientId)
+                .pipe(
+                  tap((recordId) => {
+                    this.medicalRecordId = recordId;
+                  })
+                );
+            }
+          })
+        )
+        .subscribe({
+          next: () => {
+            this.loading = false;
+            this.errorMessage = null;
+            this.successMessage = 'Download Patient Info successfully';
+            setTimeout(() => (this.successMessage = null), 3000);
+            this.loadPatientInfo();
+            this.loadDoctors();
+          },
+          error: (err) => {
+            //console.error('Error retrieving medical record:', err);
+            this.loading = false;
+            this.successMessage = null;
+            this.errorMessage = 'Failed to retrieve medical record information';
+            setTimeout(() => (this.errorMessage = null), 3000);
+          },
+          complete: () => {
+            // Handle the case when no medicalRecordId is available
+            if (!this.medicalRecordId) {
+              this.errorMessage = 'No medical record ID found';
+              setTimeout(() => (this.errorMessage = null), 3000);
+            }
+          },
+        });
     } else {
-      this.error = 'Patient ID is required';
       this.loading = false;
+      this.errorMessage = 'Patient ID is required';
+      setTimeout(() => (this.errorMessage = null), 3000);
+      this.successMessage = null;
     }
   }
 
@@ -118,7 +155,8 @@ export class PatientInfoComponent
         this.loading = false;
       },
       error: () => {
-        this.error = 'Failed to load Doctors. Please try again.';
+        this.errorMessage = 'Failed to load Doctors. Please try again.';
+        setTimeout(() => (this.errorMessage = null), 3000);
         this.loading = false;
       },
     });
@@ -135,6 +173,7 @@ export class PatientInfoComponent
           this.errorMessage = `Error loading patient information: ${
             err.message || 'Unknown error'
           }`;
+          setTimeout(() => (this.errorMessage = null), 3000);
           return of(null);
         }),
         finalize(() => (this.loading = false))
@@ -206,7 +245,7 @@ export class PatientInfoComponent
 
     this.loading = true;
     this.errorMessage = null;
-    this.updateSuccess = false;
+    this.successMessage = null;
 
     const updatedInfo = {
       ...this.patientInfo,
@@ -220,13 +259,14 @@ export class PatientInfoComponent
           this.errorMessage = `Failed to update patient information: ${
             err.message || 'Unknown error'
           }`;
+          setTimeout(() => (this.errorMessage = null), 3000);
           return of(null);
         }),
         finalize(() => (this.loading = false))
       )
       .subscribe(() => {
-        this.updateSuccess = true;
-        setTimeout(() => (this.updateSuccess = false), 3000);
+        this.successMessage = ' Information updated successfully!';
+        setTimeout(() => (this.successMessage = null), 3000);
         this.loadPatientInfo();
       });
   }
@@ -239,7 +279,7 @@ export class PatientInfoComponent
 
     this.loading = true;
     this.errorMessage = null;
-    this.updateSuccess = false;
+    this.successMessage = null;
 
     const contactInfo: ContactInfoUpdate = this.contactForm.value;
 
@@ -250,13 +290,14 @@ export class PatientInfoComponent
           this.errorMessage = `Failed to update contact information: ${
             err.message || 'Unknown error'
           }`;
+          setTimeout(() => (this.errorMessage = null), 3000);
           return of(null);
         }),
         finalize(() => (this.loading = false))
       )
       .subscribe(() => {
-        this.updateSuccess = true;
-        setTimeout(() => (this.updateSuccess = false), 3000);
+        this.successMessage = ' Information updated successfully!';
+        setTimeout(() => (this.successMessage = null), 3000);
         this.loadPatientInfo();
       });
   }
@@ -269,7 +310,7 @@ export class PatientInfoComponent
 
     this.loading = true;
     this.errorMessage = null;
-    this.updateSuccess = false;
+    this.successMessage = null;
 
     const insuranceInfo: InsuranceUpdate = this.insuranceForm.value;
 
@@ -285,8 +326,8 @@ export class PatientInfoComponent
         finalize(() => (this.loading = false))
       )
       .subscribe(() => {
-        this.updateSuccess = true;
-        setTimeout(() => (this.updateSuccess = false), 3000);
+        this.successMessage = ' Information updated successfully!';
+        setTimeout(() => (this.successMessage = null), 3000);
         this.loadPatientInfo();
       });
   }
@@ -315,6 +356,7 @@ export class PatientInfoComponent
     }
     return '';
   }
+
   backClicked() {
     this.location.back();
   }

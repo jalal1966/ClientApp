@@ -83,11 +83,9 @@
                 formControlName="allergyType"
               >
                 <option value="" disabled selected>Select allergy type</option>
-                <option value="Food">Food</option>
-                <option value="Medication">Medication</option>
-                <option value="Environmental">Environmental</option>
-                <option value="Insect">Insect</option>
-                <option value="Other">Other</option>
+                <option *ngFor="let type of allergyTypes" [value]="type">
+                  {{ type }}
+                </option>
               </select>
               <div
                 *ngIf="
@@ -102,12 +100,13 @@
 
             <div class="col-md-6 mb-3">
               <label for="name" class="form-label">Name</label>
-              <input
-                type="text"
-                id="name"
-                class="form-control"
-                formControlName="name"
-              />
+
+              <select id="name" class="form-select" formControlName="name">
+                <option value="" disabled selected>Select allergy name</option>
+                <option *ngFor="let type of allergyName" [value]="type">
+                  {{ type }}
+                </option>
+              </select>
               <div
                 *ngIf="
                   allergyForm.get('name')?.invalid &&

@@ -22,7 +22,6 @@ import { Diagnosis, Medication, Visit } from '../../../models/visits.model';
 import { Immunization } from '../../../models/medicalRecord.model';
 import { LabResult } from '../../../models/medicalRecord.model';
 import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
-import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
 
 @Component({
   selector: 'app-medical-records',
@@ -41,7 +40,7 @@ export class MedicalRecordsComponent
   implements OnInit
 {
   @Input() medicalRecords: MedicalRecord[] = [];
-  @Input() main: boolean = true;
+  @Input() isMainForm: boolean = true;
   //medicalRecordId?: number;
   medicalRecord: any = null;
   medicalRecordForm: FormGroup;

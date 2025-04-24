@@ -8,7 +8,7 @@ import {
   Validators,
   FormArray,
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Visit } from '../../../models/visits.model';
 import { PatientVisitService } from '../../../services/patient-visits/patient-visits.service';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
@@ -16,7 +16,9 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { AppointmentType } from '../../../models/enums.model';
 import { PatientService } from '../../../services/patient/patient.service';
 import { Patients } from '../../../models/patient.model';
-import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
+import { Location } from '@angular/common';
+import { MedicalRecordUtilityService } from '../../../services/medicalRecordUtility/medical-record-utility.service';
+import { filter, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'app-patient-visit',
@@ -29,14 +31,15 @@ export class PatientVisitComponent
   extends PatientComponentBase
   implements OnInit
 {
+  private destroy$ = new Subject<void>();
   @Input() visits: Visit[] = [];
-  //@Input() medicalRecordId: number | undefined;
-  //@Input() medicalRecordId: number | undefined;
+  @Input() loading = false;
+  @Input() isMainForm: boolean = true;
+
   selectedVisit: Visit | null = null;
   visitForm!: FormGroup; // Use definite assignment assertion
   showForm = false;
   viewMode = false;
-  loading = false;
   isEditMode = false;
 
   showNoRecordMessage = false;
@@ -53,43 +56,96 @@ export class PatientVisitComponent
     }));
   error: string | undefined;
 
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+
   constructor(
-    private patientVisitService: PatientVisitService,
+    private fb: FormBuilder,
     private route: ActivatedRoute,
     private patientService: PatientService,
-    private medicalRecordsService: MedicalRecordsService,
-
+    private patientVisitService: PatientVisitService,
+    private medicalRecordUtility: MedicalRecordUtilityService,
     authService: AuthService,
     router: Router,
-    private fb: FormBuilder
+    private location: Location
   ) {
     super(authService, router);
     this.doctorName =
       this.currentUser.firstName + ' ' + this.currentUser.lastName;
-    console.log('doctor', this.doctorName);
-    this.visitForm = this.createVisitForm();
+
+    this.visitForm = this.initForm();
   }
 
   ngOnInit(): void {
-    this.route.parent?.params.subscribe((parentParams) => {
-      const currentParams = this.route.snapshot.params;
+    // Get patient ID from route parameters
+    const parentParams = this.route.parent?.snapshot.paramMap;
+    const currentParams = this.route.snapshot.paramMap;
+    const id = parentParams?.get('id') ?? currentParams.get('id');
 
-      this.patientId = +(parentParams['id'] ?? currentParams['id'] ?? 0);
+    if (id) {
+      this.patientId = +id;
+      this.route.queryParams
+        .pipe(
+          take(1), // Only take the first emission to avoid multiple subscriptions
+          switchMap((params) => {
+            if (params['medicalRecordId']) {
+              this.medicalRecordId = +params['medicalRecordId'];
+              return of(this.medicalRecordId);
+            } else {
+              return this.medicalRecordUtility
+                .checkMedicalRecord(this.patientId)
+                .pipe(
+                  tap((recordId) => {
+                    this.medicalRecordId = recordId;
+                  })
+                );
+            }
+          })
+        )
+        .subscribe({
+          next: () => {
+            this.loading = false;
+            this.errorMessage = null;
+            this.successMessage = 'Download Patient Visits successfully';
+            setTimeout(() => (this.successMessage = null), 3000);
+            //this.initForm();
+            this.loadPatient(this.patientId);
+            this.loadPatientVisits(this.patientId);
+          },
+          error: () => {
+            this.loading = false;
+            this.successMessage = null;
+            this.errorMessage = 'Failed to retrieve medical record information';
+            setTimeout(() => (this.errorMessage = null), 3000);
+          },
+          complete: () => {
+            // Handle the case when no medicalRecordId is available
+            if (!this.medicalRecordId) {
+              this.errorMessage = 'No medical record ID found';
+              setTimeout(() => (this.errorMessage = null), 3000);
+            }
+          },
+        });
+    } else {
+      this.loading = false;
+      this.errorMessage = 'Patient ID is required';
+      setTimeout(() => (this.errorMessage = null), 3000);
+      this.successMessage = null;
+    }
 
-      if (this.patientId) {
-        //this.loadPatientVisits();
-        this.loadPatient(this.patientId);
-        this.checkMedicalRecord();
-      }
-    });
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.showForm = false; // Hide form when tab changes
+      });
   }
 
   openMedicalRecordForm(): void {
     // You can either navigate to a medical record creation page
     this.router.navigate(['/patients/', this.patientId, 'medical-records']);
-
-    // Or you could implement a modal form directly in this component
-    // this.showMedicalRecordForm = true;
   }
 
   loadPatient(value: number) {
@@ -99,52 +155,25 @@ export class PatientVisitComponent
         this.loading = false;
         this.patient = data;
       },
-      error: (error) => {
-        console.error('Error loading patient:', error);
+      error: () => {
         this.loading = false;
+        this.errorMessage = 'Error loading patient';
+        setTimeout(() => (this.errorMessage = null), 3000);
       },
     });
   }
 
-  // Add a new method to check if the medical record exists
-  checkMedicalRecord(): void {
+  loadPatientVisits(id: number): void {
     this.loading = true;
-    // this.medicalRecordId = 0; // Default to no record
-
-    // Use the MedicalRecordsService to check if record exists
-    this.medicalRecordsService.getMedicalRecord(this.patientId).subscribe({
-      next: (data) => {
-        this.loading = false;
-        if (data && data.id) {
-          this.medicalRecordId = data.id;
-          this.showNoRecordMessage = false;
-          this.loadPatientVisits(); // Only load visits if record exists
-        } else {
-          this.showNoRecordMessage = true;
-        }
-      },
-      error: (err) => {
-        this.loading = false;
-        // Check if it's a 404 (record doesn't exist yet)
-        if (err.status === 404 || err.message?.includes('Error Code: 404')) {
-          this.showNoRecordMessage = true;
-        } else {
-          console.error('Error checking medical record:', err);
-        }
-      },
-    });
-  }
-
-  loadPatientVisits(): void {
-    this.loading = true;
-    this.patientVisitService.getVisitsByPatient(this.patientId).subscribe({
+    this.patientVisitService.getVisitsByPatient(id).subscribe({
       next: (visits) => {
         this.visits = visits;
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error loading visits:', error);
+      error: () => {
         this.loading = false;
+        this.errorMessage = 'Error loading visits';
+        setTimeout(() => (this.errorMessage = null), 3000);
       },
     });
   }
@@ -154,7 +183,7 @@ export class PatientVisitComponent
     return this.appointmentTypeEnum[typeId] ?? 'Unknown';
   }
 
-  createVisitForm(): FormGroup {
+  initForm(): FormGroup {
     const form = this.fb.group({
       //id: [0],
       patientId: [this.patientId],
@@ -214,7 +243,7 @@ export class PatientVisitComponent
     this.isEditMode = false;
     this.showForm = true;
     this.viewMode = false;
-    this.visitForm = this.createVisitForm();
+    this.visitForm = this.initForm();
   }
 
   // Method to view visit details
@@ -232,7 +261,7 @@ export class PatientVisitComponent
     this.showForm = true;
 
     // Reset form and populate with visit data
-    this.visitForm = this.createVisitForm();
+    this.visitForm = this.initForm();
     this.visitForm.patchValue({
       id: visit.id,
       patientId: visit.patientId,
@@ -335,12 +364,13 @@ export class PatientVisitComponent
       this.patientVisitService.updateVisit(visitData).subscribe({
         next: () => {
           this.loading = false;
-          this.loadPatientVisits();
+          this.loadPatientVisits(this.patientId);
           this.cancelEdit();
         },
-        error: (error) => {
-          console.error('Error updating visit:', error);
+        error: () => {
           this.loading = false;
+          this.errorMessage = 'Error updating visits';
+          setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
     } else {
@@ -380,12 +410,13 @@ export class PatientVisitComponent
       this.patientVisitService.createVisit(wrappedPayload).subscribe({
         next: () => {
           this.loading = false;
-          this.loadPatientVisits();
+          this.loadPatientVisits(this.patientId);
           this.cancelEdit();
         },
-        error: (error) => {
-          console.error('Error creating visit:', error);
+        error: () => {
           this.loading = false;
+          this.errorMessage = 'Error creating visits';
+          setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
     }
@@ -432,16 +463,17 @@ export class PatientVisitComponent
       this.patientVisitService.deleteVisit(visitId).subscribe({
         next: () => {
           this.loading = false;
-          this.loadPatientVisits();
+          this.loadPatientVisits(this.patientId);
           if (this.selectedVisit?.id === visitId) {
             this.selectedVisit = null;
             this.showForm = false;
             this.viewMode = false;
           }
         },
-        error: (error) => {
-          console.error('Error deleting visit:', error);
+        error: () => {
           this.loading = false;
+          this.errorMessage = 'Error deleting visits';
+          setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
     }
@@ -499,5 +531,9 @@ export class PatientVisitComponent
 
   removeMedication(index: number): void {
     this.medicationsArray.removeAt(index);
+  }
+
+  backClicked() {
+    this.location.back();
   }
 }

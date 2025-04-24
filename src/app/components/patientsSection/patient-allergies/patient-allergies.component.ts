@@ -12,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Allergy } from '../../../models/medicalRecord.model';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { AuthService } from '../../../services/auth/auth.service';
+import { AllergyName, AllergyType } from '../../../models/enums.model';
 
 @Component({
   selector: 'app-patient-allergies',
@@ -28,6 +29,8 @@ export class PatientAllergiesComponent
   isEditing = false;
   currentAllergyId?: number;
   @Input() allergies: Allergy[] = [];
+  allergyTypes = Object.values(AllergyType);
+  allergyName = Object.values(AllergyName);
   //medicalRecordId: number | undefined;
 
   constructor(

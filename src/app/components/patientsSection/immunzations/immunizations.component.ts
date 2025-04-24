@@ -7,7 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { Immunization } from '../../../models/medicalRecord.model';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
@@ -15,8 +15,14 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { ImmunizationService } from '../../../services/patient-immunization/immunization.service';
 import { Patients } from '../../../models/patient.model';
 import { PatientService } from '../../../services/patient/patient.service';
-import { MedicalRecordsService } from '../../../services/medical-records/medical-records.service';
-import { filter, Subject, takeUntil } from 'rxjs';
+import { filter, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
+import { MedicalRecordUtilityService } from '../../../services/medicalRecordUtility/medical-record-utility.service';
+import { Location } from '@angular/common';
+import {
+  VaccineLotNumber,
+  VaccineManufacturer,
+  VaccineNames,
+} from '../../../models/enums.model';
 
 @Component({
   selector: 'app-immunizations',
@@ -29,17 +35,19 @@ export class ImmunizationsComponent
   extends PatientComponentBase
   implements OnInit
 {
-  /* private http = inject(HttpClient);
-  private modalService = inject(NgbModal); */
+  vaccineNames = Object.values(VaccineNames);
+  vaccineLotNumbers = Object.values(VaccineLotNumber);
+  vaccineManufacturers = Object.values(VaccineManufacturer);
 
   immunizationForm!: FormGroup;
   isEditing = false;
   currentEditId?: number;
   showForm: boolean = false;
 
+  private destroy$ = new Subject<void>();
   @Input() immunizations: Immunization[] = [];
   @Input() loading = false;
-  //@Input() medicalRecordId?: number;
+  @Input() isMainForm: boolean = true;
 
   showNoRecordMessage = false;
   patient: Patients | undefined;
@@ -49,27 +57,19 @@ export class ImmunizationsComponent
   successMessage: string | null = null;
 
   selectedImmunization: any = null;
-  /* newImmunization = {
-    vaccineName: '',
-    administrationDate: '',
-    lotNumber: '',
-    administeringProvider: '',
-    nextDoseDate: '',
-    manufacturer: '',
-  }; */
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private patientService: PatientService,
-    private medicalRecordsService: MedicalRecordsService,
+    private medicalRecordUtility: MedicalRecordUtilityService,
+    private immunizationsService: ImmunizationService,
     authService: AuthService,
     router: Router,
-    private immunizationsService: ImmunizationService
+    private location: Location
   ) {
     super(authService, router);
   }
-
-  private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
     // Get patient ID from route parameters
@@ -79,21 +79,54 @@ export class ImmunizationsComponent
 
     if (id) {
       this.patientId = +id;
-
-      // Get medical record ID directly from query parameters
-      this.route.queryParams.subscribe((params) => {
-        if (params['medicalRecordId']) {
-          this.medicalRecordId = +params['medicalRecordId'];
-          this.initForm();
-          this.loadImmunizations();
-        } else {
-          console.warn('No medical record ID provided in query parameters');
-          // Handle the case when no medicalRecordId is provided
-        }
-      });
+      this.route.queryParams
+        .pipe(
+          take(1), // Only take the first emission to avoid multiple subscriptions
+          switchMap((params) => {
+            if (params['medicalRecordId']) {
+              this.medicalRecordId = +params['medicalRecordId'];
+              return of(this.medicalRecordId);
+            } else {
+              return this.medicalRecordUtility
+                .checkMedicalRecord(this.patientId)
+                .pipe(
+                  tap((recordId) => {
+                    this.medicalRecordId = recordId;
+                  })
+                );
+            }
+          })
+        )
+        .subscribe({
+          next: () => {
+            this.loading = false;
+            this.errorMessage = null;
+            this.successMessage = 'Download Patient Info successfully';
+            setTimeout(() => (this.successMessage = null), 3000);
+            this.initForm();
+            this.loadImmunizations();
+          },
+          error: (error) => {
+            this.loading = false;
+            this.successMessage = null;
+            this.errorMessage =
+              'Failed to retrieve medical record information' +
+              (error.message || 'Unknown error');
+            setTimeout(() => (this.errorMessage = null), 3000);
+          },
+          complete: () => {
+            // Handle the case when no medicalRecordId is available
+            if (!this.medicalRecordId) {
+              this.errorMessage = 'No medical record ID found';
+              setTimeout(() => (this.errorMessage = null), 3000);
+            }
+          },
+        });
     } else {
-      this.error = 'Patient ID is required';
       this.loading = false;
+      this.errorMessage = 'Patient ID is required';
+      setTimeout(() => (this.errorMessage = null), 3000);
+      this.successMessage = null;
     }
 
     this.router.events
@@ -142,7 +175,6 @@ export class ImmunizationsComponent
         this.loading = false; // Set loading to false
       },
       error: (error) => {
-        console.error('Failed to load Immunizations results', error);
         this.loading = false; // Set loading to false
         this.errorMessage =
           'Failed to load immunizations: ' + (error.message || 'Unknown error');
@@ -156,6 +188,12 @@ export class ImmunizationsComponent
     if (this.isEditing) {
       this.cancelEdit();
     }
+  }
+  cancelEdit(): void {
+    this.isEditing = false;
+    this.currentEditId = undefined;
+    this.initForm();
+    this.showForm = false; // Hide the form when canceling
   }
 
   submitForm(): void {
@@ -236,7 +274,6 @@ export class ImmunizationsComponent
               'Failed to create Immunizations result: ' +
               (error.message || 'Unknown error');
             this.loading = false;
-            console.error('Failed to create Immunizations result', error);
           },
         });
       this.showForm = false;
@@ -250,13 +287,6 @@ export class ImmunizationsComponent
     this.initForm(immunization);
   }
 
-  cancelEdit(): void {
-    this.isEditing = false;
-    this.currentEditId = undefined;
-    this.initForm();
-    this.showForm = false; // Hide the form when canceling
-  }
-
   deleteImmunization(id?: number): void {
     if (!id) return;
 
@@ -268,7 +298,9 @@ export class ImmunizationsComponent
             this.loadImmunizations();
           },
           error: (error) => {
-            console.error('Failed to delete Immunization result', error);
+            this.errorMessage =
+              'Failed to delete Immunization result' +
+              (error.message || 'Unknown error');
           },
         });
     }
@@ -286,9 +318,10 @@ export class ImmunizationsComponent
           link.click();
           document.body.removeChild(link);
         },
-        error: (err) => {
-          console.error('Error downloading Immunizations results:', err);
-          this.error = 'Failed to download Immunizations results.';
+        error: (error) => {
+          this.errorMessage =
+            'Error downloading Immunizations results' +
+            (error.message || 'Unknown error');
         },
       });
     }
@@ -302,65 +335,16 @@ export class ImmunizationsComponent
           next: () => {
             alert('Lab results were successfully emailed to the patient.');
           },
-          error: (err) => {
-            console.error('Error emailing Immunizations results:', err);
-            this.error = 'Failed to email Immunizations results.';
+          error: (error) => {
+            this.errorMessage =
+              'Error emailing Immunizations results' +
+              (error.message || 'Unknown error');
           },
         });
     }
   }
 
-  /* openModal(content: any, immunization: any = null) {
-    this.selectedImmunization = immunization;
-    if (immunization) {
-      this.newImmunization = { ...immunization };
-    } else {
-      this.newImmunization = {
-        vaccineName: '',
-        administrationDate: '',
-        lotNumber: '',
-        administeringProvider: '',
-        nextDoseDate: '',
-        manufacturer: '',
-      };
-    }
-    this.modalService.open(content, { centered: true });
+  backClicked() {
+    this.location.back();
   }
-
-  saveImmunization(modalRef: any) {
-    if (this.selectedImmunization) {
-      // Update
-      this.http
-        .put(
-          `/api/patients/${this.patientId}/immunizations/${this.selectedImmunization.id}`,
-          {
-            ...this.newImmunization,
-            patientId: this.patientId,
-            id: this.selectedImmunization.id,
-          }
-        )
-        .subscribe(() => {
-          this.loadImmunizations();
-          modalRef.close();
-        });
-    } else {
-      // Create
-      this.http
-        .post(`/api/patients/${this.patientId}/immunizations`, {
-          ...this.newImmunization,
-        })
-        .subscribe(() => {
-          this.loadImmunizations();
-          modalRef.close();
-        });
-    }
-  }
-
-  deleteImmunization(id: number) {
-    if (confirm('Are you sure you want to delete this immunization?')) {
-      this.http
-        .delete(`/api/patients/${this.patientId}/immunizations/${id}`)
-        .subscribe(() => this.loadImmunizations());
-    }
-  } */
 }
