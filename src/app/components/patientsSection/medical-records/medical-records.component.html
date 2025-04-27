@@ -29,6 +29,13 @@
   >
     <div class="card mt-3">
       <div class="card-header">
+        <!-- Error and Success Messages -->
+        <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+          {{ errorMessage }}
+        </div>
+        <div *ngIf="successMessage" class="alert alert-success mb-3">
+          {{ successMessage }}
+        </div>
         <ul
           class="nav nav-tabs card-header-tabs"
           id="medicalRecordTabs"
@@ -165,47 +172,52 @@
             role="tabpanel"
             aria-labelledby="history-tab"
           >
-            <div class="mb-3">
-              <label for="chronicConditions">Chronic Conditions</label>
-              <textarea
-                class="form-control"
-                id="chronicConditions"
-                rows="3"
-                formControlName="chronicConditions"
-              ></textarea>
+            <!-- First row: Chronic Conditions and Surgical History -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="chronicConditions">Chronic Conditions</label>
+                <textarea
+                  class="form-control"
+                  id="chronicConditions"
+                  rows="3"
+                  formControlName="chronicConditions"
+                ></textarea>
+              </div>
+
+              <div class="col-md-6">
+                <label for="surgicalHistory">Surgical History</label>
+                <textarea
+                  class="form-control"
+                  id="surgicalHistory"
+                  rows="3"
+                  formControlName="surgicalHistory"
+                ></textarea>
+              </div>
             </div>
 
-            <div class="mb-3">
-              <label for="surgicalHistory">Surgical History</label>
-              <textarea
-                class="form-control"
-                id="surgicalHistory"
-                rows="3"
-                formControlName="surgicalHistory"
-              ></textarea>
-            </div>
+            <!-- Second row: Family Medical History and Social History -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="familyMedicalHistory">Family Medical History</label>
+                <textarea
+                  class="form-control"
+                  id="familyMedicalHistory"
+                  rows="3"
+                  formControlName="familyMedicalHistory"
+                ></textarea>
+              </div>
 
-            <div class="mb-3">
-              <label for="familyMedicalHistory">Family Medical History</label>
-              <textarea
-                class="form-control"
-                id="familyMedicalHistory"
-                rows="3"
-                formControlName="familyMedicalHistory"
-              ></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label for="socialHistory">Social History</label>
-              <textarea
-                class="form-control"
-                id="socialHistory"
-                rows="3"
-                formControlName="socialHistory"
-              ></textarea>
+              <div class="col-md-6">
+                <label for="socialHistory">Social History</label>
+                <textarea
+                  class="form-control"
+                  id="socialHistory"
+                  rows="3"
+                  formControlName="socialHistory"
+                ></textarea>
+              </div>
             </div>
           </div>
-
           <!-- Patient Visits Tab -->
           <div
             class="tab-pane fade"

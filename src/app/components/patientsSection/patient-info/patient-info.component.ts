@@ -47,9 +47,9 @@ export class PatientInfoComponent
   showNoRecordMessage = false;
 
   @Input() isMainForm: boolean = true;
+  @Input() patient: Patients | null = null;
 
   doctors: { firstName: string; lastName: string; fullName: string }[] = [];
-  @Input() patient: Patients | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -119,8 +119,10 @@ export class PatientInfoComponent
           next: () => {
             this.loading = false;
             this.errorMessage = null;
-            this.successMessage = 'Download Patient Info successfully';
-            setTimeout(() => (this.successMessage = null), 3000);
+            if (this.isMainForm) {
+              this.successMessage = 'Download Patient Info successfully';
+              setTimeout(() => (this.successMessage = null), 3000);
+            }
             this.loadPatientInfo();
             this.loadDoctors();
           },
@@ -154,8 +156,10 @@ export class PatientInfoComponent
         this.doctors = doctors;
         this.loading = false;
       },
-      error: () => {
-        this.errorMessage = 'Failed to load Doctors. Please try again.';
+      error: (error) => {
+        this.errorMessage =
+          'Failed to load Doctors. Please try again.' +
+          (error.message || 'Unknown error');
         setTimeout(() => (this.errorMessage = null), 3000);
         this.loading = false;
       },
@@ -255,9 +259,9 @@ export class PatientInfoComponent
     this.patientInfoService
       .updatePatientInfo(this.patientId, updatedInfo)
       .pipe(
-        catchError((err) => {
+        catchError((error) => {
           this.errorMessage = `Failed to update patient information: ${
-            err.message || 'Unknown error'
+            error.message || 'Unknown error'
           }`;
           setTimeout(() => (this.errorMessage = null), 3000);
           return of(null);
@@ -286,9 +290,9 @@ export class PatientInfoComponent
     this.patientInfoService
       .updateContactInfo(this.patientId, contactInfo)
       .pipe(
-        catchError((err) => {
+        catchError((error) => {
           this.errorMessage = `Failed to update contact information: ${
-            err.message || 'Unknown error'
+            error.message || 'Unknown error'
           }`;
           setTimeout(() => (this.errorMessage = null), 3000);
           return of(null);

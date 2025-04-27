@@ -49,7 +49,6 @@ export class ImmunizationsComponent
   @Input() loading = false;
   @Input() isMainForm: boolean = true;
 
-  showNoRecordMessage = false;
   patient: Patients | undefined;
   error: string | null = null;
 
@@ -101,8 +100,10 @@ export class ImmunizationsComponent
           next: () => {
             this.loading = false;
             this.errorMessage = null;
-            this.successMessage = 'Download Patient Info successfully';
-            setTimeout(() => (this.successMessage = null), 3000);
+            if (this.isMainForm) {
+              this.successMessage = 'Download Patient Info successfully';
+              setTimeout(() => (this.successMessage = null), 3000);
+            }
             this.initForm();
             this.loadImmunizations();
           },

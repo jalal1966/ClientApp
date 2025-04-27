@@ -63,7 +63,6 @@ export class PatientLabResultsComponent
     private patientService: PatientService,
     private medicalRecordUtility: MedicalRecordUtilityService,
     private labResultsService: PatientLabResultsService,
-    private medicalRecordsService: MedicalRecordsService,
     authService: AuthService,
     router: Router,
     private location: Location
@@ -101,8 +100,10 @@ export class PatientLabResultsComponent
           next: () => {
             this.loading = false;
             this.errorMessage = null;
-            this.successMessage = 'Download Patient Info successfully';
-            setTimeout(() => (this.successMessage = null), 3000);
+            if (this.isMainForm) {
+              this.successMessage = 'Download Patient Info successfully';
+              setTimeout(() => (this.successMessage = null), 3000);
+            }
             this.initForm();
             this.loadLabResults();
           },
@@ -198,8 +199,10 @@ export class PatientLabResultsComponent
           next: () => {
             this.loadLabResults();
             this.cancelEdit();
-            this.successMessage = 'Lab result updated successfully';
-            setTimeout(() => (this.successMessage = null), 3000);
+            if (this.isMainForm) {
+              this.successMessage = 'Lab result updated successfully';
+              setTimeout(() => (this.successMessage = null), 3000);
+            }
             this.showForm = false;
           },
           error: (error) => {

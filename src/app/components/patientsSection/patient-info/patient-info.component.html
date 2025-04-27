@@ -256,80 +256,89 @@
                   [formGroup]="contactForm"
                   (ngSubmit)="updateContactInfo()"
                 >
-                  <div class="form-row">
-                    <div class="form-group col-md-6">
-                      <label for="contactNumber">Contact Number</label>
-                      <input
-                        type="tel"
-                        id="contactNumber"
-                        formControlName="contactNumber"
-                        class="form-control"
-                      />
-                      <div
-                        *ngIf="isInvalid(contactForm, 'contactNumber')"
-                        class="invalid-feedback d-block"
-                      >
-                        {{ getErrorMessage(contactForm, "contactNumber") }}
+                  <div class="row">
+                    <!-- First column: Contact Number, Email, Emergency Contact Name and Number -->
+                    <div class="col-md-6">
+                      <div class="form-group mb-3">
+                        <label for="contactNumber">Contact Number</label>
+                        <input
+                          type="tel"
+                          id="contactNumber"
+                          formControlName="contactNumber"
+                          class="form-control"
+                        />
+                        <div
+                          *ngIf="isInvalid(contactForm, 'contactNumber')"
+                          class="invalid-feedback d-block"
+                        >
+                          {{ getErrorMessage(contactForm, "contactNumber") }}
+                        </div>
+                      </div>
+
+                      <div class="form-group mb-3">
+                        <label for="email">Email</label>
+                        <input
+                          type="email"
+                          id="email"
+                          formControlName="email"
+                          class="form-control"
+                        />
+                        <div
+                          *ngIf="isInvalid(contactForm, 'email')"
+                          class="invalid-feedback d-block"
+                        >
+                          {{ getErrorMessage(contactForm, "email") }}
+                        </div>
+                      </div>
+
+                      <div class="form-group mb-3">
+                        <label for="emergencyContactName"
+                          >Emergency Contact Name</label
+                        >
+                        <input
+                          type="text"
+                          id="emergencyContactName"
+                          formControlName="emergencyContactName"
+                          class="form-control"
+                        />
+                      </div>
+
+                      <div class="form-group mb-3">
+                        <label for="emergencyContactNumber"
+                          >Emergency Contact Number</label
+                        >
+                        <input
+                          type="tel"
+                          id="emergencyContactNumber"
+                          formControlName="emergencyContactNumber"
+                          class="form-control"
+                        />
+                        <div
+                          *ngIf="
+                            isInvalid(contactForm, 'emergencyContactNumber')
+                          "
+                          class="invalid-feedback d-block"
+                        >
+                          {{
+                            getErrorMessage(
+                              contactForm,
+                              "emergencyContactNumber"
+                            )
+                          }}
+                        </div>
                       </div>
                     </div>
 
-                    <div class="form-group col-md-6">
-                      <label for="email">Email</label>
-                      <input
-                        type="email"
-                        id="email"
-                        formControlName="email"
-                        class="form-control"
-                      />
-                      <div
-                        *ngIf="isInvalid(contactForm, 'email')"
-                        class="invalid-feedback d-block"
-                      >
-                        {{ getErrorMessage(contactForm, "email") }}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="address">Address</label>
-                    <textarea
-                      id="address"
-                      formControlName="address"
-                      class="form-control"
-                      rows="3"
-                    ></textarea>
-                  </div>
-
-                  <div class="form-row">
-                    <div class="form-group col-md-6">
-                      <label for="emergencyContactName"
-                        >Emergency Contact Name</label
-                      >
-                      <input
-                        type="text"
-                        id="emergencyContactName"
-                        formControlName="emergencyContactName"
-                        class="form-control"
-                      />
-                    </div>
-
-                    <div class="form-group col-md-6">
-                      <label for="emergencyContactNumber"
-                        >Emergency Contact Number</label
-                      >
-                      <input
-                        type="tel"
-                        id="emergencyContactNumber"
-                        formControlName="emergencyContactNumber"
-                        class="form-control"
-                      />
-                      <div
-                        *ngIf="isInvalid(contactForm, 'emergencyContactNumber')"
-                        class="invalid-feedback d-block"
-                      >
-                        {{
-                          getErrorMessage(contactForm, "emergencyContactNumber")
-                        }}
+                    <!-- Second column: Address -->
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="address">Address</label>
+                        <textarea
+                          id="address"
+                          formControlName="address"
+                          class="form-control"
+                          rows="12"
+                        ></textarea>
                       </div>
                     </div>
                   </div>

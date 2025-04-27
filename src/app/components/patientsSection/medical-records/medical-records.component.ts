@@ -41,15 +41,18 @@ export class MedicalRecordsComponent
 {
   @Input() medicalRecords: MedicalRecord[] = [];
   @Input() isMainForm: boolean = true;
-  //medicalRecordId?: number;
+
   medicalRecord: any = null;
-  medicalRecordForm: FormGroup;
+  medicalRecordForm!: FormGroup;
   loading = true;
   saving = false;
   saveSuccess = false;
   error: string | null = null;
   recordExists = false;
   patient: Patients | undefined;
+
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -61,8 +64,11 @@ export class MedicalRecordsComponent
     private location: Location
   ) {
     super(authService, router);
-    // Initialize the form with the fields from the updated MedicalRecord interface
 
+    this.initForm();
+  }
+
+  initForm() {
     this.medicalRecordForm = this.fb.group({
       // Physical Information
       medicalRecordId: [null], // Add this to your form group if missing
@@ -222,10 +228,14 @@ export class MedicalRecordsComponent
         if (err.status === 404 || err.message?.includes('Error Code: 404')) {
           this.medicalRecord = null;
           this.recordExists = false;
+
           this.loading = false;
         } else {
-          this.error =
-            err.message || 'An error occurred while loading medical record';
+          this.errorMessage =
+            'An error occurred while loading medical record' +
+            (this.error || 'Unknown error');
+          setTimeout(() => (this.errorMessage = null), 3000);
+
           this.loading = false;
         }
       },
@@ -287,10 +297,14 @@ export class MedicalRecordsComponent
       weight > 0
     ) {
       const bmi = this.calculateBMI(height, weight);
-      console.log('Calculated BMI:', bmi);
+
       this.medicalRecordForm.patchValue({ bmi }, { emitEvent: false });
     } else {
-      console.log('Invalid height or weight values for BMI calculation');
+      if (this.isMainForm) {
+        this.errorMessage =
+          'Invalid height or weight values for BMI calculation' +
+          setTimeout(() => (this.errorMessage = null), 3000);
+      }
     }
   }
 
@@ -453,16 +467,20 @@ export class MedicalRecordsComponent
             setTimeout(() => (this.saveSuccess = false), 3000);
           },
           error: (err) => {
-            this.error =
-              err.message || 'An error occurred while creating medical record';
+            this.errorMessage =
+              'An error occurred while creating medical record' +
+              (err.message || 'Unknown error');
+            setTimeout(() => (this.errorMessage = null), 3000);
             this.saving = false;
           },
         });
     }
   }
+
   backClicked() {
     this.location.back();
   }
+
   getUtcNow(): Date {
     return new Date(new Date().toISOString());
   }

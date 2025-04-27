@@ -55,6 +55,7 @@ h3 {
 
 .form-control {
   border-radius: 5px;
+  height: inherit;
   border: 1px solid #ccc;
   &:focus {
     border-color: #007bff;

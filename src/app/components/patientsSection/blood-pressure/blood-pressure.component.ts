@@ -102,16 +102,20 @@ export class BloodPressureComponent
           next: () => {
             this.loading = false;
             this.errorMessage = null;
-            this.successMessage = 'Download Patient Info successfully';
-            setTimeout(() => (this.successMessage = null), 3000);
+            if (this.isMainForm) {
+              this.successMessage = 'Download Patient Info successfully';
+              setTimeout(() => (this.successMessage = null), 3000);
+            }
             this.loadPatient(this.patientId);
             this.initForm();
             this.loadPressureRecords();
           },
-          error: () => {
+          error: (error) => {
             this.loading = false;
             this.successMessage = null;
-            this.errorMessage = 'Failed to retrieve medical record information';
+            this.errorMessage =
+              'Failed to retrieve medical record information' +
+              (error.message || 'Unknown error');
             setTimeout(() => (this.errorMessage = null), 3000);
           },
           complete: () => {
@@ -143,9 +147,10 @@ export class BloodPressureComponent
         this.patientWeight = this.patient.medicalRecord.weight;
         this.loading = false;
       },
-      error: () => {
+      error: (error) => {
         this.errorMessage = 'Failed to load patients. Please try again.';
-        setTimeout(() => (this.errorMessage = null), 3000);
+        setTimeout(() => (this.errorMessage = null), 3000) +
+          (error.message || 'Unknown error');
         this.loading = false;
       },
     });
@@ -171,8 +176,10 @@ export class BloodPressureComponent
         this.pressureRecords = records;
         this.isLoading = false;
       },
-      error: () => {
-        this.errorMessage = 'Failed to load blood pressure records.';
+      error: (error) => {
+        this.errorMessage =
+          'Failed to load blood pressure records.' +
+          (error.message || 'Unknown error');
         setTimeout(() => (this.errorMessage = null), 3000);
         this.isLoading = false;
       },
@@ -246,7 +253,9 @@ export class BloodPressureComponent
   }
 
   private handleSubmissionError(error: any): void {
-    this.errorMessage = 'Failed to save blood pressure record.';
+    this.errorMessage =
+      'Failed to save blood pressure record.' +
+      (error.message || 'Unknown error');
     setTimeout(() => (this.errorMessage = null), 3000);
     this.successMessage = null;
     this.isSubmitting = false;
@@ -309,10 +318,10 @@ export class BloodPressureComponent
     }
   }
 
-  formatDate(date: Date | string | undefined): string {
+  /* formatDate(date: Date | string | undefined): string {
     if (!date) return 'N/A';
     return new Date(date).toLocaleString();
-  }
+  } */
 
   backClicked() {
     this.location.back();

@@ -155,9 +155,10 @@ export class PatientVisitComponent
         this.loading = false;
         this.patient = data;
       },
-      error: () => {
+      error: (error) => {
         this.loading = false;
-        this.errorMessage = 'Error loading patient';
+        this.errorMessage =
+          'Error loading patient' + (error.message || 'Unknown error');
         setTimeout(() => (this.errorMessage = null), 3000);
       },
     });
@@ -170,9 +171,10 @@ export class PatientVisitComponent
         this.visits = visits;
         this.loading = false;
       },
-      error: () => {
+      error: (error) => {
         this.loading = false;
-        this.errorMessage = 'Error loading visits';
+        this.errorMessage =
+          'Error loading visits' + (error.message || 'Unknown error');
         setTimeout(() => (this.errorMessage = null), 3000);
       },
     });
@@ -367,9 +369,10 @@ export class PatientVisitComponent
           this.loadPatientVisits(this.patientId);
           this.cancelEdit();
         },
-        error: () => {
+        error: (error) => {
           this.loading = false;
-          this.errorMessage = 'Error updating visits';
+          this.errorMessage =
+            'Error updating visits' + (error.message || 'Unknown error');
           setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
@@ -413,9 +416,10 @@ export class PatientVisitComponent
           this.loadPatientVisits(this.patientId);
           this.cancelEdit();
         },
-        error: () => {
+        error: (error) => {
           this.loading = false;
-          this.errorMessage = 'Error creating visits';
+          this.errorMessage =
+            'Error creating visits' + (error.message || 'Unknown error');
           setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
@@ -470,9 +474,10 @@ export class PatientVisitComponent
             this.viewMode = false;
           }
         },
-        error: () => {
+        error: (error) => {
           this.loading = false;
-          this.errorMessage = 'Error deleting visits';
+          this.errorMessage =
+            'Error deleting visits' + (error.message || 'Unknown error');
           setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
@@ -485,12 +490,32 @@ export class PatientVisitComponent
       id: [diagnosis.id || 0],
       diagnosisCode: [diagnosis.diagnosisCode || ''],
       description: [diagnosis.description || '', Validators.required],
-      diagnosisDate: [
-        diagnosis.diagnosisDate
-          ? this.formatDateForDateInput(diagnosis.diagnosisDate)
+
+      isActive: [diagnosis.isActive !== undefined ? diagnosis.isActive : true],
+      treatmentPlan: [''],
+      followUpNeeded: [
+        diagnosis.followUpNeeded !== undefined
+          ? diagnosis.followUpNeeded
+          : true,
+      ],
+      followUpDate: [
+        diagnosis.followUpDate
+          ? this.formatDateForDateInput(diagnosis.followUpDate)
           : this.formatDateForDateInput(new Date()),
       ],
-      isActive: [diagnosis.isActive !== undefined ? diagnosis.isActive : true],
+      treatmentNotes: [''],
+
+      // Audit fields = DateTime.UtcNow;
+      createdAt: [
+        diagnosis.createdAt
+          ? this.formatDateForDateInput(diagnosis.createdAt)
+          : this.formatDateForDateInput(new Date()),
+      ],
+      updatedAt: [
+        diagnosis.updatedAt
+          ? this.formatDateForDateInput(diagnosis.updatedAt)
+          : this.formatDateForDateInput(new Date()),
+      ],
     });
   }
 

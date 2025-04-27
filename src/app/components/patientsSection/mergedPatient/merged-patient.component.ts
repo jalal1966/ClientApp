@@ -534,6 +534,7 @@ export class MergedPatientComponent
 
   // Navigation
   backClicked() {
-    this.location.back();
+    //this.location.back();
+    this.router.navigate(['/management']);
   }
 }
