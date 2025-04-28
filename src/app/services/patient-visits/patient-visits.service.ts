@@ -35,11 +35,11 @@ export class PatientVisitService {
     return this.http.post<Visit>(`${this.apiUrl}${this.baseUrl}`, payload);
   }
 
-  // Update an existing visit
   updateVisit(visit: Visit): Observable<void> {
+    console.log('Sending update with data:', JSON.stringify(visit, null, 2));
     return this.http.put<void>(
       `${this.apiUrl}${this.baseUrl}/${visit.id}`,
-      visit
+      visit // This is correct already since the backend expects a Visit object
     );
   }
 

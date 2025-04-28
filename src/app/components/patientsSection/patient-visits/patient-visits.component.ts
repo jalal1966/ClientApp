@@ -58,6 +58,10 @@ export class PatientVisitComponent
 
   errorMessage: string | null = null;
   successMessage: string | null = null;
+  canEdit: any;
+  showSummary: any;
+  lastUpdated?: string | number | Date;
+  medicationForm: any;
 
   constructor(
     private fb: FormBuilder,
@@ -73,7 +77,7 @@ export class PatientVisitComponent
     this.doctorName =
       this.currentUser.firstName + ' ' + this.currentUser.lastName;
 
-    this.visitForm = this.initForm();
+    //this.visitForm = this.initForm();
   }
 
   ngOnInit(): void {
@@ -108,7 +112,7 @@ export class PatientVisitComponent
             this.errorMessage = null;
             this.successMessage = 'Download Patient Visits successfully';
             setTimeout(() => (this.successMessage = null), 3000);
-            //this.initForm();
+            this.initForm();
             this.loadPatient(this.patientId);
             this.loadPatientVisits(this.patientId);
           },
@@ -187,7 +191,7 @@ export class PatientVisitComponent
 
   initForm(): FormGroup {
     const form = this.fb.group({
-      //id: [0],
+      id: [0],
       patientId: [this.patientId],
       medicalRecordId: [this.medicalRecordId],
       visitDate: [this.getCurrentDateTimeLocal(), Validators.required],
@@ -363,6 +367,36 @@ export class PatientVisitComponent
     }
 
     if (this.isEditMode) {
+      // Clean up optional fields BEFORE sending (for update too)
+      [
+        'followUpDate',
+        'followUpReason',
+        'followUpInstructions',
+        'followUpProviderName',
+        'followUpProviderId',
+        'followUpType',
+      ].forEach((key) => {
+        if (!visitData[key]) {
+          delete visitData[key];
+        }
+      });
+
+      if (!visitData.medication) visitData.medication = [];
+      visitData.medication.forEach((med: any) => {
+        if (!med.endDate) {
+          delete med.endDate;
+        }
+        med.isActive ??= true;
+      });
+
+      visitData.diagnosis ??= [];
+      visitData.medication ??= [];
+      // ✅ Then send
+      console.log(
+        'Sending update payload:',
+        JSON.stringify(visitData, null, 2)
+      );
+
       this.patientVisitService.updateVisit(visitData).subscribe({
         next: () => {
           this.loading = false;
