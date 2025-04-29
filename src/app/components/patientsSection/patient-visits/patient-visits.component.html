@@ -123,9 +123,16 @@
                   </button>
                   <button
                     (click)="deleteVisit(visit.id); $event.stopPropagation()"
-                    class="btn btn-sm btn-danger"
+                    class="btn btn-sm btn-danger me-2"
                   >
                     Delete
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary me-2"
+                    (click)="PrintPrescription(visit)"
+                  >
+                    <i class="bi bi-printer"></i>
                   </button>
                 </div>
               </div>
@@ -154,6 +161,13 @@
           <button (click)="backToList()" class="btn btn-sm btn-secondary">
             Back
           </button>
+          <!--<button
+            type="button"
+            class="btn btn-primary me-2"
+            (click)="PrintPrescription(visits.id)"
+          >
+            Print the prescription
+          </button>-->
         </div>
       </div>
 
@@ -1275,6 +1289,13 @@
               ></span>
               {{ isEditMode ? "Update Visit" : "Save Visit" }}
             </button>
+            <!--<button
+              type="button"
+              class="btn bprimary me-2"
+              (click)="PrintPrescription(visit.id)"
+            >
+              Print the prescription
+            </button>-->
           </div>
         </form>
       </div>

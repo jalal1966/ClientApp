@@ -1,0 +1,133 @@
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  padding: 20px;
+  margin: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #fff;
+}
+
+.prescription-container {
+  border: 2px solid #333;
+  padding: 25px;
+  position: relative;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rx-symbol {
+  font-size: 42px;
+  font-weight: bold;
+  margin-right: 15px;
+  color: #053b6d;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #053b6d;
+}
+
+.info-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.doctor-info {
+  text-align: right;
+  max-width: 45%;
+}
+
+.patient-info {
+  max-width: 45%;
+}
+
+.prescription-date {
+  clear: both;
+  text-align: right;
+  margin-bottom: 30px;
+}
+
+.prescription-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 30px 0 20px;
+  background-color: #f0f0f0;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.medication-item {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-left: 3px solid #053b6d;
+  background-color: #f9f9f9;
+}
+
+.medication-item h4 {
+  margin-bottom: 5px;
+  color: #053b6d;
+}
+
+.medication-item p {
+  margin: 3px 0;
+}
+
+.signature {
+  margin-top: 50px;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+  text-align: right;
+}
+
+.footer {
+  margin-top: 30px;
+  font-size: 12px;
+  text-align: center;
+  font-style: italic;
+}
+
+.no-print-button {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.no-print-button button {
+  background-color: #053b6d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.no-print-button button:hover {
+  background-color: #032c54;
+}
+
+@media print {
+  .no-print-button {
+    display: none;
+  }
+  body {
+    padding: 0;
+  }
+  .prescription-container {
+    border: none;
+    box-shadow: none;
+  }
+}

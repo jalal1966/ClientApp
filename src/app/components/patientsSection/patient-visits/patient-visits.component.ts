@@ -1,5 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -9,16 +9,18 @@ import {
   FormArray,
 } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { Visit } from '../../../models/visits.model';
-import { PatientVisitService } from '../../../services/patient-visits/patient-visits.service';
-import { PatientComponentBase } from '../../../shared/base/patient-component-base';
-import { AuthService } from '../../../services/auth/auth.service';
-import { AppointmentType } from '../../../models/enums.model';
-import { PatientService } from '../../../services/patient/patient.service';
-import { Patients } from '../../../models/patient.model';
-import { Location } from '@angular/common';
-import { MedicalRecordUtilityService } from '../../../services/medicalRecordUtility/medical-record-utility.service';
 import { filter, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
+
+import { Visit } from '../../../models/visits.model';
+import { Patients } from '../../../models/patient.model';
+import { AppointmentType } from '../../../models/enums.model';
+import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+
+import { PatientVisitService } from '../../../services/patient-visits/patient-visits.service';
+import { AuthService } from '../../../services/auth/auth.service';
+import { PatientService } from '../../../services/patient/patient.service';
+import { MedicalRecordUtilityService } from '../../../services/medicalRecordUtility/medical-record-utility.service';
+import { PrescriptionService } from '../../../services/prescription/prescription.service';
 
 @Component({
   selector: 'app-patient-visit',
@@ -29,24 +31,39 @@ import { filter, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 })
 export class PatientVisitComponent
   extends PatientComponentBase
-  implements OnInit
+  implements OnInit, OnDestroy
 {
+  // Component properties
   private destroy$ = new Subject<void>();
+
+  // Inputs
   @Input() visits: Visit[] = [];
   @Input() loading = false;
   @Input() isMainForm: boolean = true;
 
+  // Form related properties
+  visitForm!: FormGroup;
   selectedVisit: Visit | null = null;
-  visitForm!: FormGroup; // Use definite assignment assertion
   showForm = false;
   viewMode = false;
   isEditMode = false;
+  medicationForm: any;
 
-  showNoRecordMessage = false;
-  doctorName: string | undefined;
-  visitStatuses = ['scheduled', 'in-progress', 'completed', 'cancelled'];
+  // Patient data
   patient: Patients | null = null;
 
+  // UI state properties
+  showNoRecordMessage = false;
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+  canEdit: any;
+  showSummary: any;
+  lastUpdated?: string | number | Date;
+  error: string | undefined;
+  doctorName: string | undefined;
+
+  // Constants and enums
+  visitStatuses = ['scheduled', 'in-progress', 'completed', 'cancelled'];
   appointmentTypeEnum = AppointmentType;
   appointmentTypes = Object.keys(AppointmentType)
     .filter((key) => isNaN(Number(key)))
@@ -54,14 +71,6 @@ export class PatientVisitComponent
       key,
       value: AppointmentType[key as keyof typeof AppointmentType],
     }));
-  error: string | undefined;
-
-  errorMessage: string | null = null;
-  successMessage: string | null = null;
-  canEdit: any;
-  showSummary: any;
-  lastUpdated?: string | number | Date;
-  medicationForm: any;
 
   constructor(
     private fb: FormBuilder,
@@ -69,6 +78,7 @@ export class PatientVisitComponent
     private patientService: PatientService,
     private patientVisitService: PatientVisitService,
     private medicalRecordUtility: MedicalRecordUtilityService,
+    private prescriptionService: PrescriptionService,
     authService: AuthService,
     router: Router,
     private location: Location
@@ -76,67 +86,75 @@ export class PatientVisitComponent
     super(authService, router);
     this.doctorName =
       this.currentUser.firstName + ' ' + this.currentUser.lastName;
-
-    //this.visitForm = this.initForm();
   }
 
+  // Lifecycle hooks
   ngOnInit(): void {
-    // Get patient ID from route parameters
+    this.initializeComponent();
+    this.setupNavigationListener();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // Initialization methods
+  private initializeComponent(): void {
     const parentParams = this.route.parent?.snapshot.paramMap;
     const currentParams = this.route.snapshot.paramMap;
     const id = parentParams?.get('id') ?? currentParams.get('id');
 
     if (id) {
       this.patientId = +id;
-      this.route.queryParams
-        .pipe(
-          take(1), // Only take the first emission to avoid multiple subscriptions
-          switchMap((params) => {
-            if (params['medicalRecordId']) {
-              this.medicalRecordId = +params['medicalRecordId'];
-              return of(this.medicalRecordId);
-            } else {
-              return this.medicalRecordUtility
-                .checkMedicalRecord(this.patientId)
-                .pipe(
-                  tap((recordId) => {
-                    this.medicalRecordId = recordId;
-                  })
-                );
-            }
-          })
-        )
-        .subscribe({
-          next: () => {
-            this.loading = false;
-            this.errorMessage = null;
-            this.successMessage = 'Download Patient Visits successfully';
-            setTimeout(() => (this.successMessage = null), 3000);
-            this.initForm();
-            this.loadPatient(this.patientId);
-            this.loadPatientVisits(this.patientId);
-          },
-          error: () => {
-            this.loading = false;
-            this.successMessage = null;
-            this.errorMessage = 'Failed to retrieve medical record information';
-            setTimeout(() => (this.errorMessage = null), 3000);
-          },
-          complete: () => {
-            // Handle the case when no medicalRecordId is available
-            if (!this.medicalRecordId) {
-              this.errorMessage = 'No medical record ID found';
-              setTimeout(() => (this.errorMessage = null), 3000);
-            }
-          },
-        });
+      this.loadMedicalRecord();
     } else {
-      this.loading = false;
-      this.errorMessage = 'Patient ID is required';
-      setTimeout(() => (this.errorMessage = null), 3000);
-      this.successMessage = null;
+      this.handleError('Patient ID is required');
     }
+  }
 
+  private loadMedicalRecord(): void {
+    this.loading = true;
+    this.route.queryParams
+      .pipe(
+        take(1),
+        switchMap((params) => {
+          if (params['medicalRecordId']) {
+            this.medicalRecordId = +params['medicalRecordId'];
+            return of(this.medicalRecordId);
+          } else {
+            return this.medicalRecordUtility
+              .checkMedicalRecord(this.patientId)
+              .pipe(
+                tap((recordId) => {
+                  this.medicalRecordId = recordId;
+                })
+              );
+          }
+        })
+      )
+      .subscribe({
+        next: () => this.handleMedicalRecordSuccess(),
+        error: () =>
+          this.handleError('Failed to retrieve medical record information'),
+        complete: () => {
+          if (!this.medicalRecordId) {
+            this.handleError('No medical record ID found');
+          }
+        },
+      });
+  }
+
+  private handleMedicalRecordSuccess(): void {
+    this.loading = false;
+    this.errorMessage = null;
+    this.showSuccessMessage('Download Patient Visits successfully');
+    this.initForm();
+    this.loadPatient(this.patientId);
+    this.loadPatientVisits(this.patientId);
+  }
+
+  private setupNavigationListener(): void {
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
@@ -147,48 +165,7 @@ export class PatientVisitComponent
       });
   }
 
-  openMedicalRecordForm(): void {
-    // You can either navigate to a medical record creation page
-    this.router.navigate(['/patients/', this.patientId, 'medical-records']);
-  }
-
-  loadPatient(value: number) {
-    this.loading = true;
-    this.patientService.getPatient(value).subscribe({
-      next: (data) => {
-        this.loading = false;
-        this.patient = data;
-      },
-      error: (error) => {
-        this.loading = false;
-        this.errorMessage =
-          'Error loading patient' + (error.message || 'Unknown error');
-        setTimeout(() => (this.errorMessage = null), 3000);
-      },
-    });
-  }
-
-  loadPatientVisits(id: number): void {
-    this.loading = true;
-    this.patientVisitService.getVisitsByPatient(id).subscribe({
-      next: (visits) => {
-        this.visits = visits;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.loading = false;
-        this.errorMessage =
-          'Error loading visits' + (error.message || 'Unknown error');
-        setTimeout(() => (this.errorMessage = null), 3000);
-      },
-    });
-  }
-
-  getVisitTypeLabel(type: string | number | undefined): string {
-    const typeId = Number(type);
-    return this.appointmentTypeEnum[typeId] ?? 'Unknown';
-  }
-
+  // Form initialization and management
   initForm(): FormGroup {
     const form = this.fb.group({
       id: [0],
@@ -208,7 +185,11 @@ export class PatientVisitComponent
       medication: this.fb.array([]),
     });
 
-    // Add a custom validator that requires followUpDate when followUpRequired is true
+    this.setupFollowUpValidation(form);
+    return form;
+  }
+
+  private setupFollowUpValidation(form: FormGroup): void {
     form.get('followUpRequired')?.valueChanges.subscribe((required) => {
       const followUpDateControl = form.get('followUpDate');
       if (required) {
@@ -218,32 +199,49 @@ export class PatientVisitComponent
       }
       followUpDateControl?.updateValueAndValidity();
     });
-
-    return form;
   }
 
-  // Helper to get current datetime in the format needed for datetime-local input
-  getCurrentDateTimeLocal(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  // Data loading methods
+  loadPatient(patientId: number): void {
+    this.loading = true;
+    this.patientService.getPatient(patientId).subscribe({
+      next: (data) => {
+        this.loading = false;
+        this.patient = data;
+      },
+      error: (error) => {
+        this.handleError(
+          'Error loading patient: ' + (error.message || 'Unknown error')
+        );
+      },
+    });
   }
 
-  // Convenience getters for form arrays
+  loadPatientVisits(patientId: number): void {
+    this.loading = true;
+    this.patientVisitService.getVisitsByPatient(patientId).subscribe({
+      next: (visits) => {
+        this.visits = visits;
+        this.loading = false;
+      },
+      error: (error) => {
+        this.handleError(
+          'Error loading visits: ' + (error.message || 'Unknown error')
+        );
+      },
+    });
+  }
+
+  // Form getters
   get diagnosisArray(): FormArray {
-    return this.visitForm.get('diagnosis') as FormArray; // Removed optional chaining
+    return this.visitForm.get('diagnosis') as FormArray;
   }
 
   get medicationsArray(): FormArray {
-    return this.visitForm.get('medication') as FormArray; // Removed optional chaining
+    return this.visitForm.get('medication') as FormArray;
   }
 
-  // Method to create a new visit
+  // Visit management
   newVisit(): void {
     this.selectedVisit = null;
     this.isEditMode = false;
@@ -252,14 +250,12 @@ export class PatientVisitComponent
     this.visitForm = this.initForm();
   }
 
-  // Method to view visit details
   viewVisitDetails(visit: Visit): void {
     this.selectedVisit = visit;
     this.viewMode = true;
     this.showForm = false;
   }
 
-  // Method to select a visit for editing
   selectVisit(visit: Visit): void {
     this.selectedVisit = visit;
     this.isEditMode = true;
@@ -268,6 +264,10 @@ export class PatientVisitComponent
 
     // Reset form and populate with visit data
     this.visitForm = this.initForm();
+    this.populateVisitForm(visit);
+  }
+
+  private populateVisitForm(visit: Visit): void {
     this.visitForm.patchValue({
       id: visit.id,
       patientId: visit.patientId,
@@ -286,15 +286,20 @@ export class PatientVisitComponent
         : '',
     });
 
-    // Clear and repopulate diagnosis array
+    this.populateDiagnosisArray(visit);
+    this.populateMedicationsArray(visit);
+  }
+
+  private populateDiagnosisArray(visit: Visit): void {
     this.diagnosisArray.clear();
     if (visit.diagnosis && visit.diagnosis.length > 0) {
       visit.diagnosis.forEach((diagnosis) => {
         this.diagnosisArray.push(this.createDiagnosisFormGroup(diagnosis));
       });
     }
+  }
 
-    // Clear and repopulate medications array
+  private populateMedicationsArray(visit: Visit): void {
     this.medicationsArray.clear();
     if (visit.medication && visit.medication.length > 0) {
       visit.medication.forEach((medication) => {
@@ -303,37 +308,28 @@ export class PatientVisitComponent
     }
   }
 
-  // Format date for datetime-local input
-  formatDateForInput(date: string | Date): string {
-    if (!date) return '';
-    const d = new Date(date);
-    const localDateStr = d.toISOString().slice(0, 16); // Format as YYYY-MM-DDThh:mm
-    return localDateStr;
-  }
-
-  // Format date for date input (without time)
-  formatDateForDateInput(date: string | Date): string {
-    if (!date) return '';
-    const d = new Date(date);
-    const localDateStr = d.toISOString().split('T')[0]; // Format as YYYY-MM-DD // Format as YYYY-MM-DDThh:mm
-    return localDateStr;
-  }
-
-  // Method to save a visit (create or update)
   saveVisit(): void {
     if (this.visitForm.invalid) {
-      // Mark all controls as touched to show validation errors
       this.markFormGroupTouched(this.visitForm);
       return;
     }
 
     this.loading = true;
+    const visitData = this.prepareVisitData();
+
+    if (this.isEditMode) {
+      this.updateVisit(visitData);
+    } else {
+      this.createVisit(visitData);
+    }
+  }
+
+  private prepareVisitData(): any {
     const visitData = this.visitForm.value;
 
-    // 🔥 Convert from string to number
+    // Convert types and format dates
     visitData.visitType = Number(visitData.visitType);
 
-    // Ensure dates are properly formatted
     if (visitData.visitDate) {
       visitData.visitDate = new Date(visitData.visitDate).toISOString();
     }
@@ -342,7 +338,14 @@ export class PatientVisitComponent
       visitData.followUpDate = new Date(visitData.followUpDate).toISOString();
     }
 
-    // Format dates in diagnosis array
+    this.formatDiagnosisDates(visitData);
+    this.formatMedicationDates(visitData);
+    this.cleanupOptionalFields(visitData);
+
+    return visitData;
+  }
+
+  private formatDiagnosisDates(visitData: any): void {
     if (visitData.diagnosis && visitData.diagnosis.length > 0) {
       visitData.diagnosis.forEach((diagnosis: any) => {
         if (diagnosis.diagnosisDate) {
@@ -352,8 +355,9 @@ export class PatientVisitComponent
         }
       });
     }
+  }
 
-    // Format dates in medication array
+  private formatMedicationDates(visitData: any): void {
     if (visitData.medication && visitData.medication.length > 0) {
       visitData.medication.forEach((medication: any) => {
         if (medication.startDate) {
@@ -365,121 +369,63 @@ export class PatientVisitComponent
         }
       });
     }
-
-    if (this.isEditMode) {
-      // Clean up optional fields BEFORE sending (for update too)
-      [
-        'followUpDate',
-        'followUpReason',
-        'followUpInstructions',
-        'followUpProviderName',
-        'followUpProviderId',
-        'followUpType',
-      ].forEach((key) => {
-        if (!visitData[key]) {
-          delete visitData[key];
-        }
-      });
-
-      if (!visitData.medication) visitData.medication = [];
-      visitData.medication.forEach((med: any) => {
-        if (!med.endDate) {
-          delete med.endDate;
-        }
-        med.isActive ??= true;
-      });
-
-      visitData.diagnosis ??= [];
-      visitData.medication ??= [];
-      // ✅ Then send
-      console.log(
-        'Sending update payload:',
-        JSON.stringify(visitData, null, 2)
-      );
-
-      this.patientVisitService.updateVisit(visitData).subscribe({
-        next: () => {
-          this.loading = false;
-          this.loadPatientVisits(this.patientId);
-          this.cancelEdit();
-        },
-        error: (error) => {
-          this.loading = false;
-          this.errorMessage =
-            'Error updating visits' + (error.message || 'Unknown error');
-          setTimeout(() => (this.errorMessage = null), 3000);
-        },
-      });
-    } else {
-      [
-        'followUpDate',
-        'followUpReason',
-        'followUpInstructions',
-        'followUpProviderName',
-        'followUpProviderId',
-        'followUpType',
-      ].forEach((key) => {
-        if (!visitData[key]) {
-          delete visitData[key];
-        }
-      });
-      if (!visitData.medication) visitData.medication = [];
-
-      visitData.medication.forEach((med: any) => {
-        if (!med.endDate) {
-          delete med.endDate;
-        }
-        med.isActive ??= true; // Ensure isActive is defined (backend expects it)
-      });
-
-      visitData.diagnosis ??= [];
-      visitData.medication ??= [];
-
-      // 🔥 Convert from string to number
-      visitData.visitType = Number(visitData.visitType);
-      // ✅ Wrap the data as expected by the backend
-      const wrappedPayload = { visit: visitData };
-      console.log(
-        'Wrapped Payload:',
-        JSON.stringify({ visit: visitData }, null, 2)
-      );
-
-      this.patientVisitService.createVisit(wrappedPayload).subscribe({
-        next: () => {
-          this.loading = false;
-          this.loadPatientVisits(this.patientId);
-          this.cancelEdit();
-        },
-        error: (error) => {
-          this.loading = false;
-          this.errorMessage =
-            'Error creating visits' + (error.message || 'Unknown error');
-          setTimeout(() => (this.errorMessage = null), 3000);
-        },
-      });
-    }
   }
 
-  // Helper to mark all controls in a form group as touched
-  markFormGroupTouched(formGroup: FormGroup) {
-    Object.values(formGroup.controls).forEach((control) => {
-      control.markAsTouched();
-
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
-      } else if (control instanceof FormArray) {
-        control.controls.forEach((c) => {
-          if (c instanceof FormGroup) {
-            this.markFormGroupTouched(c);
-          } else {
-            c.markAsTouched();
-          }
-        });
+  private cleanupOptionalFields(visitData: any): void {
+    [
+      'followUpDate',
+      'followUpReason',
+      'followUpInstructions',
+      'followUpProviderName',
+      'followUpProviderId',
+      'followUpType',
+    ].forEach((key) => {
+      if (!visitData[key]) {
+        delete visitData[key];
       }
+    });
+
+    // Ensure medication array is initialized
+    if (!visitData.medication) visitData.medication = [];
+    visitData.medication.forEach((med: any) => {
+      if (!med.endDate) {
+        delete med.endDate;
+      }
+      med.isActive ??= true;
+    });
+
+    // Ensure diagnosis array is initialized
+    visitData.diagnosis ??= [];
+  }
+
+  private updateVisit(visitData: any): void {
+    this.patientVisitService.updateVisit(visitData).subscribe({
+      next: () => this.handleSaveSuccess(),
+      error: (error) =>
+        this.handleError(
+          'Error updating visit: ' + (error.message || 'Unknown error')
+        ),
     });
   }
 
-  // Method to cancel editing
+  private createVisit(visitData: any): void {
+    const wrappedPayload = { visit: visitData };
+
+    this.patientVisitService.createVisit(wrappedPayload).subscribe({
+      next: () => this.handleSaveSuccess(),
+      error: (error) =>
+        this.handleError(
+          'Error creating visit: ' + (error.message || 'Unknown error')
+        ),
+    });
+  }
+
+  private handleSaveSuccess(): void {
+    this.loading = false;
+    this.loadPatientVisits(this.patientId);
+    this.cancelEdit();
+  }
+
   cancelEdit(): void {
     this.selectedVisit = null;
     this.showForm = false;
@@ -487,14 +433,12 @@ export class PatientVisitComponent
     this.isEditMode = false;
   }
 
-  // Method to go back to the visit list
   backToList(): void {
     this.selectedVisit = null;
     this.viewMode = false;
     this.showForm = false;
   }
 
-  // Method to delete a visit
   deleteVisit(visitId: number): void {
     if (confirm('Are you sure you want to delete this visit?')) {
       this.loading = true;
@@ -503,28 +447,24 @@ export class PatientVisitComponent
           this.loading = false;
           this.loadPatientVisits(this.patientId);
           if (this.selectedVisit?.id === visitId) {
-            this.selectedVisit = null;
-            this.showForm = false;
-            this.viewMode = false;
+            this.cancelEdit();
           }
         },
         error: (error) => {
-          this.loading = false;
-          this.errorMessage =
-            'Error deleting visits' + (error.message || 'Unknown error');
-          setTimeout(() => (this.errorMessage = null), 3000);
+          this.handleError(
+            'Error deleting visit: ' + (error.message || 'Unknown error')
+          );
         },
       });
     }
   }
 
-  // Methods for diagnosis form array
+  // Diagnosis form management
   createDiagnosisFormGroup(diagnosis: any = {}): FormGroup {
     return this.fb.group({
       id: [diagnosis.id || 0],
       diagnosisCode: [diagnosis.diagnosisCode || ''],
       description: [diagnosis.description || '', Validators.required],
-
       isActive: [diagnosis.isActive !== undefined ? diagnosis.isActive : true],
       treatmentPlan: [''],
       followUpNeeded: [
@@ -538,8 +478,6 @@ export class PatientVisitComponent
           : this.formatDateForDateInput(new Date()),
       ],
       treatmentNotes: [''],
-
-      // Audit fields = DateTime.UtcNow;
       createdAt: [
         diagnosis.createdAt
           ? this.formatDateForDateInput(diagnosis.createdAt)
@@ -561,7 +499,7 @@ export class PatientVisitComponent
     this.diagnosisArray.removeAt(index);
   }
 
-  // Methods for medications form array
+  // Medication form management
   createMedicationFormGroup(medication: any = {}): FormGroup {
     return this.fb.group({
       id: [medication.id || 0],
@@ -592,7 +530,297 @@ export class PatientVisitComponent
     this.medicationsArray.removeAt(index);
   }
 
-  backClicked() {
+  // Print prescription functionality
+  PrintPrescription(visit: Visit): void {
+    // Reset form and populate with visit data
+    this.visitForm = this.initForm();
+    this.populateVisitForm(visit);
+
+    // Validate form for printing
+    if (!this.visitForm) {
+      this.handleError(
+        'No active visit form. Please select or create a visit first.'
+      );
+      return;
+    }
+
+    // Check if medications exist
+    const medicationsArray = this.visitForm.get('medication') as FormArray;
+    if (!medicationsArray || medicationsArray.length === 0) {
+      this.handleError('No medications to print');
+      return;
+    }
+    const prescriptionWindow = window.open('', '_blank');
+    const html = this.prescriptionService.generateHtml(
+      visit,
+      this.patient,
+      this.doctorName
+    ); // build this HTML separately
+    if (prescriptionWindow) {
+      prescriptionWindow.document.write(html);
+      prescriptionWindow.document.close();
+    }
+
+    /* // Create print window
+    const printWindow = this.createPrintWindow();
+    if (!printWindow) {
+      this.handleError(
+        'Unable to open print window. Please check your popup blocker settings.'
+      );
+      return;
+    }
+
+    // Generate and print prescription
+    const prescriptionHtml = this.generatePrescriptionHtml(medicationsArray);
+    this.printPrescription(printWindow, prescriptionHtml); */
+  }
+
+  private createPrintWindow(): Window | null {
+    return window.open('', '_blank', 'width=800,height=600');
+  }
+
+  /* private generatePrescriptionHtml(medicationsArray: FormArray): string {
+    // Get current date for prescription
+    const currentDate = new Date().toLocaleDateString();
+
+    // Format medication information
+    const medicationsHtml = this.formatMedicationsHtml(medicationsArray);
+
+    // Create and return the full HTML content
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Medical Prescription</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          margin: 0;
+          padding: 20px;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 20px;
+          padding-bottom: 10px;
+          border-bottom: 2px solid #333;
+        }
+        .doctor-info {
+          float: right;
+          text-align: right;
+          margin-bottom: 20px;
+        }
+        .patient-info {
+          float: left;
+          margin-bottom: 20px;
+        }
+        .prescription-date {
+          clear: both;
+          text-align: right;
+          margin-bottom: 30px;
+        }
+        .prescription-title {
+          text-align: center;
+          font-size: 18px;
+          font-weight: bold;
+          margin: 30px 0 20px;
+          text-decoration: underline;
+        }
+        .medication-item {
+          margin-bottom: 15px;
+        }
+        .medication-item h4 {
+          margin-bottom: 5px;
+        }
+        .medication-item p {
+          margin: 3px 0;
+        }
+        .signature {
+          margin-top: 50px;
+          padding-top: 20px;
+          border-top: 1px solid #333;
+          text-align: right;
+        }
+        .footer {
+          margin-top: 30px;
+          font-size: 12px;
+          text-align: center;
+        }
+        .divider {
+          border-top: 1px dashed #ccc;
+          margin: 20px 0;
+        }
+        .no-print-button {
+          text-align: center;
+          margin: 20px 0;
+        }
+        @media print {
+          .no-print-button {
+            display: none;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h2>MEDICAL PRESCRIPTION</h2>
+      </div>
+      
+      <div class="doctor-info">
+        <p><strong>Provider:</strong> ${this.doctorName || 'N/A'}</p>
+      </div>
+      
+      <div class="patient-info">
+        <p><strong>Patient:</strong> ${this.patient?.firstName || ''} ${
+      this.patient?.lastName || ''
+    }</p>
+        <p><strong>Patient ID:</strong> ${this.patientId || 'N/A'}</p>
+        <p><strong>DOB:</strong> ${
+          this.patient?.dateOfBirth
+            ? new Date(this.patient.dateOfBirth).toLocaleDateString()
+            : 'N/A'
+        }</p>
+      </div>
+      
+      <div class="prescription-date">
+        <p><strong>Date:</strong> ${currentDate}</p>
+      </div>
+      
+      <div class="prescription-title">PRESCRIBED MEDICATIONS</div>
+      
+      ${medicationsHtml}
+      
+      <div class="signature">
+        <p>Provider's Signature: __________________________</p>
+        <p>${this.doctorName || ''}</p>
+      </div>
+      
+      <div class="footer">
+        <p>This prescription is valid for 30 days from the date of issue.</p>
+      </div>
+      
+      <div class="no-print-button">
+        <button onclick="window.print(); setTimeout(() => window.close(), 500);">
+          Print Prescription
+        </button>
+      </div>
+    </body>
+    </html>
+  `;
+  } */
+
+  private formatMedicationsHtml(medicationsArray: FormArray): string {
+    let medicationsHtml = '';
+    medicationsArray.controls.forEach((med, index) => {
+      const medication = med.value;
+
+      medicationsHtml += `
+      <div class="medication-item">
+        <h4>${index + 1}. ${medication.name}</h4>
+        <p><strong>Dosage:</strong> ${medication.dosage}</p>
+        <p><strong>Frequency:</strong> ${medication.frequency}</p>
+        <p><strong>Start Date:</strong> ${new Date(
+          medication.startDate
+        ).toLocaleDateString()}</p>
+        ${
+          medication.endDate
+            ? `<p><strong>End Date:</strong> ${new Date(
+                medication.endDate
+              ).toLocaleDateString()}</p>`
+            : ''
+        }
+        ${
+          medication.purpose
+            ? `<p><strong>Purpose:</strong> ${medication.purpose}</p>`
+            : ''
+        }
+      </div>
+      <hr>
+    `;
+    });
+    return medicationsHtml;
+  }
+
+  private printPrescription(
+    printWindow: Window,
+    prescriptionHtml: string
+  ): void {
+    // Write HTML to the new window and trigger print
+    printWindow.document.write(prescriptionHtml);
+    printWindow.document.close();
+
+    // Add event listener to close window after printing
+    printWindow.onafterprint = () => {
+      printWindow.close();
+    };
+  }
+
+  // Navigation methods
+  openMedicalRecordForm(): void {
+    this.router.navigate(['/patients/', this.patientId, 'medical-records']);
+  }
+
+  backClicked(): void {
     this.location.back();
+  }
+
+  // Utility methods
+  getVisitTypeLabel(type: string | number | undefined): string {
+    const typeId = Number(type);
+    return this.appointmentTypeEnum[typeId] ?? 'Unknown';
+  }
+
+  getCurrentDateTimeLocal(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  formatDateForInput(date: string | Date): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const localDateStr = d.toISOString().slice(0, 16); // Format as YYYY-MM-DDThh:mm
+    return localDateStr;
+  }
+
+  formatDateForDateInput(date: string | Date): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const localDateStr = d.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    return localDateStr;
+  }
+
+  markFormGroupTouched(formGroup: FormGroup): void {
+    Object.values(formGroup.controls).forEach((control) => {
+      control.markAsTouched();
+
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      } else if (control instanceof FormArray) {
+        control.controls.forEach((c) => {
+          if (c instanceof FormGroup) {
+            this.markFormGroupTouched(c);
+          } else {
+            c.markAsTouched();
+          }
+        });
+      }
+    });
+  }
+
+  private handleError(message: string): void {
+    this.loading = false;
+    this.errorMessage = message;
+    setTimeout(() => (this.errorMessage = null), 3000);
+  }
+
+  private showSuccessMessage(message: string): void {
+    this.successMessage = message;
+    setTimeout(() => (this.successMessage = null), 3000);
   }
 }

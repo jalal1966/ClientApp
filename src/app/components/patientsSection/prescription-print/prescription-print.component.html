@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medical Prescription</title>
+  </head>
+  <body>
+    <div class="prescription-container">
+      <div class="header">
+        <div class="rx-symbol">℞</div>
+        <h2>MEDICAL PRESCRIPTION</h2>
+      </div>
+
+      <div class="info-section">
+        <div class="patient-info">
+          <p>
+            <strong>Patient:</strong> {{ patient?.firstName }}
+            {{ patient?.lastName }}
+          </p>
+          <p><strong>Patient ID:</strong> {{ patientId || "N/A" }}</p>
+          <p><strong>DOB:</strong> {{ patient?.dateOfBirth | date }}</p>
+        </div>
+
+        <div class="doctor-info">
+          <p><strong>Provider:</strong> {{ doctorName || "N/A" }}</p>
+          <p><strong>Date:</strong> {{ currentDate | date }}</p>
+        </div>
+      </div>
+
+      <div class="prescription-title">PRESCRIBED MEDICATIONS</div>
+
+      <div *ngFor="let med of medications" class="medication-item">
+        <h4>{{ med.name }}</h4>
+        <p><strong>Dosage:</strong> {{ med.dosage }}</p>
+        <p><strong>Frequency:</strong> {{ med.frequency }}</p>
+        <p *ngIf="med.startDate">
+          <strong>Start Date:</strong> {{ med.startDate | date }}
+        </p>
+        <p *ngIf="med.endDate">
+          <strong>End Date:</strong> {{ med.endDate | date }}
+        </p>
+        <p *ngIf="med.purpose"><strong>Purpose:</strong> {{ med.purpose }}</p>
+        <p *ngIf="med.prescribingProvider">
+          <strong>Prescribing Provider:</strong> {{ med.prescribingProvider }}
+        </p>
+      </div>
+
+      <div class="signature">
+        <p>Provider's Signature: __________________________</p>
+        <p>{{ doctorName || "" }}</p>
+      </div>
+
+      <div class="footer">
+        <p>This prescription is valid for 30 days from the date of issue.</p>
+      </div>
+    </div>
+
+    <div class="no-print-button">
+      <button (click)="printAndClose()">Print Prescription</button>
+    </div>
+  </body>
+</html>
