@@ -81,3 +81,17 @@ export interface Immunization {
   nextDoseDate: string;
   manufacturer?: string;
 }
+
+export interface Medicine {
+  id?: number;
+  name: string;
+  packaging?: string;
+  company?: string;
+  composition?: string;
+  note?: string;
+}
+
+export interface ImportResult {
+  added: number;
+  duplicates: number;
+}

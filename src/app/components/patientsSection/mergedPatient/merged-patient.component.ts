@@ -23,8 +23,10 @@ import { MedicalRecordsService } from '../../../services/medical-records/medical
 import {
   Allergy,
   Immunization,
+  ImportResult,
   LabResult,
   MedicalRecord,
+  Medicine,
 } from '../../../models/medicalRecord.model';
 import { Observable } from 'rxjs';
 import { Diagnosis, Medication } from '../../../models/visits.model';
@@ -35,6 +37,9 @@ import { ImmunizationsComponent } from '../immunzations/immunizations.component'
 import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
 import { MedicalRecordsComponent } from '../medical-records/medical-records.component';
 import { AppointmentType } from '../../../models/enums.model';
+import * as XLSX from 'xlsx';
+import { HttpClient } from '@angular/common/http';
+import { MedicineComponent } from '../../commonSection/medicines/medicine/medicine.component';
 
 @Component({
   selector: 'app-merged-patient',
@@ -49,6 +54,7 @@ import { AppointmentType } from '../../../models/enums.model';
     PatientLabResultsComponent,
     ImmunizationsComponent,
     BloodPressureComponent,
+    MedicineComponent,
   ],
   templateUrl: './merged-patient.component.html',
 })
@@ -100,6 +106,7 @@ export class MergedPatientComponent
     private patientService: PatientService,
     authService: AuthService,
     router: Router,
+    private http: HttpClient,
     private location: Location
   ) {
     super(authService, router);

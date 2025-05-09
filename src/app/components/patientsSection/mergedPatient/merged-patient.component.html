@@ -133,6 +133,14 @@
           >Documents</a
         >
       </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [class.active]="activeTab === 'medicines'"
+          (click)="setActiveTab('medicines')"
+          >Update Medicines</a
+        >
+      </li>
     </ul>
 
     <!-- Tab Content -->
@@ -420,6 +428,108 @@
           <div class="card-body">
             <p class="text-muted">No documents available.</p>
           </div>
+        </div>
+      </div>
+
+      <!-- Medicines -->
+      <div *ngSwitchCase="'medicines'">
+        <div class="card">
+          <app-medicine></app-medicine>
+          <!--<div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">Medicines</h5>
+            <button class="btn btn-sm btn-primary">Add New Medicines</button>
+          </div>
+          <div class="card-body">
+            <div class="card medicine-import-card">
+              <div class="card-header">
+                <h4 class="card-title">
+                  <i class="fas fa-file-medical me-2"></i>Medicine Data Import
+                </h4>
+              </div>
+
+              <div class="card-body">
+                <div class="upload-container">
+                  <div class="mb-3">
+                    <label for="excelFile" class="form-label"
+                      >Select Excel File</label
+                    >
+                    <div class="input-group">
+                      <input
+                        type="file"
+                        class="form-control"
+                        id="excelFile"
+                        accept=".xlsx, .xls"
+                        (change)="onFileChange($event)"
+                      />
+                      <button
+                        class="btn btn-primary"
+                        type="button"
+                        [disabled]="!selectedFile || isUploading"
+                        (click)="drugUpdate()"
+                      >
+                        <span
+                          *ngIf="isUploading"
+                          class="spinner-border spinner-border-sm me-1"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        {{ isUploading ? "Uploading..." : "Import Medicines" }}
+                      </button>
+                    </div>
+                    <small class="form-text text-muted">
+                      Supported formats: .xlsx, .xls
+                    </small>
+                  </div>
+                </div>
+
+                <div
+                  *ngIf="result.added > 0 || result.duplicates > 0"
+                  class="mt-4"
+                >
+                  <h5 class="results-heading">Import Results</h5>
+                  <div class="results-container">
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="result-item success">
+                          <div class="result-icon">
+                            <i class="fas fa-check-circle"></i>
+                          </div>
+                          <div class="result-content">
+                            <h6>Successfully Added</h6>
+                            <div class="result-value">{{ result.added }}</div>
+                            <div class="result-label">new medicines</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="result-item warning">
+                          <div class="result-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                          </div>
+                          <div class="result-content">
+                            <h6>Skipped Duplicates</h6>
+                            <div class="result-value">
+                              {{ result.duplicates }}
+                            </div>
+                            <div class="result-label">medicines</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-footer text-end" *ngIf="result.added > 0">
+                <small class="text-muted"
+                  >Last import: {{ currentDate | date : "medium" }}</small
+                >
+              </div>
+            </div>
+            <p class="text-muted">No medicines available.</p>
+          </div>-->
         </div>
       </div>
     </div>

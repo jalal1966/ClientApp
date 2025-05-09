@@ -13,7 +13,7 @@ import { Medication } from '../../../models/visits.model';
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './patient-medications.component.html',
-  styleUrls: ['./patient-medications.component.css'],
+  styleUrls: ['./patient-medications.component.scss'],
 })
 export class PatientMedicationsComponent
   extends PatientComponentBase
