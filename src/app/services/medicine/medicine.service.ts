@@ -10,15 +10,15 @@ import { environment } from '../../../environments/environment';
 })
 export class MedicineService {
   private apiUrl = environment.apiUrl;
-  private readonly baseUrl = 'api/medications';
+  private readonly baseUrl = 'api/Medicines';
 
   constructor(private http: HttpClient) {}
 
   // Get all medicines
   getMedicines(): Observable<Medicine[]> {
-    return this.http.get<Medicine[]>(
-      `${this.apiUrl}${this.apiUrl}/${this.baseUrl}`
-    );
+    const url = `${this.apiUrl}/${this.baseUrl}`;
+    console.log('API URL:', url);
+    return this.http.get<Medicine[]>(url);
   }
 
   // Get medicine by id

@@ -69,6 +69,9 @@ export class ClinicDashboardComponent
   appointmentStatus?: AppointmentStatus;
   appointmentTypes?: AppointmentType;
 
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+
   tabs = [
     { key: 'waitingList', label: 'WaitingList' },
     { key: 'appointments', label: 'Appointments' },
@@ -199,10 +202,12 @@ export class ClinicDashboardComponent
         this.loading = false;
         console.log('Appointments Loaded:', this.appointmentsDoctor);
       },
-      error: (err) => {
-        this.error = 'Failed to load appointments Doctor';
+      error: (error) => {
+        this.successMessage = '';
+        this.errorMessage = 'Failed to load appointments Doctor';
+        setTimeout(() => (this.errorMessage = null), 3000) +
+          (error.message || 'Unknown error');
         this.loading = false;
-        console.error(err);
       },
     });
   }
@@ -222,8 +227,11 @@ export class ClinicDashboardComponent
         this.filteredPatients = data;
         this.loading = false;
       },
-      error: (err) => {
-        this.error = 'Failed to load patients. Please try again.';
+      error: (error) => {
+        this.successMessage = '';
+        this.errorMessage = 'Failed to load patients. Please try again.';
+        setTimeout(() => (this.errorMessage = null), 3000) +
+          (error.message || 'Unknown error');
         this.loading = false;
       },
     });
@@ -236,8 +244,11 @@ export class ClinicDashboardComponent
         this.doctors = doctors;
         this.loading = false;
       },
-      error: (err) => {
-        this.error = 'Failed to load Doctors. Please try again.';
+      error: (error) => {
+        this.successMessage = '';
+        this.errorMessage = 'Failed to load Doctors. Please try again.';
+        setTimeout(() => (this.errorMessage = null), 3000) +
+          (error.message || 'Unknown error');
         this.loading = false;
       },
     });
@@ -285,13 +296,16 @@ export class ClinicDashboardComponent
           );
         }
       },
-      error: (err) => {
+      error: (error) => {
+        this.successMessage = '';
+        this.errorMessage = 'Error fetching medical record:';
+        setTimeout(() => (this.errorMessage = null), 3000) +
+          (error.message || 'Unknown error');
         this.loading = false;
-        console.error('Error fetching medical record:', err);
 
         // Handle error case - maybe navigate without the medical record ID
         // or show an error message
-        if (err.status === 404) {
+        if (error.status === 404) {
           alert(
             'No medical record found for this patient. Please create a medical record first.'
           );
@@ -326,7 +340,10 @@ export class ClinicDashboardComponent
         this.loadDoctors();
       },
       error: (err: any) => {
-        console.error('Error updating status:', err);
+        this.successMessage = '';
+        this.errorMessage = 'Error updating status:';
+        setTimeout(() => (this.errorMessage = null), 3000) +
+          (err.message || 'Unknown error');
       },
     });
   }

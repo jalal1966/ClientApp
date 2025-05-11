@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { Patients, PatientDetail } from '../../../models/patient.model';
+import { Patients } from '../../../models/patient.model';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   FormBuilder,
@@ -37,9 +37,8 @@ import { ImmunizationsComponent } from '../immunzations/immunizations.component'
 import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
 import { MedicalRecordsComponent } from '../medical-records/medical-records.component';
 import { AppointmentType } from '../../../models/enums.model';
-import * as XLSX from 'xlsx';
 import { HttpClient } from '@angular/common/http';
-import { MedicineComponent } from '../../commonSection/medicines/medicine/medicine.component';
+import { MedicineComponent } from '../../commonSection/medicines/medicine.component';
 
 @Component({
   selector: 'app-merged-patient',
@@ -96,6 +95,9 @@ export class MergedPatientComponent
   bpDiastolic: any;
 
   appointmentTypeEnum = AppointmentType;
+
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
 
   /////////////////////////////////////////
 
@@ -161,11 +163,11 @@ export class MergedPatientComponent
         }
       });
     } else {
-      this.error = 'Patient ID is required';
+      this.successMessage = null;
+      this.errorMessage = 'Patient ID is required';
+      setTimeout(() => (this.errorMessage = null), 3000);
       this.loading = false;
     }
-
-    console.log('medicalRecordId', this.medicalRecordId);
   }
 
   getVisitTypeLabel(type: string | number | undefined): string {
@@ -214,9 +216,12 @@ export class MergedPatientComponent
         this.patient = data;
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Error loading patient data', err);
-        this.error = 'Failed to load patient data. Please try again.';
+      error: (error) => {
+        this.successMessage = null;
+        this.errorMessage =
+          'Failed to load patient data. Please try again.' +
+          (error.message || 'Unknown error');
+        setTimeout(() => (this.errorMessage = null), 3000);
         this.loading = false;
       },
     });
@@ -379,9 +384,12 @@ export class MergedPatientComponent
         // Show success message
         this.error = ''; // Clear any previous errors
       },
-      error: (err) => {
-        console.error('Error saving medical record:', err);
-        this.error = 'Failed to save medical record. Please try again.';
+      error: (error) => {
+        this.successMessage = null;
+        this.errorMessage =
+          'Failed to save medical record. Please try again.' +
+          (error.message || 'Unknown error');
+        setTimeout(() => (this.errorMessage = null), 3000);
       },
     });
   }
@@ -505,9 +513,11 @@ export class MergedPatientComponent
         next: () => {
           alert('Lab results were successfully emailed to the patient.');
         },
-        error: (err) => {
-          console.error('Error emailing lab results:', err);
-          this.error = 'Failed to email lab results.';
+        error: (error) => {
+          this.successMessage = null;
+          this.errorMessage =
+            'Failed to email lab results.' + (error.message || 'Unknown error');
+          setTimeout(() => (this.errorMessage = null), 3000);
         },
       });
     }

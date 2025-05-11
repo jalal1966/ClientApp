@@ -53,7 +53,10 @@ export class PatientFormComponent
 
     // Get current user
     const currentUser = authService;
+    this.initForm();
+  }
 
+  initForm() {
     this.patientForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(3)]],
       lastName: ['', [Validators.required, Validators.minLength(3)]],
@@ -73,7 +76,6 @@ export class PatientFormComponent
       lastVisitDate: [''],
     });
   }
-
   ngOnInit(): void {
     // Set nurse ID and name from current user
     this.patientForm.patchValue({

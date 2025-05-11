@@ -60,6 +60,10 @@ export class AppointmentComponent implements OnInit {
   patientForm!: FormGroup;
   error = '';
   updateSuccess = false;
+
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+
   // Then update your appointment form initialization to use these enums
   appointmentTypes = [
     { value: AppointmentType.CheckUp, label: 'CheckUp' },
@@ -202,8 +206,6 @@ export class AppointmentComponent implements OnInit {
       status: formValues.appointmentStatus.value.toString(),
       notes: formValues.notes || '',
     };
-
-    console.log('appointment', appointment);
 
     // Call your service to create appointment
     this.appointmentService.createAppointment(appointment).subscribe({
@@ -422,8 +424,12 @@ export class AppointmentComponent implements OnInit {
         this.filteredPatients = data;
         this.loading = false;
       },
-      error: (err) => {
-        this.error = 'Failed to load patients. Please try again.';
+      error: (error) => {
+        this.successMessage = null;
+        this.errorMessage =
+          'Failed to load patients. Please try again.' +
+          (error.message || 'Unknown error');
+        setTimeout(() => (this.errorMessage = null), 3000);
         this.loading = false;
       },
     });
@@ -436,8 +442,12 @@ export class AppointmentComponent implements OnInit {
         this.doctors = doctors;
         this.loading = false;
       },
-      error: (err) => {
-        this.error = 'Failed to load Doctors. Please try again.';
+      error: (error) => {
+        this.successMessage = null;
+        this.errorMessage =
+          'Failed to load Doctors. Please try again.' +
+          (error.message || 'Unknown error');
+        setTimeout(() => (this.errorMessage = null), 3000);
         this.loading = false;
       },
     });
@@ -452,10 +462,12 @@ export class AppointmentComponent implements OnInit {
         this.loading = false;
         console.log('Appointments Loaded:', this.appointments);
       },
-      error: (err) => {
-        this.error = 'Failed to load appointments';
+      error: (error) => {
+        this.successMessage = null;
+        this.errorMessage =
+          'Failed to load appointments' + (error.message || 'Unknown error');
+        setTimeout(() => (this.errorMessage = null), 3000);
         this.loading = false;
-        console.error(err);
       },
     });
   }

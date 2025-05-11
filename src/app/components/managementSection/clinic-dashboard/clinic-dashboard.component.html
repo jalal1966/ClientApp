@@ -1,4 +1,30 @@
 <div class="dashboard-container container-fluid py-4">
+  <!-- ─── Alert Messages ─────────────────────────────── -->
+  <div
+    *ngIf="errorMessage"
+    class="alert alert-danger alert-dismissible fade show"
+    role="alert"
+  >
+    {{ errorMessage }}
+    <button
+      type="button"
+      class="btn-close"
+      (click)="errorMessage = null"
+    ></button>
+  </div>
+
+  <div
+    *ngIf="successMessage"
+    class="alert alert-success alert-dismissible fade show"
+    role="alert"
+  >
+    {{ successMessage }}
+    <button
+      type="button"
+      class="btn-close"
+      (click)="successMessage = null"
+    ></button>
+  </div>
   <div class="d-flex justify-content-between align-items-center mb-4">
     <span class="welcome-banner">
       <span class="welcome-text">Welcome 😉 </span>

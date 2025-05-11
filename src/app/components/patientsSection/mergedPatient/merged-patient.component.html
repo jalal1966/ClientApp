@@ -1,4 +1,29 @@
 <!-- merged-patient.component.html -->
+<div
+  *ngIf="errorMessage"
+  class="alert alert-danger alert-dismissible fade show"
+  role="alert"
+>
+  {{ errorMessage }}
+  <button
+    type="button"
+    class="btn-close"
+    (click)="errorMessage = null"
+  ></button>
+</div>
+<div
+  *ngIf="successMessage"
+  class="alert alert-success alert-dismissible fade show"
+  role="alert"
+>
+  {{ successMessage }}
+  <button
+    type="button"
+    class="btn-close"
+    (click)="successMessage = null"
+  ></button>
+</div>
+
 <div class="container-fluid patient-dashboard">
   <div *ngIf="showNoRecordMessage" class="alert alert-warning">
     <p>
@@ -434,7 +459,7 @@
       <!-- Medicines -->
       <div *ngSwitchCase="'medicines'">
         <div class="card">
-          <app-medicine></app-medicine>
+          <app-medicine [isMainForm]="false"> </app-medicine>
           <!--<div
             class="card-header d-flex justify-content-between align-items-center"
           >

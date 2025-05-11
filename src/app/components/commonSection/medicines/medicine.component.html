@@ -1,0 +1,331 @@
+<div
+  *ngIf="errorMessage"
+  class="alert alert-danger alert-dismissible fade show"
+  role="alert"
+>
+  {{ errorMessage }}
+  <button
+    type="button"
+    class="btn-close"
+    (click)="errorMessage = null"
+  ></button>
+</div>
+<div
+  class="d-flex align-items-center justify-content-between mb-3"
+  *ngIf="isMainForm"
+>
+  <!-- Back Button (left) -->
+  <button (click)="backClicked()" class="btn btn-success">
+    <span class="bi bi-arrow-left-square"></span>
+    Go Back
+  </button>
+</div>
+<div
+  *ngIf="successMessage"
+  class="alert alert-success alert-dismissible fade show"
+  role="alert"
+>
+  {{ successMessage }}
+  <button
+    type="button"
+    class="btn-close"
+    (click)="successMessage = null"
+  ></button>
+</div>
+
+<div class="card">
+  <!--<app-medicine></app-medicine>-->
+
+  <div class="card medicine-import-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="card-title">
+        <i class="fas fa-file-medical me-2"></i>Medicine Data Page
+      </h4>
+      <button
+        class="btn btn-sm btn-primary"
+        (click)="openFormExcel()"
+        (dblclick)="cancelEditExcel()"
+      >
+        Add New Medicines excelFile
+      </button>
+
+      <!--TODO Cancel and Save-->
+      <button
+        class="btn btn-sm btn-secondary me-1"
+        (click)="openForm()"
+        (dblclick)="cancelEdit()"
+      >
+        <i class="bi bi-file-earmark-arrow-down me-1"></i> Add New Medicine
+      </button>
+    </div>
+    <!-- Add/Edit Form To DO Dublicate Medicien-->
+    <div class="card" *ngIf="showForm">
+      <div class="card-header bg-light" style="color: black">
+        {{ isEditing ? "Edit   Medicine" : "Add New   Medicine" }}
+      </div>
+      <div class="card-body">
+        <form [formGroup]="medicineForm" (ngSubmit)="submitForm()">
+          <div class="row">
+            <!-- First column: Test Date, Test Name, Medicine, Reference Range -->
+            <div class="col-md-6">
+              <div class="mb-3 row">
+                <label for="name" class="col-sm-2 form-label">Name</label>
+                <div class="col-sm-10">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    formControlName="name"
+                  />
+                  <div
+                    class="invalid-feedback"
+                    *ngIf="
+                      medicineForm.get('name')?.invalid &&
+                      medicineForm.get('name')?.touched
+                    "
+                  >
+                    Name is required
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3 row">
+                <label for="packaging" class="col-sm-2 form-label"
+                  >Packaging</label
+                >
+                <div class="col-sm-10">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="packaging"
+                    formControlName="packaging"
+                  />
+                  <div
+                    class="invalid-feedback"
+                    *ngIf="
+                      medicineForm.get('packaging')?.invalid &&
+                      medicineForm.get('packaging')?.touched
+                    "
+                  >
+                    Packaging is required
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3 row">
+                <label for="composition" class="col-sm-3 form-label"
+                  >Composition</label
+                >
+                <div class="col-sm-9">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="composition"
+                    formControlName="composition"
+                  />
+                  <div
+                    class="invalid-feedback"
+                    *ngIf="
+                      medicineForm.get('composition')?.invalid &&
+                      medicineForm.get('composition')?.touched
+                    "
+                  >
+                    Composition is required
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3 row">
+                <label for="company" class="col-sm-2 form-label">Company</label>
+                <div class="col-sm-10">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="company"
+                    formControlName="company"
+                  />
+                  <div
+                    class="invalid-feedback"
+                    *ngIf="
+                      medicineForm.get('company')?.invalid &&
+                      medicineForm.get('company')?.touched
+                    "
+                  >
+                    Company is required
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Second column: Ordering Provider and Notes -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <textarea
+                  class="form-control"
+                  placeholder="Notes"
+                  id="notes"
+                  formControlName="notes"
+                  rows="6"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="medicineForm.invalid"
+            >
+              {{ isEditing ? "Update" : "Add" }} Medicine
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              *ngIf="isEditing"
+              (click)="cancelEdit()"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card mt-3" *ngIf="showFormExcel">
+        <div class="upload-container">
+          <div class="mb-3">
+            <label for="excelFile" class="form-label">Select Excel File</label>
+            <div class="input-group">
+              <input
+                type="file"
+                class="form-control"
+                id="excelFile"
+                accept=".xlsx, .xls"
+                (change)="onFileChange($event)"
+              />
+              <button
+                class="btn btn-primary"
+                type="button"
+                [disabled]="!selectedFile || isUploading"
+                (click)="drugUpdate()"
+              >
+                <span
+                  *ngIf="isUploading"
+                  class="spinner-border spinner-border-sm me-1"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                {{ isUploading ? "Uploading..." : "Import Medicines" }}
+              </button>
+            </div>
+            <small class="form-text text-muted">
+              Supported formats: .xlsx, .xls
+            </small>
+          </div>
+        </div>
+
+        <div *ngIf="result.added > 0 || result.duplicates > 0" class="mt-4">
+          <h5 class="results-heading">Import Medicines</h5>
+          <div class="results-container">
+            <div class="row">
+              <div class="col-6">
+                <div class="result-item success">
+                  <div class="result-icon">
+                    <i class="fas fa-check-circle"></i>
+                  </div>
+                  <div class="result-content">
+                    <h6>Successfully Added</h6>
+                    <div class="result-value">{{ result.added }}</div>
+                    <div class="result-label">new medicines</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="result-item warning">
+                  <div class="result-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </div>
+                  <div class="result-content">
+                    <h6>Skipped Duplicates</h6>
+                    <div class="result-value">
+                      {{ result.duplicates }}
+                    </div>
+                    <div class="result-label">medicines</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- To do-->
+      <!-- Medicine -->
+      <div class="tab-content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5">Patient Records</h2>
+          <p>Total Medicine: {{ filteredMedicines.length }}</p>
+          <div class="search-box">
+            <input
+              type="text"
+              placeholder="Search patients..."
+              class="p-2 border rounded w-full"
+              (input)="filterMedicine($event)"
+            />
+          </div>
+        </div>
+        <div
+          *ngIf="!loading && filteredMedicines.length === 0"
+          class="text-center py-4"
+        >
+          No Medicine found.
+        </div>
+        <div class="table-responsive p-2 border rounded">
+          <table
+            class="table table-bordered table-striped table-hover patients-table"
+          >
+            <thead class="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Packaging</th>
+                <th>Company</th>
+                <th>Composition</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let med of filteredMedicines">
+                <td>{{ med.name }}</td>
+                <td>{{ med.packaging }}</td>
+                <td>{{ med.company }}</td>
+                <td>{{ med.composition }}</td>
+                <td>{{ med.note }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer text-end" *ngIf="result.added > 0">
+      <small class="text-muted"
+        >Last import: {{ currentDate | date : "medium" }}</small
+      >
+    </div>
+  </div>
+  <p class="text-muted">No medicines available.</p>
+
+  <!--<div *ngIf="medicines$ | async as medicines">
+    <div *ngIf="medicines.length > 0; else noMedicines">
+      <div *ngFor="let medicine of medicines">
+        <h3>{{ medicine.name }}</h3>
+        <p *ngIf="medicine.company">Company: {{ medicine.company }}</p>
+        <p *ngIf="medicine.packaging">Packaging: {{ medicine.packaging }}</p>
+        <button (click)="viewDetails(medicine.id!)">View Details</button>
+      </div>
+    </div>
+    <ng-template #noMedicines>
+      <p>No medicines found.</p>
+    </ng-template>
+  </div>-->
+</div>
+<!--<button (click)="addNewMedicine()">Add New Medicine</button>-->
