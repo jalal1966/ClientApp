@@ -128,12 +128,18 @@ export class MedicineComponent implements OnInit {
         },
       });
     } else {
-      this.medicineService.createMedicine(medicine).subscribe({
-        next: () => {
-          this.medicineForm.reset();
-          this.successMessage = 'New medicine added successfully';
-          setTimeout(() => (this.successMessage = null), 3000);
-          this.loadMedicines();
+      this.medicineService.checkAndCreateMedicine(medicine).subscribe({
+        next: (result) => {
+          this.loading = false;
+          if (result.exists) {
+            this.errorMessage = result.message;
+          } else {
+            this.medicineForm.reset();
+            this.successMessage = 'New medicine added successfully';
+            setTimeout(() => (this.successMessage = null), 3000);
+            this.loadMedicines();
+          }
+
           this.showForm = false;
         },
         error: (error) => {
@@ -347,191 +353,4 @@ export class MedicineComponent implements OnInit {
   backClicked() {
     this.location.back();
   }
-  /*  drugUpdate() {
-    if (!this.selectedFile) {
-      this.showNotification('error', 'Please select an Excel file first');
-      return;
-    }
-
-    this.isUploading = true;
-    // Read the Excel file
-    const fileReader = new FileReader();
-    fileReader.onload = (e: any) => {
-      try {
-        const arrayBuffer = e.target.result;
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-
-        // Assuming the first sheet contains our data
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-
-        // Convert to JSON
-        const excelData = XLSX.utils.sheet_to_json<any>(worksheet);
-
-        // Transform Excel data to match our Medicine model
-        const medicines: Medicine[] = this.mapExcelDataToMedicines(excelData);
-
-        // Send to API to save without duplicates
-        this.saveMedicinesWithoutDuplicates(medicines);
-      } catch (error) {
-        console.error('Error processing Excel file:', error);
-        this.isUploading = false;
-        this.showNotification(
-          'error',
-          'Failed to process Excel file. Please check the format.'
-        );
-      }
-    };
-
-    fileReader.readAsArrayBuffer(this.selectedFile);
-  }
-  private mapExcelDataToMedicines(excelData: any[]): Medicine[] {
-    // Map Excel columns to Medicine properties
-    // Adjust this mapping based on your Excel file structure
-    return excelData
-      .map((row) => {
-        const medicine: Medicine = {
-          name:
-            row['Name'] ||
-            row['name'] ||
-            row['MEDICINE NAME'] ||
-            row['Medicine Name'] ||
-            '',
-          packaging:
-            row['Packaging'] || row['packaging'] || row['PACKAGING'] || null,
-          company:
-            row['Company'] ||
-            row['company'] ||
-            row['MANUFACTURER'] ||
-            row['Manufacturer'] ||
-            null,
-          composition:
-            row['Composition'] ||
-            row['composition'] ||
-            row['COMPOSITION'] ||
-            null,
-          note: row['Note'] || row['note'] || row['NOTES'] || null,
-        };
-
-        // Skip rows without a medicine name
-        if (!medicine.name || medicine.name.trim() === '') {
-          return null;
-        }
-
-        // Clean and standardize the data
-        medicine.name = medicine.name.trim();
-        if (medicine.packaging) medicine.packaging = medicine.packaging.trim();
-        if (medicine.company) medicine.company = medicine.company.trim();
-        if (medicine.composition)
-          medicine.composition = medicine.composition.trim();
-        if (medicine.note) medicine.note = medicine.note.trim();
-
-        return medicine;
-      })
-      .filter((medicine) => medicine !== null) as Medicine[];
-  }
-  private showNotification(
-    type: 'success' | 'warning' | 'error',
-    message: string
-  ): void {
-    // This is a placeholder - implement with your preferred notification system
-    // Examples: NGX-Toastr, Material Snackbar, or custom notification service
-    console.log(`[${type}] ${message}`);
-
-    // If using no notification library:
-    alert(message);
-  }
-  private saveMedicinesWithoutDuplicates(medicines: Medicine[]): void {
-    if (medicines.length === 0) {
-      this.isUploading = false;
-      this.showNotification(
-        'warning',
-        'No valid medicine data found in the Excel file'
-      );
-      return;
-    }
-
-    // First check if any of these medicines already exist in the database
-    const batchImportRequests = from(medicines).pipe(
-      mergeMap((medicine) => {
-        // For each medicine, check if it already exists in the database
-        // This assumes you have a method to check for duplicates by some unique identifier
-        // like name or code
-        return this.checkMedicineExists(medicine).pipe(
-          map((exists) => ({ medicine, exists }))
-        );
-      }),
-      toArray(),
-      map((results) => {
-        const newMedicines = results
-          .filter((result) => !result.exists)
-          .map((result) => result.medicine);
-        const duplicates = results.filter((result) => result.exists).length;
-
-        return { newMedicines, duplicates };
-      })
-    );
-
-    batchImportRequests.subscribe({
-      next: ({ newMedicines, duplicates }) => {
-        if (newMedicines.length === 0) {
-          // All medicines are duplicates
-          this.isUploading = false;
-          this.result = { added: 0, duplicates };
-          this.currentDate = new Date();
-
-          this.showNotification(
-            'warning',
-            `All medicines (${duplicates}) already exist in the database`
-          );
-        } else {
-          // Save only the non-duplicate medicines
-          this.http
-            .post<ImportResult>(`${this.apiUrl}/bulk-import`, {
-              medicines: newMedicines,
-            })
-            .subscribe({
-              next: (response) => {
-                this.result = {
-                  added: response.added,
-                  duplicates: duplicates + (response.duplicates || 0),
-                };
-                this.isUploading = false;
-                this.currentDate = new Date();
-
-                this.showNotification(
-                  'success',
-                  `Import completed: ${response.added} medicines added, ${this.result.duplicates} duplicates skipped`
-                );
-              },
-              error: (error) => {
-                console.error('Error saving medicines:', error);
-                this.isUploading = false;
-                this.showNotification(
-                  'error',
-                  'Failed to save medicines. Please try again.'
-                );
-              },
-            });
-        }
-      },
-      error: (error) => {
-        console.error('Error checking for duplicates:', error);
-        this.isUploading = false;
-        this.showNotification(
-          'error',
-          'Failed to check for duplicate medicines. Please try again.'
-        );
-      },
-    });
-  }
-
-  // Helper method to check if a medicine already exists in the database
-  private checkMedicineExists(medicine: Medicine): Observable<boolean> {
-    // Modify this to use whatever unique identifier you have for medicines
-    // For example, you might check by name, code, or another field
-    return this.http.get<boolean>(`${this.apiUrl}/${this.baseUrl}/exists`, {
-      params: new HttpParams().set('name', medicine.name),
-    });
-  } */
 }

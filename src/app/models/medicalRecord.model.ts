@@ -95,3 +95,11 @@ export interface ImportResult {
   added: number;
   duplicates: number;
 }
+
+// Update in medicine.service.ts
+export interface MedicineCheckResult {
+  exists: boolean;
+  message: string;
+  existingMedicineId?: number;
+  createdMedicineId?: number;
+}

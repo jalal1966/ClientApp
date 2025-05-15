@@ -2,7 +2,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Medicine } from '../../models/medicalRecord.model';
+import {
+  Medicine,
+  MedicineCheckResult,
+} from '../../models/medicalRecord.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -43,6 +46,16 @@ export class MedicineService {
   deleteMedicine(id: number): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}${this.apiUrl}/${this.baseUrl}/${id}`
+    );
+  }
+
+  // New method to check and create medicine
+  checkAndCreateMedicine(
+    medicine: Omit<Medicine, 'id'>
+  ): Observable<MedicineCheckResult> {
+    return this.http.post<MedicineCheckResult>(
+      `${this.apiUrl}/${this.baseUrl}/check-and-create`,
+      medicine
     );
   }
 }
