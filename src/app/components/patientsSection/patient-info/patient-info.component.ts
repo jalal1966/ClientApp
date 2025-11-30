@@ -171,7 +171,7 @@ export class PatientInfoComponent
     this.errorMessage = null;
 
     this.patientInfoService
-      .getPatient(this.patientId)
+      .getPatientById(this.patientId)
       .pipe(
         catchError((err) => {
           this.errorMessage = `Error loading patient information: ${

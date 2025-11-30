@@ -204,7 +204,7 @@ export class PatientVisitComponent
   // Data loading methods
   loadPatient(patientId: number): void {
     this.loading = true;
-    this.patientService.getPatient(patientId).subscribe({
+    this.patientService.getPatientById(patientId).subscribe({
       next: (data) => {
         this.loading = false;
         this.patient = data;

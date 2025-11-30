@@ -50,7 +50,7 @@ export class PatientService {
       .pipe(catchError(this.handleError));
   }
 
-  getPatient(id: number): Observable<Patients> {
+  getPatientById(id: number): Observable<Patients> {
     return this.http.get<any>(`${this.apiUrl}${this.baseUrl}/${id}`).pipe(
       map((patient) => this.patientAdapter.adaptApiResponseToPatient(patient)),
       catchError(this.handleError)

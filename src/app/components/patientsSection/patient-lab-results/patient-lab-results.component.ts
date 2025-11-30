@@ -53,6 +53,7 @@ export class PatientLabResultsComponent
   // Add error handling and loading state
 
   showForm: boolean = false;
+  showVideo = false;
 
   errorMessage: string | null = null;
   successMessage: string | null = null;
@@ -315,5 +316,9 @@ export class PatientLabResultsComponent
 
   backClicked() {
     this.location.back();
+  }
+
+  toggleVideo() {
+    this.showVideo = !this.showVideo;
   }
 }

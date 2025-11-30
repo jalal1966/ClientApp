@@ -1,4 +1,14 @@
 <div class="card border-0 shadow-sm">
+  <button (click)="toggleVideo()" class="btn btn-primary mb-2">
+    {{ showVideo ? "Hide" : "Show" }} Demo Video
+  </button>
+  <div *ngIf="showVideo" class="text-center mb-3">
+    <video width="640" height="360" controls>
+      <source src="assets/videos/Tr1.avi" type="video/avi" />
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
   <div class="card-header bg-primary text-white">
     <h5 class="mb-0">Patient Lab Results</h5>
   </div>

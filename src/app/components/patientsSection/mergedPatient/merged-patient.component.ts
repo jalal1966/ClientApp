@@ -211,7 +211,7 @@ export class MergedPatientComponent
   // Merged loading method
   loadPatientDetailsData(): void {
     this.loading = true;
-    this.patientService.getPatient(this.patientId).subscribe({
+    this.patientService.getPatientById(this.patientId).subscribe({
       next: (data) => {
         this.patient = data;
         this.loading = false;

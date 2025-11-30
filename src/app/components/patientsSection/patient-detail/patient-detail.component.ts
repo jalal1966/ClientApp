@@ -141,7 +141,7 @@ export class PatientDetailComponent
 
   loadPatient(value: number): void {
     this.loading = true;
-    this.patientService.getPatient(value).subscribe({
+    this.patientService.getPatientById(value).subscribe({
       next: (data) => {
         this.patient = data;
         console.log('this.patients', this.patient);
