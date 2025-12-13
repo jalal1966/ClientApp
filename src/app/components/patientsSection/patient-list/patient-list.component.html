@@ -78,7 +78,7 @@
         <tbody>
           <tr *ngFor="let patient of filteredPatients">
             <td>{{ patient.id }}</td>
-            <td>{{ patient.firstName }}{{ patient.lastName }}</td>
+            <td>{{ patient.firstName }} {{ patient.lastName }}</td>
             <td>{{ patient.dateOfBirth | date : "dd.MM.yyyy" }}</td>
             <td>
               {{ patient.genderID | gender }}

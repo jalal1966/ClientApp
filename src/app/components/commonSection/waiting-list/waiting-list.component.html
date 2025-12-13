@@ -40,12 +40,12 @@
           {{ waitingList?.appointment?.startTime | date : "shortTime" }}
         </td>
         <td>
-          <span *ngIf="!waitingList.appointment?.status"> Not arrived </span>
+          <span *ngIf="!waitingList.appointment.status"> Not arrived </span>
           <span
             *ngIf="
-              waitingList.appointment?.status === 'Waiting' ||
-              waitingList.appointment?.status === 'InProgress' ||
-              waitingList.appointment?.status === 'Completed'
+              waitingList.appointment.status === 'Waiting' ||
+              waitingList.appointment.status === 'InProgress' ||
+              waitingList.appointment.status === 'Completed'
             "
           >
             {{ waitingList.arrivalTime | date : "shortTime" }}
@@ -77,10 +77,10 @@
         <td class="actions-cell">
           <button
             *ngIf="
-              waitingList.appointment?.status !== 'Waiting' &&
-              waitingList.appointment?.status !== 'InProgress' &&
-              waitingList.appointment?.status !== 'Completed' &&
-              waitingList.appointment?.status !== 'NoShow'
+              waitingList.appointment.status !== 'Waiting' &&
+              waitingList.appointment.status !== 'InProgress' &&
+              waitingList.appointment.status !== 'Completed' &&
+              waitingList.appointment.status !== 'NoShow'
             "
             (click)="checkInPatient(waitingList)"
             class="btn btn-sm btn-success me-2"
@@ -88,21 +88,21 @@
             Check In
           </button>
           <button
-            *ngIf="waitingList.appointment?.status === 'Waiting'"
+            *ngIf="waitingList.appointment.status === 'Waiting'"
             (click)="updateStatus(waitingList, 'InProgress')"
             class="btn btn-sm btn-success me-2"
           >
             Start
           </button>
           <button
-            *ngIf="waitingList.appointment?.status === 'InProgress'"
+            *ngIf="waitingList.appointment.status === 'InProgress'"
             (click)="updateStatus(waitingList, 'Completed')"
             class="btn btn-sm btn-danger me-2"
           >
             Complete
           </button>
           <button
-            *ngIf="waitingList.appointment?.status === 'Waiting'"
+            *ngIf="waitingList.appointment.status === 'Waiting'"
             (click)="updateStatus(waitingList, 'NoShow')"
             class="btn btn-sm btn-danger me-2"
           >

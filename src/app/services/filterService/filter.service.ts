@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Appointment } from '../../models/appointment.model';
 import { WaitingPatient } from '../../models/waiting.model';
 import { Patients } from '../../models/patient.model';
+import { AppointmentStatus } from '../../models/enums.model';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +12,10 @@ export class FilterService {
   private waitingPatient: WaitingPatient[] = [];
   private appointments: Appointment[] = [];
   private patients: Patients[] = [];
-  private selectedStatus: string = 'All';
+
+  // Use BehaviorSubject to make status changes observable
+  private selectedStatusSubject = new BehaviorSubject<string>('All');
+  public selectedStatus$ = this.selectedStatusSubject.asObservable();
 
   constructor() {}
 
@@ -28,7 +33,17 @@ export class FilterService {
   }
 
   setSelectedStatus(status: string): void {
-    this.selectedStatus = status;
+    this.selectedStatusSubject.next(status);
+  }
+
+  getSelectedStatus(): string {
+    return this.selectedStatusSubject.value;
+  }
+
+  // Convert string status to enum number
+  private getStatusEnumValue(statusString: string): number | null {
+    if (statusString === 'All') return null;
+    return AppointmentStatus[statusString as keyof typeof AppointmentStatus];
   }
 
   // Method with function overloading for filtering by status
@@ -37,6 +52,9 @@ export class FilterService {
   filterStatuses(
     type: 'waiting' | 'appointments'
   ): WaitingPatient[] | Appointment[] {
+    const currentStatus = this.selectedStatusSubject.value;
+    const statusEnumValue = this.getStatusEnumValue(currentStatus);
+
     if (type === 'waiting') {
       if (!this.waitingPatient || this.waitingPatient.length === 0) {
         console.warn('No waiting patients found');
@@ -44,15 +62,21 @@ export class FilterService {
       }
 
       const filteredPatients =
-        this.selectedStatus === 'All'
+        statusEnumValue === null
           ? this.waitingPatient
           : this.waitingPatient.filter(
               (patient) =>
                 patient.appointment &&
-                patient.appointment.status === this.selectedStatus
+                patient.appointment.status === String(statusEnumValue)
             );
 
-      console.log('Filtered Waiting Patients:', filteredPatients); // Debugging line
+      console.log('Filtered Waiting Patients:', filteredPatients);
+      console.log(
+        'Filter Status:',
+        currentStatus,
+        '| Enum Value:',
+        statusEnumValue
+      );
       return filteredPatients;
     } else {
       if (!this.appointments || this.appointments.length === 0) {
@@ -61,12 +85,19 @@ export class FilterService {
       }
 
       const filteredAppointments =
-        this.selectedStatus === 'All'
+        statusEnumValue === null
           ? this.appointments
           : this.appointments.filter(
-              (appointment) => appointment.status === this.selectedStatus
+              (appointment) => appointment.status === String(statusEnumValue)
             );
 
+      console.log('Filtered Appointments:', filteredAppointments);
+      console.log(
+        'Filter Status:',
+        currentStatus,
+        '| Enum Value:',
+        statusEnumValue
+      );
       return filteredAppointments;
     }
   }
