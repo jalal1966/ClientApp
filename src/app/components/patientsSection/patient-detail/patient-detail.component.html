@@ -563,7 +563,6 @@
     </div>
 
     <!-- Recent Visits Tab -->
-    <!-- Recent Visits Tab -->
     <div *ngIf="activeTab === 'visits'">
       <!-- Debugging output (optional) 
       <pre>{{ medicalRecord?.visits | json }}</pre>-->
@@ -626,7 +625,9 @@
                             <strong>Description:</strong>
                             {{ diag.description }} <br />
                             <strong>Date:</strong>
-                            {{ diag.diagnosisDate | date : "shortDate" }} <br />
+                            {{ diag.createdAt | date : "shortDate" }} <br />
+                            <strong>TreatmentPlan :</strong
+                            >{{ diag.treatmentPlan }} <br />
                             <strong>Status:</strong>
                             <span
                               [ngClass]="

@@ -46,17 +46,26 @@ export class PatientLabResultsComponent
   @Input() loading = false;
   @Input() isMainForm: boolean = true;
 
-  // @Input() medicalRecordId?: number;
   showNoRecordMessage = false;
   patient: Patients | undefined;
   error: string | null = null;
-  // Add error handling and loading state
 
   showForm: boolean = false;
   showVideo = false;
 
   errorMessage: string | null = null;
   successMessage: string | null = null;
+
+  // Email preview properties
+  showEmailPreview = false;
+  emailPreviewData: {
+    labId: number;
+    patientEmail: string;
+    patientName: string;
+    testName: string;
+    testDate: string;
+    result: string;
+  } | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -79,6 +88,10 @@ export class PatientLabResultsComponent
 
     if (id) {
       this.patientId = +id;
+
+      // Load patient data
+      this.loadPatientData(this.patientId);
+
       this.route.queryParams
         .pipe(
           take(1), // Only take the first emission to avoid multiple subscriptions
@@ -140,8 +153,19 @@ export class PatientLabResultsComponent
         this.showForm = false; // Hide form when tab changes
       });
   }
-  // Add a new method to check if the medical record exists
 
+  loadPatientData(patientId: number): void {
+    this.patientService.getPatientById(patientId).subscribe({
+      next: (patient) => {
+        this.patient = patient;
+      },
+      error: (error) => {
+        console.error('Error loading patient data:', error);
+      },
+    });
+  }
+
+  // Add a new method to check if the medical record exists
   loadLabResults(): void {
     this.loading = true;
     this.errorMessage = null;
@@ -278,40 +302,82 @@ export class PatientLabResultsComponent
   }
 
   downloadLabResults(labId: number): void {
-    if (this.patient) {
-      this.patientService.downloadLabResults(labId).subscribe({
-        next: (pdfBlob) => {
-          const url = window.URL.createObjectURL(pdfBlob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `lab-results-${labId}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        },
-        error: (error) => {
-          this.errorMessage =
-            'Error downloading lab results:' +
-            (error.message || 'Unknown error');
-          setTimeout(() => (this.errorMessage = null), 3000);
-        },
-      });
-    }
+    this.patientService.downloadLabResults(labId).subscribe({
+      next: (pdfBlob) => {
+        // Create a URL for the blob
+        const url = window.URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `lab-results-${labId}.pdf`;
+
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up
+        window.URL.revokeObjectURL(url);
+
+        // Show success message
+        this.successMessage = `PDF saved successfully to C:\\Pdf Data\\lab-results-${labId}.pdf`;
+        setTimeout(() => (this.successMessage = null), 5000);
+      },
+      error: (error) => {
+        this.errorMessage =
+          'Error downloading lab results: ' +
+          (error.message || 'Unknown error');
+        setTimeout(() => (this.errorMessage = null), 3000);
+      },
+    });
   }
 
-  emailLabResults(labId: number): void {
-    if (this.patient && this.patient.email) {
-      this.patientService.emailLabResults(labId, this.patient.email).subscribe({
-        next: () => {
-          alert('Lab results were successfully emailed to the patient.');
-        },
-        error: (error) => {
-          this.errorMessage =
-            'Error emailing lab results:' + (error.message || 'Unknown error');
-          setTimeout(() => (this.errorMessage = null), 3000);
-        },
-      });
+  // Show email preview before sending
+  showEmailPreviewDialog(labResult: LabResult): void {
+    if (!this.patient || !this.patient.email) {
+      this.errorMessage = 'Patient email address is not available';
+      setTimeout(() => (this.errorMessage = null), 3000);
+      return;
     }
+
+    this.emailPreviewData = {
+      labId: labResult.id!,
+      patientEmail: this.patient.email,
+      patientName: `${this.patient.firstName} ${this.patient.lastName}`,
+      testName: labResult.testName,
+      testDate: new Date(labResult.testDate).toLocaleDateString(),
+      result: labResult.result,
+    };
+
+    this.showEmailPreview = true;
+  }
+
+  // Cancel email sending
+  cancelEmailPreview(): void {
+    this.showEmailPreview = false;
+    this.emailPreviewData = null;
+  }
+
+  // Confirm and send email
+  confirmSendEmail(): void {
+    if (!this.emailPreviewData) return;
+
+    const { labId, patientEmail } = this.emailPreviewData;
+
+    this.patientService.emailLabResults(labId, patientEmail).subscribe({
+      next: () => {
+        this.successMessage = `Lab results were successfully emailed to ${patientEmail}`;
+        setTimeout(() => (this.successMessage = null), 5000);
+        this.showEmailPreview = false;
+        this.emailPreviewData = null;
+      },
+      error: (error) => {
+        this.errorMessage =
+          'Error emailing lab results: ' + (error.message || 'Unknown error');
+        setTimeout(() => (this.errorMessage = null), 3000);
+        this.showEmailPreview = false;
+        this.emailPreviewData = null;
+      },
+    });
   }
 
   backClicked() {

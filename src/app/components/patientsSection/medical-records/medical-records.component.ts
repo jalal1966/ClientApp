@@ -1,4 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import {
@@ -22,6 +28,10 @@ import { Diagnosis, Medication, Visit } from '../../../models/visits.model';
 import { Immunization } from '../../../models/medicalRecord.model';
 import { LabResult } from '../../../models/medicalRecord.model';
 import { PatientVisitComponent } from '../patient-visits/patient-visits.component';
+import { PatientAllergiesComponent } from '../patient-allergies/patient-allergies.component';
+import { PatientLabResultsComponent } from '../patient-lab-results/patient-lab-results.component';
+import { ImmunizationsComponent } from '../immunzations/immunizations.component';
+import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
 
 @Component({
   selector: 'app-medical-records',
@@ -31,6 +41,10 @@ import { PatientVisitComponent } from '../patient-visits/patient-visits.componen
     RouterModule,
     ReactiveFormsModule,
     PatientVisitComponent,
+    PatientAllergiesComponent,
+    PatientLabResultsComponent,
+    ImmunizationsComponent,
+    BloodPressureComponent,
   ],
   templateUrl: './medical-records.component.html',
   styleUrl: './medical-records.component.scss',
@@ -41,7 +55,9 @@ export class MedicalRecordsComponent
 {
   @Input() medicalRecords: MedicalRecord[] = [];
   @Input() isMainForm: boolean = true;
-
+  // allergies: Allergy[] = []; // <-- Ensure this is present
+  // immunizations: Immunization[] = [];
+  @ViewChild('noAllergies', { static: true }) noAllergies!: TemplateRef<any>;
   medicalRecord: any = null;
   medicalRecordForm!: FormGroup;
   loading = true;
@@ -218,6 +234,10 @@ export class MedicalRecordsComponent
         });
 
         this.medicalRecord = data;
+        // Store arrays in component for reuse
+        //this.allergies = data.allergies || [];
+        //this.immunizations = data.immunizations || [];
+
         this.patchMedicalRecordForm();
         // console.log('Form values after patch:', this.medicalRecord.value);
         this.loading = false;

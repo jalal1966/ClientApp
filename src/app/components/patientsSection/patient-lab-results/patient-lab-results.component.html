@@ -1,14 +1,4 @@
 <div class="card border-0 shadow-sm">
-  <button (click)="toggleVideo()" class="btn btn-primary mb-2">
-    {{ showVideo ? "Hide" : "Show" }} Demo Video
-  </button>
-  <div *ngIf="showVideo" class="text-center mb-3">
-    <video width="640" height="360" controls>
-      <source src="assets/videos/Tr1.avi" type="video/avi" />
-      Your browser does not support the video tag.
-    </video>
-  </div>
-
   <div class="card-header bg-primary text-white">
     <h5 class="mb-0">Patient Lab Results</h5>
   </div>
@@ -47,12 +37,12 @@
     >
       Test date is required
     </div>
-    <!-- Loading Indicator -->
-    <div *ngIf="!loading" class="d-flex justify-content-center mb-3">
+    <!-- Loading Indicator 
+    <div *ngIf="loading" class="d-flex justify-content-center mb-3">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-    </div>
+    </div>-->
     <!-- Add/Edit Form -->
     <div class="card" *ngIf="showForm">
       <div class="card-header bg-light" style="color: black">
@@ -234,12 +224,14 @@
                 <button
                   class="btn btn-sm btn-outline-secondary me-1"
                   (click)="downloadLabResults(result.id!)"
+                  title="Download PDF to C:\Pdf Data"
                 >
                   <i class="bi bi-file-earmark-arrow-down me-1"></i> PDF
                 </button>
                 <button
                   class="btn btn-sm btn-outline-info"
-                  (click)="emailLabResults(result.id!)"
+                  (click)="showEmailPreviewDialog(result)"
+                  title="Preview and send email to patient"
                 >
                   <i class="bi bi-envelope me-1"></i> Email
                 </button>
@@ -250,6 +242,101 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Email Preview Modal -->
+<div
+  class="modal fade show"
+  style="display: block; background-color: rgba(0, 0, 0, 0.5)"
+  *ngIf="showEmailPreview && emailPreviewData"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-envelope-check me-2"></i>Preview Email Before Sending
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          (click)="cancelEmailPreview()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong
+            >Review the email content below before sending to the
+            patient.</strong
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">To:</label>
+          <div class="p-2 bg-light rounded">
+            {{ emailPreviewData.patientEmail }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Subject:</label>
+          <div class="p-2 bg-light rounded">
+            Your Lab Results - {{ emailPreviewData.testName }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Message Body:</label>
+          <div class="p-3 bg-light rounded border">
+            <p>Dear {{ emailPreviewData.patientName }},</p>
+            <p>
+              Your lab results are now available. Please find the details below:
+            </p>
+            <ul>
+              <li>
+                <strong>Test Name:</strong> {{ emailPreviewData.testName }}
+              </li>
+              <li>
+                <strong>Test Date:</strong> {{ emailPreviewData.testDate }}
+              </li>
+              <li><strong>Result:</strong> {{ emailPreviewData.result }}</li>
+            </ul>
+            <p>
+              The complete lab report is attached to this email for your
+              records.
+            </p>
+            <p>
+              If you have any questions or concerns about your results, please
+              contact our office.
+            </p>
+            <p>Best regards,<br />Medical Team</p>
+          </div>
+        </div>
+
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong>Note:</strong> Once sent, this email cannot be recalled.
+          Please verify all information is correct.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="cancelEmailPreview()"
+        >
+          <i class="bi bi-x-circle me-1"></i>Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmSendEmail()"
+        >
+          <i class="bi bi-send me-1"></i>Send Email
+        </button>
       </div>
     </div>
   </div>

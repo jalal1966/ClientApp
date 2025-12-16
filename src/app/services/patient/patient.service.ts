@@ -187,7 +187,7 @@ export class PatientService {
    */
   downloadLabResults(labId: number): Observable<Blob> {
     return this.http.get(
-      `${this.apiUrl}${this.baseUrl}/labs/${labId}/results`,
+      `${this.apiUrl}${this.baseUrl}/lab-results/${labId}/pdf`,
       {
         responseType: 'blob',
       }

@@ -33,8 +33,8 @@ import { Diagnosis, Medication } from '../../../models/visits.model';
 import { PatientInfoComponent } from '../patient-info/patient-info.component';
 import { PatientAllergiesComponent } from '../patient-allergies/patient-allergies.component';
 import { PatientLabResultsComponent } from '../patient-lab-results/patient-lab-results.component';
-import { ImmunizationsComponent } from '../immunzations/immunizations.component';
-import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
+//import { ImmunizationsComponent } from '../immunzations/immunizations.component';
+//import { BloodPressureComponent } from '../blood-pressure/blood-pressure.component';
 import { MedicalRecordsComponent } from '../medical-records/medical-records.component';
 import { AppointmentType } from '../../../models/enums.model';
 import { HttpClient } from '@angular/common/http';
@@ -49,10 +49,8 @@ import { MedicineComponent } from '../../commonSection/medicines/medicine.compon
     RouterModule,
     PatientInfoComponent,
     MedicalRecordsComponent,
-    PatientAllergiesComponent,
-    PatientLabResultsComponent,
-    ImmunizationsComponent,
-    BloodPressureComponent,
+    //ImmunizationsComponent,
+    //BloodPressureComponent,
     MedicineComponent,
   ],
   templateUrl: './merged-patient.component.html',

@@ -102,7 +102,7 @@
           >Medical Record</a
         >
       </li>
-      <li class="nav-item">
+      <!--<li class="nav-item">
         <a
           class="nav-link"
           [class.active]="activeTab === 'allergies'"
@@ -121,7 +121,7 @@
       <li class="nav-item">
         <a
           class="nav-link"
-          [class.active]="activeTab === 'immunizations'"
+          [class.active]="activeTab === 'Immunizations'"
           (click)="setActiveTab('immunizations')"
           >Immunizations</a
         >
@@ -133,7 +133,7 @@
           (click)="setActiveTab('pressuer')"
           >Blood Pressure</a
         >
-      </li>
+      </li>-->
       <li class="nav-item">
         <a
           class="nav-link"
@@ -142,14 +142,14 @@
           >Recent Visits</a
         >
       </li>
-      <li class="nav-item">
+      <!--<li class="nav-item">
         <a
           class="nav-link"
           [class.active]="activeTab === 'history'"
           (click)="setActiveTab('history')"
           >Medical History</a
         >
-      </li>
+      </li>-->
       <li class="nav-item">
         <a
           class="nav-link"
@@ -177,20 +177,21 @@
           [isMainForm]="false"
         ></app-patient-info>
       </div>
+
       <!-- Basic MedicalRecord -->
       <div *ngSwitchCase="'MedicalRecord'">
         <app-medical-records [isMainForm]="false"></app-medical-records>
       </div>
-      <!-- Allergies -->
+      <!-- Allergies
       <div *ngSwitchCase="'allergies'">
         <app-patient-allergies
           [allergies]="patient.medicalRecord.allergies || []"
           [patientId]="patientId"
           [isMainForm]="false"
         ></app-patient-allergies>
-      </div>
+      </div> -->
 
-      <!-- Lab Results -->
+      <!-- Lab Results 
       <div *ngSwitchCase="'labs'">
         <app-patient-lab-results
           [labResults]="patient.medicalRecord.labResults || []"
@@ -199,26 +200,26 @@
           [isMainForm]="false"
           [loading]="true"
         ></app-patient-lab-results>
-      </div>
+      </div>-->
       <!-- Lab Results Tab -->
 
-      <!-- immunizations -->
+      <!-- immunizations 
       <div *ngSwitchCase="'immunizations'">
         <app-immunizations
           [isMainForm]="false"
           [immunizations]="patient.medicalRecord.immunizations || []"
           [patientId]="patientId"
         ></app-immunizations>
-      </div>
+      </div>-->
 
-      <!-- Blood Pressure -->
+      <!-- Blood Pressure 
       <div *ngSwitchCase="'pressuer'">
         <app-blood-pressure
           [isMainForm]="false"
           [pressure]="patient.medicalRecord.pressure || []"
           [patientId]="patientId"
         ></app-blood-pressure>
-      </div>
+      </div>-->
 
       <div *ngIf="activeTab === 'visits'" class="card border-0 shadow-sm">
         <!-- Debugging output (optional) 
@@ -287,8 +288,9 @@
                               <strong>Description:</strong>
                               {{ diag.description }} <br />
                               <strong>Date:</strong>
-                              {{ diag.diagnosisDate | date : "shortDate" }}
-                              <br />
+                              {{ diag.createdAt | date : "shortDate" }}
+                              <br /><strong>TreatmentPlan :</strong
+                              >{{ diag.treatmentPlan }} <br />
                               <strong>Status:</strong>
                               <span
                                 [ngClass]="

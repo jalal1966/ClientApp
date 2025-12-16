@@ -68,6 +68,58 @@
           <li class="nav-item">
             <a
               class="nav-link"
+              id="Allergies-tab"
+              data-bs-toggle="tab"
+              href="#allergies"
+              role="tab"
+              aria-controls="allergies"
+              aria-selected="false"
+              >Allergies</a
+            >
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="LabResults-tab"
+              data-bs-toggle="tab"
+              href="#labResults"
+              role="tab"
+              aria-controls="labResults"
+              aria-selected="false"
+              >Lab Results</a
+            >
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="Immunizations-tab"
+              data-bs-toggle="tab"
+              href="#immunizations"
+              role="tab"
+              aria-controls="immunizations"
+              aria-selected="false"
+              >Immunizations</a
+            >
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="Pressuer-tab"
+              data-bs-toggle="tab"
+              href="#pressuer"
+              role="tab"
+              aria-controls="pressuers"
+              aria-selected="false"
+              >Pressuer</a
+            >
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
               id="visits-tab"
               data-bs-toggle="tab"
               href="#visits"
@@ -218,6 +270,79 @@
               </div>
             </div>
           </div>
+
+          <!-- Allergies -->
+          <div
+            class="tab-pane fade"
+            id="allergies"
+            role="tabpanel"
+            aria-labelledby="Allergies-tab"
+          >
+            <div *ngIf="!medicalRecordId" class="alert alert-info">
+              Please input a medical record first.
+            </div>
+            <app-patient-allergies
+              [allergies]="medicalRecord.allergies || []"
+              [patientId]="patientId"
+              [isMainForm]="false"
+            ></app-patient-allergies>
+          </div>
+
+          <!-- Lab Results -->
+          <div
+            class="tab-pane fade"
+            id="labResults"
+            role="tabpanel"
+            aria-labelledby="LabResults-tab"
+          >
+            <div *ngIf="!medicalRecordId" class="alert alert-info">
+              Please input a medical record first.
+            </div>
+            <app-patient-lab-results
+              [labResults]="medicalRecord.labResults || []"
+              [patientId]="patientId"
+              [medicalRecordId]="medicalRecordId"
+              [isMainForm]="false"
+              [loading]="true"
+            ></app-patient-lab-results>
+          </div>
+
+          <!-- Immunizations -->
+          <div
+            class="tab-pane fade"
+            id="immunizations"
+            role="tabpanel"
+            aria-labelledby="Immunizations-tab"
+          >
+            <div *ngIf="!medicalRecordId" class="alert alert-info">
+              Please input a medical record first.
+            </div>
+            <app-immunizations
+              [patientId]="patientId"
+              [medicalRecordId]="medicalRecordId"
+              [isMainForm]="false"
+              [loading]="true"
+            ></app-immunizations>
+          </div>
+
+          <!-- Blood Pressure -->
+          <div
+            class="tab-pane fade"
+            id="pressuer"
+            role="tabpanel"
+            aria-labelledby="Pressuer-tab"
+          >
+            <div *ngIf="!medicalRecordId" class="alert alert-info">
+              Please input a medical record first.
+            </div>
+            <app-blood-pressure
+              [patientId]="patientId"
+              [medicalRecordId]="medicalRecordId"
+              [isMainForm]="false"
+              [loading]="true"
+            ></app-blood-pressure>
+          </div>
+
           <!-- Patient Visits Tab -->
           <div
             class="tab-pane fade"

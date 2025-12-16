@@ -62,9 +62,9 @@ export interface LabResult {
   id?: number;
   patientId: number;
   medicalRecordId?: number;
-  testDate?: Date;
-  testName?: string;
-  result?: string;
+  testDate: Date;
+  testName: string;
+  result: string;
   referenceRange?: string;
   orderingProvider?: string;
   notes?: string;
