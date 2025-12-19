@@ -419,7 +419,7 @@ export class PatientDetailComponent
 
   downloadLabResults(labId: number): void {
     if (this.patient) {
-      this.patientService.downloadLabResults(labId).subscribe({
+      this.patientService.downloadLabResults(this.patientId, labId).subscribe({
         next: (pdfBlob) => {
           const url = window.URL.createObjectURL(pdfBlob);
           const link = document.createElement('a');
@@ -439,15 +439,17 @@ export class PatientDetailComponent
 
   emailLabResults(labId: number): void {
     if (this.patient && this.patient.email) {
-      this.patientService.emailLabResults(labId, this.patient.email).subscribe({
-        next: () => {
-          alert('Lab results were successfully emailed to the patient.');
-        },
-        error: (err) => {
-          console.error('Error emailing lab results:', err);
-          this.error = 'Failed to email lab results.';
-        },
-      });
+      this.patientService
+        .emailLabResults(this.patientId, labId, this.patient.email)
+        .subscribe({
+          next: () => {
+            alert('Lab results were successfully emailed to the patient.');
+          },
+          error: (err) => {
+            console.error('Error emailing lab results:', err);
+            this.error = 'Failed to email lab results.';
+          },
+        });
     }
   }
 

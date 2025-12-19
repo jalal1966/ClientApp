@@ -302,7 +302,7 @@ export class PatientLabResultsComponent
   }
 
   downloadLabResults(labId: number): void {
-    this.patientService.downloadLabResults(labId).subscribe({
+    this.patientService.downloadLabResults(labId, this.patientId).subscribe({
       next: (pdfBlob) => {
         // Create a URL for the blob
         const url = window.URL.createObjectURL(pdfBlob);
@@ -363,21 +363,23 @@ export class PatientLabResultsComponent
 
     const { labId, patientEmail } = this.emailPreviewData;
 
-    this.patientService.emailLabResults(labId, patientEmail).subscribe({
-      next: () => {
-        this.successMessage = `Lab results were successfully emailed to ${patientEmail}`;
-        setTimeout(() => (this.successMessage = null), 5000);
-        this.showEmailPreview = false;
-        this.emailPreviewData = null;
-      },
-      error: (error) => {
-        this.errorMessage =
-          'Error emailing lab results: ' + (error.message || 'Unknown error');
-        setTimeout(() => (this.errorMessage = null), 3000);
-        this.showEmailPreview = false;
-        this.emailPreviewData = null;
-      },
-    });
+    this.patientService
+      .emailLabResults(this.patientId, labId, patientEmail)
+      .subscribe({
+        next: () => {
+          this.successMessage = `Lab results were successfully emailed to ${patientEmail}`;
+          setTimeout(() => (this.successMessage = null), 5000);
+          this.showEmailPreview = false;
+          this.emailPreviewData = null;
+        },
+        error: (error) => {
+          this.errorMessage =
+            'Error emailing lab results: ' + (error.message || 'Unknown error');
+          setTimeout(() => (this.errorMessage = null), 3000);
+          this.showEmailPreview = false;
+          this.emailPreviewData = null;
+        },
+      });
   }
 
   backClicked() {

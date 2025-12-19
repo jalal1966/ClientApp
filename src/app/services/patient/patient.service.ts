@@ -185,9 +185,9 @@ export class PatientService {
   /**
    * Downloads lab results as a PDF for a specific lab
    */
-  downloadLabResults(labId: number): Observable<Blob> {
+  downloadLabResults(patientId: number, labId: number): Observable<Blob> {
     return this.http.get(
-      `${this.apiUrl}${this.baseUrl}/lab-results/${labId}/pdf`,
+      `${this.apiUrl}${this.baseUrl}/${patientId}/lab-results/${labId}/pdf`,
       {
         responseType: 'blob',
       }
@@ -197,9 +197,12 @@ export class PatientService {
   /**
    * Downloads immunizations results as a PDF for a specific lab
    */
-  downloadImmunizationsResults(immzId: number): Observable<Blob> {
+  downloadImmunizationsResults(
+    patientId: number,
+    immzId: number
+  ): Observable<Blob> {
     return this.http.get(
-      `${this.apiUrl}${this.baseUrl}/immunization/${immzId}/results`,
+      `${this.apiUrl}${this.baseUrl}/${patientId}/immunization/${immzId}/pdf`,
       {
         responseType: 'blob',
       }
@@ -212,21 +215,32 @@ export class PatientService {
   /**
    * Emails lab results to a patient
    */
-  emailLabResults(labId: number, email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}${this.baseUrl}/labs/${labId}/email`, {
-      email,
-    });
+  emailLabResults(
+    patientId: number,
+    labId: number,
+    email: string
+  ): Observable<any> {
+    console.log(
+      `${this.apiUrl}${this.baseUrl}/${patientId}/lab-results/${labId}/email`,
+      { email: email }
+    );
+    return this.http.post(
+      `${this.apiUrl}${this.baseUrl}/${patientId}/lab-results/${labId}/email`,
+      { email: email }
+    );
   }
 
   /**
    * Emails lab results to a patient
    */
-  emailImmunizationsResults(labId: number, email: string): Observable<any> {
+  emailImmunizationsResults(
+    patientId: number,
+    immzId: number,
+    email: string
+  ): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}${this.baseUrl}/immunization/${labId}/email`,
-      {
-        email,
-      }
+      `${this.apiUrl}${this.baseUrl}/${patientId}/immunization/${immzId}/email`,
+      { email }
     );
   }
   /**

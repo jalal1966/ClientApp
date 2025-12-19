@@ -309,29 +309,31 @@ export class ImmunizationsComponent
 
   downloadImmunization(immzId: number): void {
     if (this.patient) {
-      this.patientService.downloadImmunizationsResults(immzId).subscribe({
-        next: (pdfBlob) => {
-          const url = window.URL.createObjectURL(pdfBlob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `Immunizations-results-${immzId}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        },
-        error: (error) => {
-          this.errorMessage =
-            'Error downloading Immunizations results' +
-            (error.message || 'Unknown error');
-        },
-      });
+      this.patientService
+        .downloadImmunizationsResults(this.patientId, immzId)
+        .subscribe({
+          next: (pdfBlob) => {
+            const url = window.URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Immunizations-results-${immzId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          },
+          error: (error) => {
+            this.errorMessage =
+              'Error downloading Immunizations results' +
+              (error.message || 'Unknown error');
+          },
+        });
     }
   }
 
   emailImmunizationResults(immzId: number): void {
     if (this.patient && this.patient.email) {
       this.patientService
-        .emailImmunizationsResults(immzId, this.patient.email)
+        .emailImmunizationsResults(this.patientId, immzId, this.patient.email)
         .subscribe({
           next: () => {
             alert('Lab results were successfully emailed to the patient.');

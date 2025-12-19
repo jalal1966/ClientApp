@@ -487,7 +487,7 @@ export class MergedPatientComponent
 
   downloadLabResults(labId: number): void {
     if (this.patient) {
-      this.patientService.downloadLabResults(labId).subscribe({
+      this.patientService.downloadLabResults(this.patientId, labId).subscribe({
         next: (pdfBlob) => {
           const url = window.URL.createObjectURL(pdfBlob);
           const link = document.createElement('a');
@@ -507,17 +507,20 @@ export class MergedPatientComponent
 
   emailLabResults(labId: number): void {
     if (this.patient && this.patient.email) {
-      this.patientService.emailLabResults(labId, this.patient.email).subscribe({
-        next: () => {
-          alert('Lab results were successfully emailed to the patient.');
-        },
-        error: (error) => {
-          this.successMessage = null;
-          this.errorMessage =
-            'Failed to email lab results.' + (error.message || 'Unknown error');
-          setTimeout(() => (this.errorMessage = null), 3000);
-        },
-      });
+      this.patientService
+        .emailLabResults(this.patientId, labId, this.patient.email)
+        .subscribe({
+          next: () => {
+            alert('Lab results were successfully emailed to the patient.');
+          },
+          error: (error) => {
+            this.successMessage = null;
+            this.errorMessage =
+              'Failed to email lab results.' +
+              (error.message || 'Unknown error');
+            setTimeout(() => (this.errorMessage = null), 3000);
+          },
+        });
     }
   }
 
