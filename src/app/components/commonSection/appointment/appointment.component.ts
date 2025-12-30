@@ -1,5 +1,5 @@
 // src/app/components/appointment/appointment.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -18,6 +18,7 @@ import { AppointmentService } from '../../../services/appointment/appointment.se
 import { StatusFilterComponent } from '../shared/status-filter/status-filter.component';
 import { Patients } from '../../../models/patient.model';
 import { User } from '../../../models/user';
+import { Location } from '@angular/common';
 import {
   AppointmentStatus,
   AppointmentType,
@@ -46,6 +47,7 @@ export class AppointmentComponent implements OnInit {
     throw new Error('Method not implemented.');
   }
 
+  @Input() isMainForm: boolean = true;
   // Form for new appointments
   appointmentForm!: FormGroup;
   appointments: Appointment[] = [];
@@ -95,6 +97,7 @@ export class AppointmentComponent implements OnInit {
     private patientService: PatientService,
     private doctorsService: AuthService,
     private usersService: UsersService,
+    private location: Location,
     private fb: FormBuilder,
     private router: Router
   ) {
@@ -505,5 +508,9 @@ export class AppointmentComponent implements OnInit {
   editPatientDetails(id: number | undefined): void {
     console.log('Editing patient ID', id);
     // In a real application, this would open a form to edit patient details
+  }
+
+  backClicked() {
+    this.location.back();
   }
 }

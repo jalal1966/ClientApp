@@ -16,6 +16,9 @@ export class NursePageComponent extends PatientComponentBase {
   public currentUserToSave!: User;
   isPatientFormVisible = false;
   isaddPatientFormVisible = false;
+  isVitalSigns = false;
+  // In nurse-page.component.ts
+  selectedPatientId: number | null = null;
   loginForm!: FormGroup;
   sections = [
     {
@@ -75,8 +78,22 @@ export class NursePageComponent extends PatientComponentBase {
   }
 
   private navigateToVitalSigns() {
-    this.router.navigate(['/vital-signs']);
+    this.router.navigate(['/patients']);
   }
+
+  /*private navigateToVitalSigns() {
+    if (this.selectedPatientId) {
+      this.router.navigate([
+        '/patients',
+        this.selectedPatientId,
+        'vital-signs',
+      ]);
+    } else {
+      // Show error or open patient selection
+      alert('Please select a patient first');
+      this.router.navigate(['/patients']);
+    }
+  }*/
 
   private navigateToMedicationLog() {
     this.router.navigate(['/medication-log']);
@@ -106,6 +123,12 @@ export class NursePageComponent extends PatientComponentBase {
     console.log('addPatientForm', this.isPatientFormVisible);
     this.router.navigate(['/patient-form']);
   }
+
+  /*this.vitalSignsService
+  .getByPatient(this.patientId)
+  .subscribe(data => {
+    this.vitalSignsList = data;
+  });*/
 
   // convenience getter for easy access to form fields
   get f() {

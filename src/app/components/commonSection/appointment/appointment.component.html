@@ -26,17 +26,38 @@
   <div *ngIf="updateSuccess" class="success-message">
     Information updated successfully!
   </div>
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h5">All Appointments</h2>
-    <p>Total Appointments: {{ appointments.length }}</p>
+  <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+    <!-- Title -->
+    <h2 class="h5 mb-0">All Appointments</h2>
+
+    <!-- Total count -->
+    <p class="mb-0 mx-3">
+      Total Appointments: <strong>{{ appointments.length }}</strong>
+    </p>
+
+    <!-- Status Filter -->
     <app-status-filter
+      class="mx-3"
       [selectedStatus]="selectedStatus"
       (statusChange)="selectedStatus = $event"
     >
     </app-status-filter>
-    <button class="btn btn-primary" (click)="showNewAppointmentForm = true">
-      + New Appointment
-    </button>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" (click)="showNewAppointmentForm = true">
+        + New Appointment
+      </button>
+
+      <button
+        *ngIf="isMainForm"
+        (click)="backClicked()"
+        class="btn btn-outline-danger"
+      >
+        <i class="bi bi-arrow-left-square"></i>
+        Go Back
+      </button>
+    </div>
   </div>
 
   <div *ngIf="showNewAppointmentForm" class="modal fade show d-block">

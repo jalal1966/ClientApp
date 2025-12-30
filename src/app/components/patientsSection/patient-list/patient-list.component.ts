@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Route, Router, RouterModule } from '@angular/router';
 import { PatientService } from '../../../services/patient/patient.service';
 import { AppointmentService } from '../../../services/appointment/appointment.service';
 import { Patients } from '../../../models/patient.model';
 import { AuthService } from '../../../services/auth/auth.service';
+import { Location } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -13,6 +14,7 @@ import {
 } from '@angular/forms';
 import { GenderPipe } from '../../../pipes/gender/gender.pipe';
 import { PatientComponentBase } from '../../../shared/base/patient-component-base';
+import { PatientInfoComponent } from '../patient-info/patient-info.component';
 
 @Component({
   selector: 'app-patient-list',
@@ -30,11 +32,12 @@ export class PatientListComponent
   appoment: AppointmentService | undefined;
   loading = true;
   error = '';
-
+  @Input() isMainForm: boolean = true;
   constructor(
     private patientService: PatientService,
     authService: AuthService,
     router: Router,
+    private location: Location,
     private fb: FormBuilder // Inject FormBuilder
   ) {
     super(authService, router);
@@ -51,10 +54,10 @@ export class PatientListComponent
   }
 
   viewPatientDetailsInfo(patients: Patients): void {
-    console.log('Opening patient record for');
+    console.log('Opening patient record for', patients?.id);
 
     if (patients?.id) {
-      this.router.navigate(['/patients', patients?.id, 'info']);
+      this.router.navigate(['/patients', patients?.id]);
     }
   }
 
@@ -107,6 +110,10 @@ export class PatientListComponent
         },
       });
     }
+  }
+
+  backClicked() {
+    this.location.back();
   }
   // Method to navigate back
   goBack() {

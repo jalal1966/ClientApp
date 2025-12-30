@@ -10,38 +10,42 @@
       <li><a routerLink="visits">Visits</a></li>
     </ul>
   </nav>-->
-  <h1 class="text-2xl font-bold justify-content-between">
-    Patient List {{ currentUser.firstName }} {{ currentUser.lastName }}
-  </h1>
-  <!--<div class="d-flex bd-highlight mb-3 buttom">-->
-  <div class="d-flex justify-content-between mt-6">
-    <div class="me-auto p-2 bd-highlight">
-      <input
-        class="mb-10"
-        type="text"
-        placeholder="Search patients..."
-        class="p-2 border rounded w-full"
-        (input)="filterPatients($event)"
-      />
-    </div>
-    <div class="p-2 bd-highlight">
-      <button
-        [routerLink]="['/patient-form']"
-        class="btn btn-secondary"
-        style="margin-right: 10px"
-      >
+  <div class="d-flex align-items-center justify-content-between flex-wrap mb-4">
+    <!-- Title -->
+    <h1 class="h4 fw-bold mb-0">
+      Patient List {{ currentUser.firstName }} {{ currentUser.lastName }}
+    </h1>
+
+    <!-- Search -->
+    <input
+      type="text"
+      class="form-control mx-3"
+      style="max-width: 250px"
+      placeholder="Search patients..."
+      (input)="filterPatients($event)"
+    />
+
+    <!-- Buttons -->
+    <div class="d-flex gap-2">
+      <button [routerLink]="['/patient-form']" class="btn btn-secondary">
         Add New Patient
       </button>
 
+      <button [routerLink]="['/waitingList']" class="btn btn-success">
+        Waiting List
+      </button>
       <button
-        [routerLink]="['/waitingList']"
-        class="btn btn btn-success"
-        style="margin-right: 10px"
+        *ngIf="isMainForm"
+        (click)="backClicked()"
+        class="btn btn-outline-danger"
       >
-        waiting List
+        <i class="bi bi-arrow-left-square"></i>
+        Go Back
       </button>
     </div>
   </div>
+
+  <!-- Loading -->
   <div *ngIf="loading" class="text-center">
     <p>Loading patients...</p>
   </div>
@@ -101,8 +105,15 @@
               >
                 View Info
               </button>
+              <!-- Add this button -->
+              <button
+                class="btn btn-sm btn-primary me-1"
+                [routerLink]="['/patients', patient.id, 'vital-signs']"
+              >
+                <i class="bi bi-heart-pulse"></i> Vitals
+              </button>
               <a
-                [routerLink]="['/patient', patient.id, 'edit']"
+                [routerLink]="['/patient/edit', patient.id]"
                 class="btn btn-warning btn-sm me-2"
                 >Edit</a
               >

@@ -80,7 +80,7 @@ export class PatientDetailComponent
   showDiagnosis = false;
   showMedications = false;
   expandedVisitId: number | null = null;
-
+  isMainForm = false;
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,

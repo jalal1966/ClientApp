@@ -31,6 +31,7 @@ import { PatientDetailComponent } from './components/patientsSection/patient-det
 import { BloodPressureComponent } from './components/patientsSection/blood-pressure/blood-pressure.component';
 import { PatientRecordComponent } from './components/patientsSection/patient-record/patient-record.component';
 import { MergedPatientComponent } from './components/patientsSection/mergedPatient/merged-patient.component';
+import { VitalSignsComponent } from './components/patientsSection/vital-signs/vital-signs.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -46,11 +47,18 @@ export const routes: Routes = [
   { path: 'doctor-schedule', component: MapComponent },
 
   { path: 'patients', component: PatientListComponent }, // List of patients
-  { path: 'patients/:id', component: PatientInfoComponent }, // Patient details page
+
+  // ⭐ MOVE ALL SPECIFIC ROUTES BEFORE THE GENERIC :id ROUTE
+  { path: 'patients/:id/vital-signs', component: VitalSignsComponent },
+
   { path: 'patients/:id/medical-records', component: MedicalRecordsComponent },
   { path: 'patients/:id/allergies', component: PatientAllergiesComponent },
   { path: 'patients/:id/medications', component: PatientMedicationsComponent },
   { path: 'patients/:id/lab-results', component: PatientLabResultsComponent },
+
+  // ⭐ GENERIC ROUTE GOES LAST
+  { path: 'patients/:id', component: PatientInfoComponent }, // Patient details page
+
   { path: 'visits/:id', component: PatientVisitComponent },
   { path: 'visits', component: PatientVisitComponent },
   { path: 'patient-detail/:id', component: PatientDetailComponent },
@@ -58,6 +66,7 @@ export const routes: Routes = [
   { path: 'pressur/:id', component: BloodPressureComponent },
   { path: 'patientRecord/:id', component: PatientRecordComponent },
   { path: 'merge/:id', component: MergedPatientComponent },
+
   {
     path: 'admin',
     component: AdministratorComponent,
@@ -75,11 +84,6 @@ export const routes: Routes = [
     component: NursePageComponent,
     canActivate: [RoleGuard],
     data: { roleId: 2 },
-  },
-  // TODO: Add a route for the administrator page
-  {
-    path: 'patients',
-    component: PatientListComponent,
   },
   {
     path: 'patient-form',

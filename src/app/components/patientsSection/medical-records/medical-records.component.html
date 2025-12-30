@@ -282,7 +282,7 @@
               Please input a medical record first.
             </div>
             <app-patient-allergies
-              [allergies]="medicalRecord.allergies || []"
+              [allergies]="medicalRecord.allergies"
               [patientId]="patientId"
               [isMainForm]="false"
             ></app-patient-allergies>

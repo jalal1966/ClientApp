@@ -1,0 +1,473 @@
+<div class="container mx-auto p-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h4 fw-bold mb-0">Record Patient Vital Signs</h1>
+    <button (click)="goBack()" class="btn btn-outline-danger">
+      <i class="bi bi-arrow-left"></i> Back
+    </button>
+  </div>
+
+  <!-- Success Message -->
+  <div
+    *ngIf="successMessage"
+    class="alert alert-success alert-dismissible fade show"
+    role="alert"
+  >
+    <i class="bi bi-check-circle-fill me-2"></i>
+    {{ successMessage }}
+  </div>
+
+  <!-- Error Message -->
+  <div
+    *ngIf="error"
+    class="alert alert-danger alert-dismissible fade show"
+    role="alert"
+  >
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ error }}
+  </div>
+
+  <div class="row">
+    <!-- Vital Signs Form -->
+    <div class="col-lg-7 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-heart-pulse me-2"></i>Enter Vital Signs
+          </h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="vitalSignsForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+              <!-- Temperature -->
+              <div class="col-md-6 mb-3">
+                <label for="temperature" class="form-label fw-semibold">
+                  <i class="bi bi-thermometer-half text-danger me-1"></i>
+                  Temperature (°C) <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  id="temperature"
+                  class="form-control"
+                  formControlName="temperature"
+                  placeholder="36.5"
+                />
+                <small class="text-muted">Normal: 36.1-37.2°C</small>
+              </div>
+
+              <!-- Heart Rate -->
+              <div class="col-md-6 mb-3">
+                <label for="heartRate" class="form-label fw-semibold">
+                  <i class="bi bi-heart-fill text-danger me-1"></i>
+                  Heart Rate (bpm) <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="heartRate"
+                  class="form-control"
+                  formControlName="heartRate"
+                  placeholder="72"
+                />
+                <small class="text-muted">Normal: 60-100 bpm</small>
+              </div>
+
+              <!-- Blood Pressure Systolic -->
+              <div class="col-md-6 mb-3">
+                <label
+                  for="bloodPressureSystolic"
+                  class="form-label fw-semibold"
+                >
+                  <i class="bi bi-activity text-primary me-1"></i>
+                  BP Systolic (mmHg) <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="bloodPressureSystolic"
+                  class="form-control"
+                  formControlName="bloodPressureSystolic"
+                  placeholder="120"
+                />
+                <small class="text-muted">Normal: 90-120 mmHg</small>
+              </div>
+
+              <!-- Blood Pressure Diastolic -->
+              <div class="col-md-6 mb-3">
+                <label
+                  for="bloodPressureDiastolic"
+                  class="form-label fw-semibold"
+                >
+                  <i class="bi bi-activity text-primary me-1"></i>
+                  BP Diastolic (mmHg) <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="bloodPressureDiastolic"
+                  class="form-control"
+                  formControlName="bloodPressureDiastolic"
+                  placeholder="80"
+                />
+                <small class="text-muted">Normal: 60-80 mmHg</small>
+              </div>
+
+              <!-- Respiratory Rate -->
+              <div class="col-md-6 mb-3">
+                <label for="respiratoryRate" class="form-label fw-semibold">
+                  <i class="bi bi-lungs text-info me-1"></i>
+                  Respiratory Rate (breaths/min)
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="respiratoryRate"
+                  class="form-control"
+                  formControlName="respiratoryRate"
+                  placeholder="16"
+                />
+                <small class="text-muted">Normal: 12-20 breaths/min</small>
+              </div>
+
+              <!-- Oxygen Saturation -->
+              <div class="col-md-6 mb-3">
+                <label for="oxygenSaturation" class="form-label fw-semibold">
+                  <i class="bi bi-droplet-fill text-primary me-1"></i>
+                  Oxygen Saturation (%) <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="oxygenSaturation"
+                  class="form-control"
+                  formControlName="oxygenSaturation"
+                  placeholder="98"
+                />
+                <small class="text-muted">Normal: 95-100%</small>
+              </div>
+
+              <!-- Weight -->
+              <div class="col-md-6 mb-3">
+                <label for="weight" class="form-label fw-semibold">
+                  <i class="bi bi-speedometer2 text-secondary me-1"></i>
+                  Weight (kg)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  id="weight"
+                  class="form-control"
+                  formControlName="weight"
+                  placeholder="70.5"
+                />
+                <small class="text-muted">Optional</small>
+              </div>
+
+              <!-- Remarks -->
+              <div class="col-12 mb-3">
+                <label for="remarks" class="form-label fw-semibold">
+                  <i class="bi bi-chat-left-text me-1"></i>
+                  Remarks / Notes
+                </label>
+                <textarea
+                  id="remarks"
+                  class="form-control"
+                  formControlName="remarks"
+                  rows="3"
+                  placeholder="Any additional observations or notes..."
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+                [disabled]="vitalSignsForm.invalid || loading"
+              >
+                <span *ngIf="!loading">
+                  <i class="bi bi-check-circle me-2"></i>Record Vital Signs
+                </span>
+                <span *ngIf="loading">
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Recording...
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5 mb-4">
+      <!-- Quick Reference Card -->
+      <div class="card shadow-sm mt-1">
+        <div class="card-header bg-secondary text-white">
+          <h6 class="mb-0"><i class="bi bi-book me-2"></i>Normal Ranges</h6>
+        </div>
+        <div class="card-body small">
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2"><strong>Temperature:</strong> 36.1 - 37.2°C</li>
+            <li class="mb-2"><strong>Heart Rate:</strong> 60 - 100 bpm</li>
+            <li class="mb-2">
+              <strong>Blood Pressure:</strong> 90-120 / 60-80 mmHg
+            </li>
+            <li class="mb-2">
+              <strong>Respiratory Rate:</strong> 12 - 20 breaths/min
+            </li>
+            <li class="mb-2"><strong>Oxygen Saturation:</strong> 95 - 100%</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Recent Vital Signs History -->
+      <div class="card shadow-sm mt-1">
+        <div
+          class="card-header bg-info text-white d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">
+            <i class="bi bi-clock-history me-2"></i>
+            {{ showFullHistory ? "Full History" : "Recent Records" }}
+          </h5>
+          <button (click)="viewFullHistory()" class="btn btn-sm btn-light">
+            {{ showFullHistory ? "Show Less" : "View All" }}
+          </button>
+        </div>
+        <div class="card-body p-0">
+          <!-- No records message -->
+          <div
+            *ngIf="allVitalSigns.length === 0"
+            class="text-center p-4 text-muted"
+          >
+            <i class="bi bi-inbox display-4"></i>
+            <p class="mt-2">No previous records</p>
+          </div>
+
+          <!-- Recent records (collapsed view) -->
+          <div *ngIf="!showFullHistory && allVitalSigns.length > 0">
+            <div
+              *ngFor="let vital of recentVitalSigns"
+              class="border-bottom p-3 hover-bg"
+            >
+              <div
+                class="d-flex justify-content-between align-items-start mb-2"
+              >
+                <small class="text-muted">
+                  <i class="bi bi-calendar3 me-1"></i>
+                  {{ vital.recordedAt | date : "dd/MM/yyyy HH:mm" }}
+                </small>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'bg-success': getVitalSignStatus(vital) === 'Normal',
+                    'bg-warning':
+                      getVitalSignStatus(vital) === 'Low O2' ||
+                      getVitalSignStatus(vital) === 'Low BP',
+                    'bg-danger':
+                      getVitalSignStatus(vital) === 'High BP' ||
+                      getVitalSignStatus(vital) === 'Fever' ||
+                      getVitalSignStatus(vital) === 'Hypothermia'
+                  }"
+                >
+                  {{ getVitalSignStatus(vital) }}
+                </span>
+              </div>
+
+              <div class="row g-2 small">
+                <div class="col-6">
+                  <strong>Temp:</strong> {{ vital.temperature }}°C
+                </div>
+                <div class="col-6">
+                  <strong>HR:</strong> {{ vital.heartRate }} bpm
+                </div>
+                <div class="col-6">
+                  <strong>BP:</strong> {{ vital.bloodPressureSystolic }}/{{
+                    vital.bloodPressureDiastolic
+                  }}
+                </div>
+                <div class="col-6">
+                  <strong>SpO2:</strong> {{ vital.oxygenSaturation }}%
+                </div>
+                <div class="col-6">
+                  <strong>RR:</strong> {{ vital.respiratoryRate }} br/min
+                </div>
+                <div class="col-6" *ngIf="vital.weight">
+                  <strong>Weight:</strong> {{ vital.weight }} kg
+                </div>
+              </div>
+
+              <div *ngIf="vital.remarks" class="mt-2 small">
+                <strong>Notes:</strong> <em>{{ vital.remarks }}</em>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full history table (expanded view) -->
+          <div *ngIf="showFullHistory && allVitalSigns.length > 0">
+            <div class="table-responsive">
+              <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="small">Date & Time</th>
+                    <th class="small">Temp</th>
+                    <th class="small">BP</th>
+                    <th class="small">HR</th>
+                    <th class="small">RR</th>
+                    <th class="small">SpO2</th>
+                    <th class="small">Weight</th>
+                    <th class="small">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let vital of paginatedVitalSigns">
+                    <td class="small">
+                      {{ vital.recordedAt | date : "dd/MM/yy" }}<br />
+                      <span class="text-muted">{{
+                        vital.recordedAt | date : "HH:mm"
+                      }}</span>
+                    </td>
+                    <td
+                      class="small"
+                      [ngClass]="{
+                        'text-danger':
+                          vital.temperature > 38 || vital.temperature < 36,
+                        'text-success':
+                          vital.temperature >= 36 && vital.temperature <= 38
+                      }"
+                    >
+                      {{ vital.temperature }}
+                    </td>
+                    <td
+                      class="small"
+                      [ngClass]="{
+                        'text-danger':
+                          vital.bloodPressureSystolic >= 140 ||
+                          vital.bloodPressureDiastolic >= 90 ||
+                          vital.bloodPressureSystolic < 90 ||
+                          vital.bloodPressureDiastolic < 60,
+                        'text-success':
+                          vital.bloodPressureSystolic >= 90 &&
+                          vital.bloodPressureSystolic < 140 &&
+                          vital.bloodPressureDiastolic >= 60 &&
+                          vital.bloodPressureDiastolic < 90
+                      }"
+                    >
+                      {{ vital.bloodPressureSystolic }}/{{
+                        vital.bloodPressureDiastolic
+                      }}
+                    </td>
+                    <td
+                      class="small"
+                      [ngClass]="{
+                        'text-danger':
+                          vital.heartRate < 60 || vital.heartRate > 100,
+                        'text-success':
+                          vital.heartRate >= 60 && vital.heartRate <= 100
+                      }"
+                    >
+                      {{ vital.heartRate }}
+                    </td>
+                    <td
+                      class="small"
+                      [ngClass]="{
+                        'text-danger':
+                          vital.respiratoryRate < 12 ||
+                          vital.respiratoryRate > 20,
+                        'text-success':
+                          vital.respiratoryRate >= 12 &&
+                          vital.respiratoryRate <= 20
+                      }"
+                    >
+                      {{ vital.respiratoryRate }}
+                    </td>
+                    <td
+                      class="small"
+                      [ngClass]="{
+                        'text-danger': vital.oxygenSaturation < 95,
+                        'text-success': vital.oxygenSaturation >= 95
+                      }"
+                    >
+                      {{ vital.oxygenSaturation }}
+                    </td>
+                    <td class="small">{{ vital.weight || "-" }}</td>
+                    <td>
+                      <span
+                        class="badge badge-sm"
+                        [ngClass]="{
+                          'bg-success': getVitalSignStatus(vital) === 'Normal',
+                          'bg-warning':
+                            getVitalSignStatus(vital) === 'Low O2' ||
+                            getVitalSignStatus(vital) === 'Low BP',
+                          'bg-danger':
+                            getVitalSignStatus(vital) === 'High BP' ||
+                            getVitalSignStatus(vital) === 'Fever' ||
+                            getVitalSignStatus(vital) === 'Hypothermia'
+                        }"
+                      >
+                        {{ getVitalSignStatus(vital) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div
+              *ngIf="totalPages > 1"
+              class="d-flex justify-content-between align-items-center p-3 border-top"
+            >
+              <small class="text-muted">
+                Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+                {{
+                  currentPage * itemsPerPage > allVitalSigns.length
+                    ? allVitalSigns.length
+                    : currentPage * itemsPerPage
+                }}
+                of {{ allVitalSigns.length }} records
+              </small>
+              <nav>
+                <ul class="pagination pagination-sm mb-0">
+                  <li class="page-item" [class.disabled]="currentPage === 1">
+                    <a
+                      class="page-link"
+                      (click)="previousPage()"
+                      href="javascript:void(0)"
+                    >
+                      <i class="bi bi-chevron-left"></i>
+                    </a>
+                  </li>
+                  <li
+                    *ngFor="
+                      let page of [].constructor(totalPages);
+                      let i = index
+                    "
+                    class="page-item"
+                    [class.active]="currentPage === i + 1"
+                  >
+                    <a
+                      class="page-link"
+                      (click)="goToPage(i + 1)"
+                      href="javascript:void(0)"
+                    >
+                      {{ i + 1 }}
+                    </a>
+                  </li>
+                  <li
+                    class="page-item"
+                    [class.disabled]="currentPage === totalPages"
+                  >
+                    <a
+                      class="page-link"
+                      (click)="nextPage()"
+                      href="javascript:void(0)"
+                    >
+                      <i class="bi bi-chevron-right"></i>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
