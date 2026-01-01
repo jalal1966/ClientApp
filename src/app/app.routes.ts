@@ -52,6 +52,7 @@ export const routes: Routes = [
   { path: 'patients/:id/vital-signs', component: VitalSignsComponent },
 
   { path: 'patients/:id/medical-records', component: MedicalRecordsComponent },
+
   { path: 'patients/:id/allergies', component: PatientAllergiesComponent },
   { path: 'patients/:id/medications', component: PatientMedicationsComponent },
   { path: 'patients/:id/lab-results', component: PatientLabResultsComponent },

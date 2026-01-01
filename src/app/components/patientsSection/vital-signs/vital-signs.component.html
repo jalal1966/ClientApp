@@ -32,7 +32,8 @@
       <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
           <h5 class="mb-0">
-            <i class="bi bi-heart-pulse me-2"></i>Enter Vital Signs
+            <i class="bi bi-heart-pulse me-2"></i>Enter Vital Signs for
+            {{ patient?.firstName }} {{ patient?.lastName }}
           </h5>
         </div>
         <div class="card-body">
@@ -204,8 +205,12 @@
         </div>
         <div class="card-body small">
           <ul class="list-unstyled mb-0">
-            <li class="mb-2"><strong>Temperature:</strong> 36.1 - 37.2°C</li>
-            <li class="mb-2"><strong>Heart Rate:</strong> 60 - 100 bpm</li>
+            <li class="mb-2 d-flex justify-content-between">
+              <span class="me-4"
+                ><strong>Temperature:</strong> 36.1 - 37.2°C</span
+              >
+              <span><strong>Heart Rate:</strong> 60 - 100 bpm</span>
+            </li>
             <li class="mb-2">
               <strong>Blood Pressure:</strong> 90-120 / 60-80 mmHg
             </li>

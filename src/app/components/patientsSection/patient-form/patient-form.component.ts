@@ -201,10 +201,26 @@ export class PatientFormComponent
 
       console.log('Submitting patient data:', formData);
 
-      // Send to server
-      await this.patientService.createPatient(formData).toPromise();
-      alert('Patient registered successfully!');
-      this.location.back();
+      // Send to server and get the response with the new patient ID
+      const response = await this.patientService
+        .createPatient(formData)
+        .toPromise();
+
+      alert(
+        'Patient registered successfully! Redirecting to medical record form...'
+      );
+
+      // Navigate to medical record form with the new patient ID
+      // Assuming the response contains the patient ID as 'id' or 'patientId'
+      const newPatientId = response?.id || response?.id;
+
+      if (newPatientId) {
+        // Navigate to medical records form
+        this.router.navigate(['/patients', newPatientId, 'medical-records']);
+      } else {
+        console.error('Patient ID not returned from server');
+        this.location.back();
+      }
     } catch (error: any) {
       console.error('Error submitting form:', error);
 

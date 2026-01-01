@@ -15,6 +15,13 @@ import {
   CreateVitalSigns,
   UpdateVitalSigns,
 } from '../../../models/vital-signs.model';
+import { BloodPressureService } from '../../../services/bloodPressure/blood-pressure.service';
+import { Pressure } from '../../../models/medicalRecord.model';
+import { MedicalRecordUtilityService } from '../../../services/medicalRecordUtility/medical-record-utility.service';
+import { PatientService } from '../../../services/patient/patient.service';
+import { Patients } from '../../../models/patient.model';
+import { differenceInYears } from 'date-fns/differenceInYears';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-vital-signs',
@@ -38,18 +45,62 @@ export class VitalSignsComponent implements OnInit {
   itemsPerPage = 10;
   totalPages = 1;
 
+  //Patient info for blood pressure calculations
+  patient: Patients | undefined;
+  patientAge: number = 0;
+  patientWeight: number = 0;
+  patientGender: string = '';
+  medicalRecordId: number | undefined;
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private location: Location,
-    private vitalSignsService: VitalSignsService
+    private vitalSignsService: VitalSignsService,
+    private bloodPressureService: BloodPressureService,
+    private medicalRecordUtility: MedicalRecordUtilityService,
+    private patientService: PatientService
   ) {}
 
   ngOnInit(): void {
     this.patientId = Number(this.route.snapshot.paramMap.get('id'));
     this.initializeForm();
+    this.loadPatientData();
     this.loadRecentVitalSigns();
+  }
+
+  loadPatientData(): void {
+    this.loading = true;
+
+    // Load patient details
+    this.patientService.getPatientById(this.patientId).subscribe({
+      next: (data) => {
+        this.patient = data;
+        this.patientAge = differenceInYears(
+          new Date(),
+          new Date(this.patient.dateOfBirth)
+        );
+        this.patientGender = this.patient.genderID === 1 ? 'male' : 'female';
+        this.patientWeight = this.patient.medicalRecord?.weight || 0;
+
+        // Get medical record ID
+        this.medicalRecordUtility.checkMedicalRecord(this.patientId).subscribe({
+          next: (recordId) => {
+            this.medicalRecordId = recordId;
+            this.loading = false;
+          },
+          error: (err) => {
+            console.error('Failed to get medical record ID', err);
+            this.loading = false;
+          },
+        });
+      },
+      error: (err) => {
+        console.error('Failed to load patient data', err);
+        this.loading = false;
+      },
+    });
   }
 
   initializeForm(): void {
@@ -79,7 +130,7 @@ export class VitalSignsComponent implements OnInit {
         [Validators.required, Validators.min(70), Validators.max(100)],
       ],
       weight: ['', [Validators.min(1), Validators.max(300)]],
-      remarks: [''],
+      remarks: ['Test vital signs'],
     });
   }
 
@@ -108,27 +159,55 @@ export class VitalSignsComponent implements OnInit {
       return;
     }
 
+    if (!this.medicalRecordId) {
+      this.error = 'Medical record ID is required. Please try again.';
+      return;
+    }
+
     this.loading = true;
     this.error = '';
     this.successMessage = '';
 
+    const formValues = this.vitalSignsForm.value;
+    const systolic = formValues.bloodPressureSystolic;
+    const diastolic = formValues.bloodPressureDiastolic;
+
+    // Prepare vital signs data
     const vitalSigns: VitalSigns = {
       patientId: this.patientId,
-      temperature: this.vitalSignsForm.value.temperature,
-      bloodPressureSystolic: this.vitalSignsForm.value.bloodPressureSystolic,
-      bloodPressureDiastolic: this.vitalSignsForm.value.bloodPressureDiastolic,
-      heartRate: this.vitalSignsForm.value.heartRate,
-      respiratoryRate: this.vitalSignsForm.value.respiratoryRate,
-      oxygenSaturation: this.vitalSignsForm.value.oxygenSaturation,
-      weight: this.vitalSignsForm.value.weight || undefined,
+      temperature: formValues.temperature,
+      bloodPressureSystolic: systolic,
+      bloodPressureDiastolic: diastolic,
+      heartRate: formValues.heartRate,
+      respiratoryRate: formValues.respiratoryRate,
+      oxygenSaturation: formValues.oxygenSaturation,
+      weight: formValues.weight || undefined,
       recordedAt: new Date(),
-      remarks: this.vitalSignsForm.value.remarks || undefined,
-      status: '',
+      remarks: formValues.remarks || undefined,
+      status: this.getVitalSignStatusFromForm(formValues),
     };
 
-    this.vitalSignsService.recordVitalSigns(vitalSigns).subscribe({
+    // Save both vital signs and blood pressure records
+    const vitalSigns$ = this.vitalSignsService.recordVitalSigns(vitalSigns);
+    const bloodPressure$ =
+      this.bloodPressureService.createComprehensivePressureRecord(
+        this.patientId,
+        this.medicalRecordId,
+        systolic,
+        diastolic,
+        this.patientAge,
+        this.patientWeight || formValues.weight || 0,
+        this.patientGender
+      );
+
+    // Execute both save operations
+    forkJoin({
+      vitalSigns: vitalSigns$,
+      bloodPressure: bloodPressure$,
+    }).subscribe({
       next: (response) => {
-        this.successMessage = 'Vital signs recorded successfully!';
+        this.successMessage =
+          'Vital signs and blood pressure recorded successfully!';
         this.loading = false;
         this.vitalSignsForm.reset();
         this.loadRecentVitalSigns();
@@ -138,7 +217,9 @@ export class VitalSignsComponent implements OnInit {
         }, 3000);
       },
       error: (err) => {
-        this.error = 'Failed to record vital signs. Please try again.';
+        console.error('Error saving records:', err);
+        this.error =
+          'Failed to record vital signs and blood pressure. Please try again.';
         this.loading = false;
       },
     });
@@ -173,6 +254,63 @@ export class VitalSignsComponent implements OnInit {
     }
 
     return 'Normal';
+  }
+
+  getVitalSignStatusFromForm(formValues: any): string {
+    // Blood Pressure Status
+    if (
+      formValues.bloodPressureSystolic >= 140 ||
+      formValues.bloodPressureDiastolic >= 90
+    ) {
+      return 'High BP';
+    }
+    if (
+      formValues.bloodPressureSystolic < 90 ||
+      formValues.bloodPressureDiastolic < 60
+    ) {
+      return 'Low BP';
+    }
+
+    // Temperature Status
+    if (formValues.temperature > 38) {
+      return 'Fever';
+    }
+    if (formValues.temperature < 36) {
+      return 'Hypothermia';
+    }
+
+    // Oxygen Saturation
+    if (formValues.oxygenSaturation < 95) {
+      return 'Low O2';
+    }
+
+    return 'Normal';
+  }
+
+  getBloodPressureCategory(systolic: number, diastolic: number): string {
+    return this.bloodPressureService.getBloodPressureCategory(
+      systolic,
+      diastolic
+    );
+  }
+
+  getBPCategoryClass(category: string): string {
+    switch (category) {
+      case 'Low Blood Pressure':
+        return 'text-info';
+      case 'Normal':
+        return 'text-success';
+      case 'Elevated':
+        return 'text-warning';
+      case 'Hypertension Stage 1':
+        return 'text-warning';
+      case 'Hypertension Stage 2':
+        return 'text-danger';
+      case 'Hypertensive Crisis':
+        return 'text-danger fw-bold';
+      default:
+        return '';
+    }
   }
 
   goBack(): void {
