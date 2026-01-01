@@ -1,0 +1,54 @@
+.hover-bg-light:hover {
+  background-color: #f8f9fa;
+  transition: background-color 0.2s ease;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+// Dropdown styling
+.position-relative {
+  .form-control:focus + div {
+    display: block;
+  }
+}
+
+// Patient info card
+.alert-info {
+  border-left: 4px solid #0dcaf0;
+}
+
+// Smooth transitions for dropdown
+.position-absolute {
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Custom scrollbar for dropdown
+.position-absolute::-webkit-scrollbar {
+  width: 8px;
+}
+
+.position-absolute::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.position-absolute::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.position-absolute::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

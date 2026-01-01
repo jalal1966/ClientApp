@@ -33,6 +33,7 @@ export class PatientListComponent
   loading = true;
   error = '';
   @Input() isMainForm: boolean = true;
+
   constructor(
     private patientService: PatientService,
     authService: AuthService,

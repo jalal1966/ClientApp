@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -26,7 +27,7 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-vital-signs',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './vital-signs.component.html',
   styleUrls: ['./vital-signs.component.scss'],
 })
@@ -51,6 +52,12 @@ export class VitalSignsComponent implements OnInit {
   patientWeight: number = 0;
   patientGender: string = '';
   medicalRecordId: number | undefined;
+  filteredPatients: Patients[] = [];
+  patients: Patients[] = [];
+
+  // Patient search
+  searchTerm: string = '';
+  showDropdown: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -64,10 +71,32 @@ export class VitalSignsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.patientId = Number(this.route.snapshot.paramMap.get('id'));
+    const routePatientId = this.route.snapshot.paramMap.get('id');
+
     this.initializeForm();
-    this.loadPatientData();
-    this.loadRecentVitalSigns();
+    this.loadAllPatients();
+
+    // If patient ID is in route, load that patient
+    if (routePatientId && routePatientId !== 'vital-signs') {
+      this.patientId = Number(routePatientId);
+      this.loadPatientData();
+      this.loadRecentVitalSigns();
+    } else {
+      // No patient selected - show search prompt
+      console.log('No patient selected. Please search for a patient.');
+    }
+  }
+
+  loadAllPatients(): void {
+    this.patientService.getPatients().subscribe({
+      next: (data) => {
+        this.patients = data;
+        this.filteredPatients = [];
+      },
+      error: (err) => {
+        console.error('Failed to load patients', err);
+      },
+    });
   }
 
   loadPatientData(): void {
@@ -77,6 +106,7 @@ export class VitalSignsComponent implements OnInit {
     this.patientService.getPatientById(this.patientId).subscribe({
       next: (data) => {
         this.patient = data;
+        this.searchTerm = `${data.firstName} ${data.lastName}`;
         this.patientAge = differenceInYears(
           new Date(),
           new Date(this.patient.dateOfBirth)
@@ -130,7 +160,7 @@ export class VitalSignsComponent implements OnInit {
         [Validators.required, Validators.min(70), Validators.max(100)],
       ],
       weight: ['', [Validators.min(1), Validators.max(300)]],
-      remarks: ['Test vital signs'],
+      remarks: [''],
     });
   }
 
@@ -153,9 +183,53 @@ export class VitalSignsComponent implements OnInit {
     return this.allVitalSigns.slice(startIndex, endIndex);
   }
 
+  filterPatients(event: Event): void {
+    const searchValue = (event.target as HTMLInputElement).value;
+    this.searchTerm = searchValue;
+
+    if (searchValue.trim().length === 0) {
+      this.filteredPatients = [];
+      this.showDropdown = false;
+      return;
+    }
+
+    const searchLower = searchValue.toLowerCase();
+    this.filteredPatients = this.patients.filter(
+      (patient) =>
+        patient.firstName.toLowerCase().includes(searchLower) ||
+        patient.lastName.toLowerCase().includes(searchLower) ||
+        `${patient.firstName} ${patient.lastName}`
+          .toLowerCase()
+          .includes(searchLower)
+    );
+    this.showDropdown = this.filteredPatients.length > 0;
+  }
+
+  selectPatient(patient: Patients): void {
+    this.patient = patient;
+    this.patientId = patient.id;
+    this.searchTerm = `${patient.firstName} ${patient.lastName}`;
+    this.showDropdown = false;
+    this.filteredPatients = [];
+
+    // Load patient data and vital signs
+    this.loadPatientData();
+    this.loadRecentVitalSigns();
+
+    // Reset form
+    this.vitalSignsForm.reset();
+    this.error = '';
+    this.successMessage = '';
+  }
+
   onSubmit(): void {
     if (this.vitalSignsForm.invalid) {
       this.error = 'Please fill in all required fields with valid values.';
+      return;
+    }
+
+    if (!this.patientId) {
+      this.error = 'Please select a patient first.';
       return;
     }
 

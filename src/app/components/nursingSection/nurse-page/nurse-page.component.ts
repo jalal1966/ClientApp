@@ -36,6 +36,7 @@ export class NursePageComponent extends PatientComponentBase {
     {
       title: 'Vital Signs',
       description: 'Record patient vital signs',
+      class: 'bi bi-heart-pulse',
       buttonText: 'Record Vitals',
       action: 'recordVitals',
     },
@@ -78,7 +79,8 @@ export class NursePageComponent extends PatientComponentBase {
   }
 
   private navigateToVitalSigns() {
-    this.router.navigate(['/patients']);
+    //this.router.navigate(['/patients']);
+    this.router.navigate(['/vital-signs']);
   }
 
   /*private navigateToVitalSigns() {

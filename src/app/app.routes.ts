@@ -49,6 +49,8 @@ export const routes: Routes = [
   { path: 'patients', component: PatientListComponent }, // List of patients
 
   // ⭐ MOVE ALL SPECIFIC ROUTES BEFORE THE GENERIC :id ROUTE
+  { path: 'vital-signs', component: VitalSignsComponent },
+
   { path: 'patients/:id/vital-signs', component: VitalSignsComponent },
 
   { path: 'patients/:id/medical-records', component: MedicalRecordsComponent },

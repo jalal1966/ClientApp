@@ -1,9 +1,90 @@
 <div class="container mx-auto p-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h4 fw-bold mb-0">Record Patient Vital Signs</h1>
+
+    <!-- Patient Search with Dropdown -->
+    <div class="position-relative mx-3" style="max-width: 300px; flex: 1">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Search patients..."
+        [(ngModel)]="searchTerm"
+        (input)="filterPatients($event)"
+        (focus)="
+          showDropdown = searchTerm.length > 0 && filteredPatients.length > 0
+        "
+      />
+
+      <!-- Dropdown for filtered patients -->
+      <div
+        *ngIf="showDropdown && filteredPatients.length > 0"
+        class="position-absolute w-100 bg-white border rounded shadow-lg mt-1"
+        style="max-height: 300px; overflow-y: auto; z-index: 1000"
+      >
+        <div
+          *ngFor="let p of filteredPatients"
+          class="p-3 border-bottom cursor-pointer hover-bg-light"
+          (click)="selectPatient(p)"
+          style="cursor: pointer"
+        >
+          <div class="fw-semibold">{{ p.firstName }} {{ p.lastName }}</div>
+          <small class="text-muted">
+            <i class="bi bi-calendar3 me-1"></i>
+            {{ p.dateOfBirth | date : "dd/MM/yyyy" }}
+            <span class="ms-2">
+              <i class="bi bi-person me-1"></i>
+              {{ p.genderID === 1 ? "Male" : "Female" }}
+            </span>
+          </small>
+        </div>
+      </div>
+    </div>
+
     <button (click)="goBack()" class="btn btn-outline-danger">
       <i class="bi bi-arrow-left"></i> Back
     </button>
+  </div>
+
+  <!-- Prompt to select patient (shown when no patient is selected) -->
+  <div *ngIf="!patient" class="alert alert-warning mb-4">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-search display-6 me-3"></i>
+      <div>
+        <h5 class="mb-1">
+          <i class="bi bi-arrow-up-circle me-2"></i>Please Search and Select a
+          Patient
+        </h5>
+        <small
+          >Use the search box above to find and select a patient to record their
+          vital signs.</small
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Information Card (shown when patient is selected) -->
+  <div *ngIf="patient" class="alert alert-info mb-4">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-person-circle display-6 me-3"></i>
+      <div>
+        <h5 class="mb-1">
+          {{ patient.firstName }} {{ patient.lastName }}
+          <span class="badge bg-primary ms-2">
+            {{ patient.genderID === 1 ? "Male" : "Female" }}
+          </span>
+        </h5>
+        <small>
+          <strong>DOB:</strong>
+          {{ patient.dateOfBirth | date : "dd/MM/yyyy" }} ({{
+            patientAge
+          }}
+          years old)
+          <span *ngIf="patientWeight > 0" class="ms-3">
+            <strong>Weight:</strong> {{ patientWeight }} kg
+          </span>
+        </small>
+      </div>
+    </div>
   </div>
 
   <!-- Success Message -->
@@ -32,10 +113,13 @@
       <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
           <h5 class="mb-0">
-            <i class="bi bi-heart-pulse me-2"></i>Enter Vital Signs for
-            {{ patient?.firstName }} {{ patient?.lastName }}
+            <i class="bi bi-heart-pulse me-2"></i>Enter Vital Signs
+            <span *ngIf="patient">
+              for {{ patient.firstName }} {{ patient.lastName }}
+            </span>
           </h5>
         </div>
+
         <div class="card-body">
           <form [formGroup]="vitalSignsForm" (ngSubmit)="onSubmit()">
             <div class="row">
@@ -181,7 +265,7 @@
               <button
                 type="submit"
                 class="btn btn-primary btn-lg"
-                [disabled]="vitalSignsForm.invalid || loading"
+                [disabled]="vitalSignsForm.invalid || loading || !patient"
               >
                 <span *ngIf="!loading">
                   <i class="bi bi-check-circle me-2"></i>Record Vital Signs
@@ -223,7 +307,7 @@
       </div>
 
       <!-- Recent Vital Signs History -->
-      <div class="card shadow-sm mt-1">
+      <div *ngIf="patient" class="card shadow-sm mt-1">
         <div
           class="card-header bg-info text-white d-flex justify-content-between align-items-center"
         >
