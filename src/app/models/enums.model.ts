@@ -21,17 +21,17 @@ export enum AppointmentStatus {
 }
 
 export enum TaskStatus {
-  NotStarted = 'NotStarted',
-  InProgress = 'InProgress',
-  Completed = 'Completed',
-  Overdue = 'Overdue',
+  NotStarted = 0,
+  InProgress = 1,
+  Completed = 2,
+  Overdue = 3,
 }
 
 export enum TaskPriority {
-  Low = 'Low',
-  Medium = 'Medium',
-  High = 'High',
-  Critical = 'Critical',
+  Low = 0,
+  Medium = 1,
+  High = 2,
+  Critical = 3,
 }
 
 export enum VaccineNames {

@@ -75,27 +75,13 @@ export class NursePageComponent extends PatientComponentBase {
   }
 
   private navigateToTasks() {
-    this.router.navigate(['/task-dashboard']);
+    this.router.navigate(['/patient-task']);
   }
 
   private navigateToVitalSigns() {
     //this.router.navigate(['/patients']);
     this.router.navigate(['/vital-signs']);
   }
-
-  /*private navigateToVitalSigns() {
-    if (this.selectedPatientId) {
-      this.router.navigate([
-        '/patients',
-        this.selectedPatientId,
-        'vital-signs',
-      ]);
-    } else {
-      // Show error or open patient selection
-      alert('Please select a patient first');
-      this.router.navigate(['/patients']);
-    }
-  }*/
 
   private navigateToMedicationLog() {
     this.router.navigate(['/medication-log']);

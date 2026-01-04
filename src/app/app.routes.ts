@@ -11,7 +11,6 @@ import { AppointmentComponent } from './components/commonSection/appointment/app
 import { WaitingListComponent } from './components/commonSection/waiting-list/waiting-list.component';
 import { NursePageComponent } from './components/nursingSection/nurse-page/nurse-page.component';
 import { ClinicDashboardComponent } from './components/managementSection/clinic-dashboard/clinic-dashboard.component';
-import { TaskDashboardComponent } from './components/nursingSection/task-dashboard/task-dashboard.component';
 import { AuthGuard } from './services/authGuard/auth-guard.service';
 import { AdministratorComponent } from './components/adminSection/administrator/administrator.component';
 import { RoleGuard } from './services/roleGuard/role-guard.service';
@@ -32,6 +31,7 @@ import { BloodPressureComponent } from './components/patientsSection/blood-press
 import { PatientRecordComponent } from './components/patientsSection/patient-record/patient-record.component';
 import { MergedPatientComponent } from './components/patientsSection/mergedPatient/merged-patient.component';
 import { VitalSignsComponent } from './components/patientsSection/vital-signs/vital-signs.component';
+import { PatientTaskComponent } from './components/patientsSection/patient-task/patient-task.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -41,7 +41,7 @@ export const routes: Routes = [
   { path: 'waitingList', component: WaitingListComponent },
   { path: 'nurse', component: NursePageComponent },
   { path: 'management', component: ClinicDashboardComponent },
-  { path: 'task-dashboard', component: TaskDashboardComponent },
+  { path: 'patient-task', component: PatientTaskComponent },
   { path: 'doctor-map', component: DoctorMapScheduleComponent },
   { path: 'usersList', component: UsersListComponent },
   { path: 'doctor-schedule', component: MapComponent },

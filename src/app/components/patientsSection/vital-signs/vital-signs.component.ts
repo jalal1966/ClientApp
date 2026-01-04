@@ -10,7 +10,6 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Location } from '@angular/common';
-import { VitalSignsService } from '../../../services/vital-signs-service';
 import {
   VitalSigns,
   CreateVitalSigns,
@@ -23,6 +22,7 @@ import { PatientService } from '../../../services/patient/patient.service';
 import { Patients } from '../../../models/patient.model';
 import { differenceInYears } from 'date-fns/differenceInYears';
 import { forkJoin } from 'rxjs';
+import { VitalSignsService } from '../../../services/vital-signs/vital-signs-service';
 
 @Component({
   selector: 'app-vital-signs',
